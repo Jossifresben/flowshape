@@ -106,7 +106,7 @@ interface PatternDef {
 
 ### 4.3 URL state schema
 
-`/#/p/<patternId>?v=1&seed=71203&points=1500&angle=137.51&...&layout=titled&format=a3&title=...&caption=...&theme=dark&lang=es`
+`/#/p/<patternId>?v=1&seed=71203&points=1500&angle=137.51&...&pal=navy-gold&bg=131a2b&ink=e8dcc0&acc=d9a441&layout=titled&format=a3&title=...&caption=...&theme=dark&lang=es`
 
 - `v` is the schema version; decoding unknown/missing params falls back to defaults (old links keep working).
 - Params round to sensible precision to keep URLs short. Title/caption URL-encoded.
@@ -123,7 +123,19 @@ Heavy patterns (differential growth; flow field at high line counts) run `genera
 - Formats map to mm (or in) dimensions; SVG viewBox is mm-true; PNG export renders at user-chosen DPI-equivalent pixel sizes (preset: 150 / 300 dpi).
 - Poster sheet is always white with dark ink by default (print reality); palette choice can override deliberately.
 
-### 4.6 i18n and themes
+### 4.6 Color system
+
+Every pattern is colored through exactly three role tokens (§4.2), each user-adjustable in the playground:
+
+- **Background color** — the pattern/poster ground
+- **Line color** — the ink every stroke, dot, and fill derives from
+- **Accent color** — the sparse highlight some patterns emit (accent-every-N dots, marked tiles); patterns that emit no accent simply ignore it
+
+Controls: a **predefined palette row first** (one-click swatch triples), then per-role custom pickers for the three tokens. Predefined palettes are curated named triples shipped in `poster/palettes.ts` — the first two are always the monochrome defaults, `Mono Light` (white / near-black / red) and `Mono Dark` (near-black / white / red), followed by a small curated set (~8: e.g. Navy & Gold, Teal & Sand, Terracotta, Sashiko Indigo…). Flat colors only — the palette type cannot express gradients.
+
+URL encoding: `pal=<paletteId>` for a predefined choice, or explicit `bg=`, `ink=`, `acc=` hex overrides (an override wins over `pal`). Site theme (light/dark) selects which monochrome palette is the *default*; an explicit user choice is kept regardless of theme.
+
+### 4.7 i18n and themes
 
 - All UI strings via `locales/*.json`; explain content as per-language markdown. Language auto-detected, toggleable, persisted in URL (`lang`).
 - Theme: CSS custom properties, `data-theme` attribute, `prefers-color-scheme` default, toggle persisted in URL (`theme`).
