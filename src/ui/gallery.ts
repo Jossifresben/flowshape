@@ -17,6 +17,7 @@ export const NAMES: Record<string, string> = {
   diffgrowth: 'Differential Growth',
   coulomb: 'Coulomb Field',
   bands: 'Concentric Bands',
+  moire: 'Moiré Weave',
 };
 
 /** Human label for each pattern family. */
