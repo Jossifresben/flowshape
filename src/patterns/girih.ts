@@ -9,7 +9,7 @@ export const girih = definePattern({
   params: [
     { key: 'hexSize', kind: 'int', min: 20, max: 80, step: 2, default: 30, label: 'girih.hexSize' },
     { key: 'contactAngle', kind: 'float', min: 15, max: 80, step: 0.5, default: 60, label: 'girih.contactAngle' },
-    { key: 'strokeWidth', kind: 'float', min: 0.6, max: 5, step: 0.1, default: 2, label: 'girih.strokeWidth' },
+    { key: 'strokeWidth', kind: 'float', min: 0.2, max: 5, step: 0.1, default: 0.9, label: 'girih.strokeWidth' },
   ],
   generate(p, _seed, size) {
     const S = p['hexSize']!;

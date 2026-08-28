@@ -14,8 +14,8 @@ export const flowfield = definePattern({
     { key: 'curl', kind: 'float', min: 0.5, max: 3, step: 0.05, default: 1.9, label: 'flowfield.curl' },
     { key: 'spacing', kind: 'int', min: 6, max: 20, step: 1, default: 9, label: 'flowfield.spacing' },
     { key: 'steps', kind: 'int', min: 50, max: 400, step: 10, default: 300, label: 'flowfield.steps' },
-    { key: 'strokeWidth', kind: 'float', min: 0.4, max: 2.5, step: 0.05, default: 1.1, label: 'flowfield.strokeWidth' },
-    { key: 'accentEvery', kind: 'int', min: 0, max: 40, step: 1, default: 17, label: 'flowfield.accentEvery' },
+    { key: 'strokeWidth', kind: 'float', min: 0.15, max: 2.5, step: 0.05, default: 0.5, label: 'flowfield.strokeWidth' },
+    { key: 'emphasisEvery', kind: 'int', min: 0, max: 40, step: 1, default: 17, label: 'flowfield.emphasisEvery' },
   ],
   generate(p, seed, size) {
     const noise = fbm2D(deriveSeed(seed, 'flow'), 2);
@@ -47,14 +47,14 @@ export const flowfield = definePattern({
           n++;
         }
         if (n < 5) continue;
-        const accent = p['accentEvery']! > 0 && id % p['accentEvery']! === 0;
+        const emphasis = p['emphasisEvery']! > 0 && id % p['emphasisEvery']! === 0;
         children.push(el('path', {
           d,
           fill: 'none',
-          stroke: accent ? 'accent' : 'ink',
-          'stroke-width': p['strokeWidth']!,
+          stroke: 'ink',
+          'stroke-width': emphasis ? p['strokeWidth']! * 2.2 : p['strokeWidth']!,
           'stroke-linecap': 'round',
-          opacity: 0.85,
+          opacity: emphasis ? 1 : 0.7,
         }));
       }
     }

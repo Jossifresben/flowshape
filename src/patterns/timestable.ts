@@ -9,7 +9,7 @@ export const timestable = definePattern({
   params: [
     { key: 'chords', kind: 'int', min: 100, max: 600, step: 10, default: 400, label: 'timestable.chords' },
     { key: 'multiplier', kind: 'float', min: 2, max: 100, step: 0.05, default: 34, label: 'timestable.multiplier' },
-    { key: 'strokeWidth', kind: 'float', min: 0.2, max: 2, step: 0.05, default: 0.6, label: 'timestable.strokeWidth' },
+    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 0.35, label: 'timestable.strokeWidth' },
     { key: 'opacity', kind: 'float', min: 0.05, max: 1, step: 0.01, default: 0.28, label: 'timestable.opacity' },
     { key: 'showCircle', kind: 'bool', min: 0, max: 1, step: 1, default: 1, label: 'timestable.showCircle' },
   ],
@@ -17,7 +17,7 @@ export const timestable = definePattern({
     const N = p['chords']!;
     const M = p['multiplier']!;
     const cx = size.w / 2, cy = size.h / 2;
-    const R = Math.min(size.w, size.h) * 0.42;
+    const R = Math.min(size.w, size.h) * 0.34;
     const pt = (k: number): [number, number] => {
       const a = (2 * Math.PI * k) / N - Math.PI / 2;
       return [cx + R * Math.cos(a), cy + R * Math.sin(a)];

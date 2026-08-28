@@ -36,10 +36,21 @@ export function serialize(node: SvgNode, pal: Palette): string {
     attrs['xmlns'] = 'http://www.w3.org/2000/svg';
   }
   const parts: string[] = [];
+  let hasStroke = false;
+  let strokeIsNone = false;
+  let hasVectorEffect = false;
   for (const [k, v] of Object.entries(attrs)) {
     let out = fmt(v);
     if (ROLE_ATTRS.has(k) && ROLES.has(out)) out = pal[out as Role];
+    if (k === 'stroke') {
+      hasStroke = true;
+      strokeIsNone = out === 'none';
+    }
+    if (k === 'vector-effect') hasVectorEffect = true;
     parts.push(`${k}="${esc(out)}"`);
+  }
+  if (hasStroke && !strokeIsNone && !hasVectorEffect) {
+    parts.push(`vector-effect="non-scaling-stroke"`);
   }
   const open = `<${node.tag}${parts.length ? ' ' + parts.join(' ') : ''}`;
   if (node.children.length === 0) return `${open}/>`;

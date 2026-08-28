@@ -14,7 +14,7 @@ export const stipple = definePattern({
     { key: 'maxGap', kind: 'float', min: 8, max: 30, step: 0.5, default: 22, label: 'stipple.maxGap' },
     { key: 'noiseScale', kind: 'float', min: 0.5, max: 4, step: 0.05, default: 1.6, label: 'stipple.noiseScale' },
     { key: 'contrast', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.15, label: 'stipple.contrast' },
-    { key: 'dotSize', kind: 'float', min: 0.5, max: 3, step: 0.1, default: 1.1, label: 'stipple.dotSize' },
+    { key: 'dotSize', kind: 'float', min: 0.25, max: 3, step: 0.1, default: 0.7, label: 'stipple.dotSize' },
     { key: 'accentEvery', kind: 'int', min: 0, max: 300, step: 1, default: 173, label: 'stipple.accentEvery' },
   ],
   generate(p, seed, size) {

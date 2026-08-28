@@ -12,7 +12,7 @@ export const voronoiCells = definePattern({
   params: [
     { key: 'sites', kind: 'int', min: 30, max: 300, step: 5, default: 150, label: 'voronoi.sites' },
     { key: 'inset', kind: 'float', min: 0.5, max: 0.98, step: 0.01, default: 0.86, label: 'voronoi.inset' },
-    { key: 'strokeWidth', kind: 'float', min: 0.3, max: 3, step: 0.1, default: 1, label: 'voronoi.strokeWidth' },
+    { key: 'strokeWidth', kind: 'float', min: 0.15, max: 3, step: 0.1, default: 0.5, label: 'voronoi.strokeWidth' },
     { key: 'inkEvery', kind: 'int', min: 0, max: 40, step: 1, default: 13, label: 'voronoi.inkEvery' },
     { key: 'accentEvery', kind: 'int', min: 0, max: 40, step: 1, default: 19, label: 'voronoi.accentEvery' },
   ],

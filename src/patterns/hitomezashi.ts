@@ -11,7 +11,7 @@ export const hitomezashi = definePattern({
   params: [
     { key: 'cell', kind: 'int', min: 8, max: 30, step: 1, default: 12, label: 'hitomezashi.cell' },
     { key: 'bitChance', kind: 'float', min: 0.2, max: 0.8, step: 0.01, default: 0.5, label: 'hitomezashi.bitChance' },
-    { key: 'strokeWidth', kind: 'float', min: 0.6, max: 4, step: 0.1, default: 1.6, label: 'hitomezashi.strokeWidth' },
+    { key: 'strokeWidth', kind: 'float', min: 0.2, max: 4, step: 0.1, default: 0.7, label: 'hitomezashi.strokeWidth' },
     { key: 'fillParity', kind: 'bool', min: 0, max: 1, step: 1, default: 1, label: 'hitomezashi.fillParity' },
   ],
   generate(p, seed, size) {
