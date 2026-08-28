@@ -1,0 +1,52 @@
+import { el, type SvgNode } from '../core/svg';
+import { definePattern } from './registry';
+import { mulberry32, deriveSeed } from '../core/prng';
+
+export const truchet = definePattern({
+  id: 'truchet',
+  family: 'tilings',
+  phase: 1,
+  heavy: false,
+  usesSeed: true,
+  params: [
+    { key: 'cell', kind: 'int', min: 20, max: 80, step: 2, default: 30, label: 'truchet.cell' },
+    { key: 'variant', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'truchet.variant', options: ['truchet.arcs', 'truchet.diagonals'] },
+    { key: 'strokeWidth', kind: 'float', min: 0.8, max: 6, step: 0.1, default: 2.2, label: 'truchet.strokeWidth' },
+    { key: 'boldChance', kind: 'float', min: 0, max: 0.3, step: 0.01, default: 0.12, label: 'truchet.boldChance' },
+    { key: 'accentChance', kind: 'float', min: 0, max: 0.2, step: 0.01, default: 0.04, label: 'truchet.accentChance' },
+  ],
+  generate(p, seed, size) {
+    const rnd = mulberry32(deriveSeed(seed, 'truchet'));
+    const s = p['cell']!;
+    const cols = Math.floor(size.w / s);
+    const rows = Math.floor(size.h / s);
+    const ox = (size.w - cols * s) / 2;
+    const oy = (size.h - rows * s) / 2;
+    const h = s / 2;
+    const children: SvgNode[] = [];
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        const x = ox + i * s, y = oy + j * s;
+        const flip = rnd() > 0.5;
+        const bold = rnd() < p['boldChance']!;
+        const accent = rnd() < p['accentChance']!;
+        let d: string;
+        if (p['variant']! === 0) {
+          d = flip
+            ? `M${x} ${y + h}A${h} ${h} 0 0 1 ${x + h} ${y}M${x + h} ${y + s}A${h} ${h} 0 0 1 ${x + s} ${y + h}`
+            : `M${x} ${y + h}A${h} ${h} 0 0 0 ${x + h} ${y + s}M${x + h} ${y}A${h} ${h} 0 0 0 ${x + s} ${y + h}`;
+        } else {
+          d = flip ? `M${x} ${y}L${x + s} ${y + s}` : `M${x + s} ${y}L${x} ${y + s}`;
+        }
+        children.push(el('path', {
+          d,
+          fill: 'none',
+          stroke: accent ? 'accent' : 'ink',
+          'stroke-width': bold ? p['strokeWidth']! * 2 : p['strokeWidth']!,
+          'stroke-linecap': 'round',
+        }));
+      }
+    }
+    return el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }, children);
+  },
+});
