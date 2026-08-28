@@ -10,3 +10,4 @@ import './truchet';
 import './hitomezashi';
 import './girih';
 import './diffgrowth';
+import './coulomb';
