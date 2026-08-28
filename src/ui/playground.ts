@@ -1,4 +1,5 @@
 import { getPattern, defaultParams, clampParams, generateSafe, listPatterns, type PatternDef } from '../patterns/registry';
+import { randomParams } from '../patterns/randomize';
 import { serialize, type SvgNode } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette } from '../poster/palettes';
@@ -119,21 +120,26 @@ export function mountPlayground(root: HTMLElement): () => void {
     );
     panel.append(patternSel);
 
+    const seedRow = document.createElement('div');
+    seedRow.className = 'ctl-row';
     if (def.usesSeed) {
-      const seedRow = document.createElement('div');
-      seedRow.className = 'ctl-row';
       const seedVal = document.createElement('span');
       seedVal.className = 'ctl-value';
       seedVal.textContent = `SEED ${state.seed}`;
-      const rand = document.createElement('button');
-      rand.className = 'btn';
-      rand.textContent = 'Randomize';
-      rand.addEventListener('click', () =>
-        setState({ seed: 1 + Math.floor(Math.random() * 99999) }),
-      );
-      seedRow.append(seedVal, rand);
-      panel.append(seedRow);
+      seedRow.append(seedVal);
     }
+    const rand = document.createElement('button');
+    rand.className = 'btn';
+    rand.textContent = 'Randomize';
+    rand.addEventListener('click', () => {
+      if (def.usesSeed) {
+        setState({ seed: 1 + Math.floor(Math.random() * 99999) });
+      } else {
+        setState({ params: randomParams(def, Math.random, state.params) });
+      }
+    });
+    seedRow.append(rand);
+    panel.append(seedRow);
 
     for (const pd of def.params) {
       const v = params[pd.key]!;
