@@ -13,7 +13,9 @@ const DEFAULT_STATE: AppState = {
   lang: 'en',
 };
 
-export function mountPlayground(root: HTMLElement): void {
+/** Mounts the playground into `root` and returns a cleanup function that
+ * removes its listeners (used by the router when switching to another view). */
+export function mountPlayground(root: HTMLElement): () => void {
   let state = decodeState(location.hash) ?? DEFAULT_STATE;
   let stage!: HTMLDivElement;
   let generation = 0;
@@ -97,6 +99,12 @@ export function mountPlayground(root: HTMLElement): void {
     const panel = document.createElement('div');
     panel.className = 'panel';
 
+    const backLink = document.createElement('a');
+    backLink.className = 'gal-back-link';
+    backLink.href = '#/';
+    backLink.textContent = '← All patterns';
+    panel.append(backLink);
+
     const patternSel = document.createElement('select');
     patternSel.className = 'ctl-select';
     for (const def2 of listPatterns().filter((x) => x.phase === 1).sort((a, b) => a.id.localeCompare(b.id))) {
@@ -150,12 +158,17 @@ export function mountPlayground(root: HTMLElement): void {
     root.append(stage, panel);
   }
 
-  window.addEventListener('hashchange', () => {
+  function onHashChange(): void {
     generation++;
     state = decodeState(location.hash) ?? DEFAULT_STATE;
     render();
     history.replaceState(null, '', encodeState(state));
-  });
+  }
+  window.addEventListener('hashchange', onHashChange);
   render();
   history.replaceState(null, '', encodeState(state));
+
+  return () => {
+    window.removeEventListener('hashchange', onHashChange);
+  };
 }
