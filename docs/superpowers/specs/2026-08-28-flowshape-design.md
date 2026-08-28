@@ -144,6 +144,7 @@ URL encoding: `pal=<paletteId>` for a predefined choice, or explicit `bg=`, `ink
 ## 5. UI (per approved mockups — design canvas "flowshape.art UI")
 
 1. **Gallery** (`/`): headline, family filter chips, pattern cards with live-generated thumbnails (small fixed-seed renders, generated at build time as static SVG for instant load).
+   - **Preset starting points (Part 3):** each pattern ships 3–6 curated preset states (full URL states chosen for visual range — different params/palettes, hand-picked). The gallery card links to the default; inside the playground a thumbnail strip/carousel of that pattern's presets gives users a starting stage to explore from, one click to load. Presets are just URLs in a `presets.ts` per pattern — no new machinery.
 2. **Playground** (`/#/p/<id>`): full-bleed pattern; right panel: seed (randomize/lock), parameter sliders (mono labels + values), palette strips (monochrome default first), Explain-the-math button; red **Create poster →**.
 3. **Poster preview**: composed sheet on worktable; right panel: format chips (ISO/US/other/custom), layout chips, title/caption, export SVG/PNG; footer note pointing to external editors.
 4. **Explain modal**: formula, 2–3 short paragraphs, small diagram, EN/ES.
