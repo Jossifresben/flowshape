@@ -6,29 +6,19 @@ const state: AppState = {
   seed: 71203,
   params: { points: 1500, angle: 137.51 },
   color: { pal: 'navy-gold' },
-  theme: 'light',
   lang: 'es',
 };
 
 describe('url state', () => {
-  it('round-trips (light theme, explicit in the URL)', () => {
+  it('round-trips', () => {
     const hash = encodeState(state);
-    expect(hash).toContain('theme=light');
     expect(decodeState(hash)).toEqual(state);
   });
 
-  it('round-trips (dark theme, omitted from the URL as default)', () => {
-    const s: AppState = { ...state, theme: 'dark' };
-    const hash = encodeState(s);
-    expect(hash).not.toContain('theme=');
-    expect(decodeState(hash)).toEqual(s);
-  });
-
   it('decodes hex overrides and omits empty fields', () => {
-    const s: AppState = { ...state, color: { bg: '131a2b' }, theme: 'dark', lang: 'en' };
+    const s: AppState = { ...state, color: { bg: '131a2b' }, lang: 'en' };
     const hash = encodeState(s);
     expect(hash).not.toContain('pal=');
-    expect(hash).not.toContain('theme='); // dark is default, omitted
     expect(hash).not.toContain('lang=');  // en is default, omitted
     expect(decodeState(hash)).toEqual(s);
   });
@@ -56,5 +46,13 @@ describe('url state', () => {
     const hash = encodeState({ ...state, params: { seed: 7, angle: 12 } });
     expect(decodeState(hash)!.seed).toBe(71203);
     expect(decodeState(hash)!.params).toEqual({ angle: 12 });
+  });
+
+  it('silently ignores a stale theme= param from an old shared link', () => {
+    const s = decodeState('#/p/girih?theme=light&seed=3');
+    expect(s).not.toBeNull();
+    expect(s).not.toHaveProperty('theme');
+    expect(s!.params).not.toHaveProperty('theme');
+    expect(s!.params).toEqual({});
   });
 });

@@ -36,7 +36,6 @@ function patternHref(id: string): string {
     seed: 1,
     params: {},
     color: {},
-    theme: 'dark',
     lang: 'en',
   });
 }
@@ -57,20 +56,7 @@ export function mountGallery(root: HTMLElement): void {
   wordmark.className = 'gal-wordmark';
   wordmark.innerHTML = 'flowshape<span class="gal-wordmark-dot">.art</span>';
 
-  const themeBtn = document.createElement('button');
-  themeBtn.className = 'btn';
-  const syncThemeLabel = (): void => {
-    const isDark = document.documentElement.dataset['theme'] === 'dark';
-    themeBtn.textContent = isDark ? 'Light theme' : 'Dark theme';
-  };
-  syncThemeLabel();
-  themeBtn.addEventListener('click', () => {
-    const isDark = document.documentElement.dataset['theme'] === 'dark';
-    document.documentElement.dataset['theme'] = isDark ? 'light' : 'dark';
-    syncThemeLabel();
-  });
-
-  topbar.append(wordmark, themeBtn);
+  topbar.append(wordmark);
 
   // --- hero ---
   const hero = document.createElement('div');

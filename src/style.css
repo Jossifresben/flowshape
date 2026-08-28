@@ -1,19 +1,12 @@
 :root {
-  --paper: #ffffff;
-  --fog: #f2f2f0;
-  --line: #e0e0dc;
-  --ink: #1c1b22;
-  --gray: #8a8a86;
-  --accent: #e3261a;
-  --font-ui: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-mono: 'IBM Plex Mono', Menlo, monospace;
-}
-[data-theme='dark'] {
   --paper: #17171a;
   --fog: #101012;
   --line: #2e2e33;
   --ink: #ececea;
   --gray: #8e8e90;
+  --accent: #e3261a;
+  --font-ui: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', Menlo, monospace;
 }
 * { box-sizing: border-box; }
 body {

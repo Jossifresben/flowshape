@@ -10,7 +10,6 @@ const DEFAULT_STATE: AppState = {
   seed: 1,
   params: {},
   color: {},
-  theme: 'dark',
   lang: 'en',
 };
 
@@ -56,12 +55,12 @@ export function mountPlayground(root: HTMLElement): () => void {
   }
 
   function fillStage(def: PatternDef): void {
-    const pal = resolvePalette(state.color, state.theme);
+    const pal = resolvePalette(state.color);
     stage.style.background = pal.paper;
     if (def.heavy) {
       stage.classList.add('computing');
       computeInWorker((node) => {
-        stage.innerHTML = serialize(node, resolvePalette(state.color, state.theme));
+        stage.innerHTML = serialize(node, resolvePalette(state.color));
       });
     } else {
       stage.innerHTML = serialize(generateSafe(def, state.params, state.seed, { w: 600, h: 840 }), pal);
@@ -88,7 +87,6 @@ export function mountPlayground(root: HTMLElement): () => void {
       root.textContent = 'Unknown pattern';
       return;
     }
-    document.documentElement.dataset['theme'] = state.theme;
     const params = clampParams(def, { ...defaultParams(def), ...state.params });
     state = { ...state, params };
     root.innerHTML = '';
@@ -152,14 +150,6 @@ export function mountPlayground(root: HTMLElement): () => void {
       }
     }
     panel.append(paletteRow(state.color, (c) => setState({ color: c })));
-
-    const themeBtn = document.createElement('button');
-    themeBtn.className = 'btn';
-    themeBtn.textContent = state.theme === 'light' ? 'Dark theme' : 'Light theme';
-    themeBtn.addEventListener('click', () =>
-      setState({ theme: state.theme === 'light' ? 'dark' : 'light' }),
-    );
-    panel.append(themeBtn);
 
     root.append(stage, panel);
   }

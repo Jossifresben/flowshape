@@ -17,8 +17,8 @@ export const PALETTES: PaletteDef[] = [
 
 const HEX = /^[0-9a-fA-F]{6}$/;
 
-export function resolvePalette(c: ColorState, theme: 'light' | 'dark'): Palette {
-  const fallback = theme === 'dark' ? PALETTES[1]! : PALETTES[0]!;
+export function resolvePalette(c: ColorState): Palette {
+  const fallback = PALETTES[1]!;
   const base = PALETTES.find((p) => p.id === c.pal) ?? fallback;
   return {
     paper: c.bg && HEX.test(c.bg) ? '#' + c.bg.toLowerCase() : base.paper,
