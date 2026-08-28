@@ -6,7 +6,6 @@ import './voronoi';
 import './harmonograph';
 import './timestable';
 import './flowfield';
-import './clifford';
 import './truchet';
 import './hitomezashi';
 import './girih';

@@ -23,7 +23,6 @@ const THUMB_SEED = 1;
 
 /** Thumbnails are 240×320; full print density is invisible at that size and costs KB. */
 const THUMB_OVERRIDES: Record<string, Record<string, number>> = {
-  clifford: { maxDots: 4000 },
   harmonograph: { duration: 260 },
   phyllotaxis: { points: 900 },
 };

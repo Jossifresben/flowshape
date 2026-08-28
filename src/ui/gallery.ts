@@ -11,7 +11,6 @@ export const NAMES: Record<string, string> = {
   harmonograph: 'Harmonograph',
   timestable: 'Times-Table Chords',
   flowfield: 'Flow Field',
-  clifford: 'Clifford Attractor',
   truchet: 'Truchet Arcs',
   hitomezashi: 'Hitomezashi',
   girih: 'Girih Stars',

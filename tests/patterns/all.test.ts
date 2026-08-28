@@ -6,8 +6,8 @@ import { RESERVED } from '../../src/core/reserved';
 const patterns = listPatterns();
 
 describe('pattern registry as a whole', () => {
-  it('registers all 13 launch patterns at phase 1', () => {
-    expect(patterns).toHaveLength(13);
+  it('registers all 12 launch patterns at phase 1', () => {
+    expect(patterns).toHaveLength(12);
     for (const p of patterns) expect(p.phase).toBe(1);
   });
 
