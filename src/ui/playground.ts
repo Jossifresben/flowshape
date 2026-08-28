@@ -1,5 +1,5 @@
-import { getPattern, defaultParams, clampParams, generateSafe } from '../patterns/registry';
-import { serialize } from '../core/svg';
+import { getPattern, defaultParams, clampParams, generateSafe, type PatternDef } from '../patterns/registry';
+import { serialize, type SvgNode } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette } from '../poster/palettes';
 import { sliderRow, paletteRow, checkboxRow, selectRow } from './controls';
@@ -23,13 +23,37 @@ export function mountPlayground(root: HTMLElement): void {
     render();
   }
 
+  let worker: Worker | null = null;
+  let workerReq = 0;
+  function computeInWorker(onNode: (node: SvgNode) => void): void {
+    worker ??= new Worker(new URL('../workers/compute.worker.ts', import.meta.url), { type: 'module' });
+    const id = ++workerReq;
+    worker.onmessage = (e: MessageEvent<{ id: number; node: SvgNode | null }>) => {
+      if (e.data.id !== workerReq || !e.data.node) return;
+      onNode(e.data.node);
+    };
+    worker.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: { w: 600, h: 840 } });
+  }
+
+  function fillStage(def: PatternDef): void {
+    const pal = resolvePalette(state.color, state.theme);
+    stage.style.background = pal.paper;
+    if (def.heavy) {
+      stage.classList.add('computing');
+      computeInWorker((node) => {
+        stage.classList.remove('computing');
+        stage.innerHTML = serialize(node, resolvePalette(state.color, state.theme));
+      });
+    } else {
+      stage.innerHTML = serialize(generateSafe(def, state.params, state.seed, { w: 600, h: 840 }), pal);
+    }
+  }
+
   let rafId = 0;
   function renderStage(): void {
     const def = getPattern(state.patternId);
     if (!def) return;
-    const pal = resolvePalette(state.color, state.theme);
-    stage.style.background = pal.paper;
-    stage.innerHTML = serialize(generateSafe(def, state.params, state.seed, { w: 600, h: 840 }), pal);
+    fillStage(def);
   }
   function setParam(key: string, v: number): void {
     state = { ...state, params: { ...state.params, [key]: v } };
@@ -46,13 +70,11 @@ export function mountPlayground(root: HTMLElement): void {
     }
     document.documentElement.dataset['theme'] = state.theme;
     const params = clampParams(def, { ...defaultParams(def), ...state.params });
-    const pal = resolvePalette(state.color, state.theme);
     root.innerHTML = '';
 
     stage = document.createElement('div');
     stage.className = 'stage';
-    stage.style.background = pal.paper;
-    stage.innerHTML = serialize(generateSafe(def, state.params, state.seed, { w: 600, h: 840 }), pal);
+    fillStage(def);
 
     const panel = document.createElement('div');
     panel.className = 'panel';

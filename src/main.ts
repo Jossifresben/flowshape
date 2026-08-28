@@ -1,6 +1,5 @@
 import './style.css';
-import './patterns/phyllotaxis';
-import './patterns/maurer';
+import './patterns/index';
 import { mountPlayground } from './ui/playground';
 
 mountPlayground(document.querySelector<HTMLDivElement>('#app')!);
