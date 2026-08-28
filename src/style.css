@@ -97,7 +97,7 @@ input[type='checkbox'] { accent-color: var(--ink); }
 }
 .gal-card { display: block; color: inherit; text-decoration: none; }
 .gal-thumb {
-  background: #ffffff; border: 1px solid var(--line);
+  background: #17171a; border: 1px solid var(--line);
 }
 .gal-thumb img { width: 100%; height: auto; display: block; }
 .gal-card:hover .gal-thumb { border-color: var(--ink); }

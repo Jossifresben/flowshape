@@ -37,7 +37,7 @@ function patternHref(id: string): string {
     seed: 1,
     params: {},
     color: {},
-    theme: 'light',
+    theme: 'dark',
     lang: 'en',
   });
 }

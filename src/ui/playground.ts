@@ -9,7 +9,7 @@ const DEFAULT_STATE: AppState = {
   seed: 1,
   params: {},
   color: {},
-  theme: 'light',
+  theme: 'dark',
   lang: 'en',
 };
 

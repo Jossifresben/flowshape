@@ -6,20 +6,29 @@ const state: AppState = {
   seed: 71203,
   params: { points: 1500, angle: 137.51 },
   color: { pal: 'navy-gold' },
-  theme: 'dark',
+  theme: 'light',
   lang: 'es',
 };
 
 describe('url state', () => {
-  it('round-trips', () => {
-    expect(decodeState(encodeState(state))).toEqual(state);
+  it('round-trips (light theme, explicit in the URL)', () => {
+    const hash = encodeState(state);
+    expect(hash).toContain('theme=light');
+    expect(decodeState(hash)).toEqual(state);
+  });
+
+  it('round-trips (dark theme, omitted from the URL as default)', () => {
+    const s: AppState = { ...state, theme: 'dark' };
+    const hash = encodeState(s);
+    expect(hash).not.toContain('theme=');
+    expect(decodeState(hash)).toEqual(s);
   });
 
   it('decodes hex overrides and omits empty fields', () => {
-    const s: AppState = { ...state, color: { bg: '131a2b' }, theme: 'light', lang: 'en' };
+    const s: AppState = { ...state, color: { bg: '131a2b' }, theme: 'dark', lang: 'en' };
     const hash = encodeState(s);
     expect(hash).not.toContain('pal=');
-    expect(hash).not.toContain('theme='); // light is default, omitted
+    expect(hash).not.toContain('theme='); // dark is default, omitted
     expect(hash).not.toContain('lang=');  // en is default, omitted
     expect(decodeState(hash)).toEqual(s);
   });

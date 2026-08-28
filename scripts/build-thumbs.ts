@@ -17,7 +17,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-const THUMB_PALETTE: Palette = { paper: '#ffffff', ink: '#1c1b22', accent: '#e3261a' };
+const THUMB_PALETTE: Palette = { paper: '#17171a', ink: '#ececea', accent: '#e3261a' };
 const THUMB_SIZE = { w: 240, h: 320 };
 const THUMB_SEED = 1;
 

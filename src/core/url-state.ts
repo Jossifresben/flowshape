@@ -21,7 +21,7 @@ export function encodeState(s: AppState): string {
   if (s.color.bg) q.set('bg', s.color.bg);
   if (s.color.ink) q.set('ink', s.color.ink);
   if (s.color.acc) q.set('acc', s.color.acc);
-  if (s.theme !== 'light') q.set('theme', s.theme);
+  if (s.theme !== 'dark') q.set('theme', s.theme);
   if (s.lang !== 'en') q.set('lang', s.lang);
   for (const [k, v] of Object.entries(s.params)) {
     if (RESERVED.has(k)) continue;
@@ -57,7 +57,7 @@ export function decodeState(hash: string): AppState | null {
     seed: Number.isFinite(seedRaw) && seedRaw > 0 ? Math.floor(seedRaw) : 1,
     params,
     color,
-    theme: q.get('theme') === 'dark' ? 'dark' : 'light',
+    theme: q.get('theme') === 'light' ? 'light' : 'dark',
     lang: q.get('lang') === 'es' ? 'es' : 'en',
   };
 }
