@@ -16,6 +16,7 @@ export const NAMES: Record<string, string> = {
   girih: 'Girih Stars',
   diffgrowth: 'Differential Growth',
   coulomb: 'Coulomb Field',
+  bands: 'Concentric Bands',
 };
 
 /** Human label for each pattern family. */

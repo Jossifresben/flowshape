@@ -11,3 +11,4 @@ import './hitomezashi';
 import './girih';
 import './diffgrowth';
 import './coulomb';
+import './bands';

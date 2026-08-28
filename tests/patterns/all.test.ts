@@ -7,8 +7,8 @@ const patterns = listPatterns();
 const FRAME = { w: 600, h: 840 };
 
 describe('pattern registry as a whole', () => {
-  it('registers all 13 launch patterns at phase 1', () => {
-    expect(patterns).toHaveLength(13);
+  it('registers all 14 launch patterns at phase 1', () => {
+    expect(patterns).toHaveLength(14);
     for (const p of patterns) expect(p.phase).toBe(1);
   });
 
