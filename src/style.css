@@ -23,3 +23,27 @@ body {
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
+
+#app { display: flex; height: 100vh; }
+.stage { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.stage svg { max-width: 100%; max-height: 100%; }
+.panel {
+  width: 320px; border-left: 1px solid var(--line); padding: 20px;
+  display: flex; flex-direction: column; gap: 16px; overflow-y: auto;
+}
+.ctl-row { display: flex; flex-direction: column; gap: 8px; }
+.ctl-head { display: flex; justify-content: space-between; }
+.ctl-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--gray); }
+.ctl-value { font-family: var(--font-mono); font-size: 12px; }
+.btn {
+  font-family: var(--font-mono); font-size: 11px; padding: 8px 14px;
+  border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer;
+}
+.pal-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.pal-chip {
+  display: flex; padding: 2px; gap: 2px; border: 2px solid transparent;
+  background: transparent; cursor: pointer;
+}
+.pal-chip.selected { border-color: var(--ink); }
+.pal-chip span { width: 22px; height: 22px; display: block; border: 1px solid var(--line); }
+input[type='range'] { accent-color: var(--ink); }

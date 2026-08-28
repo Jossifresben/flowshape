@@ -1,3 +1,6 @@
 import './style.css';
+import './patterns/phyllotaxis';
+import './patterns/maurer';
+import { mountPlayground } from './ui/playground';
 
-document.querySelector<HTMLDivElement>('#app')!.textContent = 'flowshape.art';
+mountPlayground(document.querySelector<HTMLDivElement>('#app')!);
