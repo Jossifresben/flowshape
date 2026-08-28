@@ -16,20 +16,37 @@ const DEFAULT_STATE: AppState = {
 export function mountPlayground(root: HTMLElement): void {
   let state = decodeState(location.hash) ?? DEFAULT_STATE;
   let stage!: HTMLDivElement;
+  let generation = 0;
 
   function setState(next: Partial<AppState>): void {
+    generation++;
     state = { ...state, ...next };
-    history.replaceState(null, '', encodeState(state));
     render();
+    history.replaceState(null, '', encodeState(state));
   }
 
   let worker: Worker | null = null;
   let workerReq = 0;
   function computeInWorker(onNode: (node: SvgNode) => void): void {
-    worker ??= new Worker(new URL('../workers/compute.worker.ts', import.meta.url), { type: 'module' });
+    if (!worker) {
+      worker = new Worker(new URL('../workers/compute.worker.ts', import.meta.url), { type: 'module' });
+      worker.onerror = () => {
+        stage.classList.remove('computing');
+        stage.innerHTML = '';
+        stage.textContent = 'Could not render this pattern.';
+      };
+    }
+    const myGeneration = generation;
+    const target = stage;
     const id = ++workerReq;
-    worker.onmessage = (e: MessageEvent<{ id: number; node: SvgNode | null }>) => {
-      if (e.data.id !== workerReq || !e.data.node) return;
+    worker.onmessage = (e: MessageEvent<{ id: number; node: SvgNode | null; error?: string }>) => {
+      if (e.data.id !== workerReq || myGeneration !== generation || target !== stage) return;
+      target.classList.remove('computing');
+      if (!e.data.node) {
+        target.innerHTML = '';
+        target.textContent = 'Could not render this pattern.';
+        return;
+      }
       onNode(e.data.node);
     };
     worker.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: { w: 600, h: 840 } });
@@ -41,7 +58,6 @@ export function mountPlayground(root: HTMLElement): void {
     if (def.heavy) {
       stage.classList.add('computing');
       computeInWorker((node) => {
-        stage.classList.remove('computing');
         stage.innerHTML = serialize(node, resolvePalette(state.color, state.theme));
       });
     } else {
@@ -56,6 +72,7 @@ export function mountPlayground(root: HTMLElement): void {
     fillStage(def);
   }
   function setParam(key: string, v: number): void {
+    generation++;
     state = { ...state, params: { ...state.params, [key]: v } };
     history.replaceState(null, '', encodeState(state));
     if (rafId) cancelAnimationFrame(rafId);
@@ -70,6 +87,7 @@ export function mountPlayground(root: HTMLElement): void {
     }
     document.documentElement.dataset['theme'] = state.theme;
     const params = clampParams(def, { ...defaultParams(def), ...state.params });
+    state = { ...state, params };
     root.innerHTML = '';
 
     stage = document.createElement('div');
@@ -133,8 +151,10 @@ export function mountPlayground(root: HTMLElement): void {
   }
 
   window.addEventListener('hashchange', () => {
+    generation++;
     state = decodeState(location.hash) ?? DEFAULT_STATE;
     render();
+    history.replaceState(null, '', encodeState(state));
   });
   render();
   history.replaceState(null, '', encodeState(state));

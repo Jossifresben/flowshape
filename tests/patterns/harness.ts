@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { PatternDef } from '../../src/patterns/registry';
-import { defaultParams } from '../../src/patterns/registry';
+import { defaultParams, generateSafe } from '../../src/patterns/registry';
 import { serialize, type Palette } from '../../src/core/svg';
 
 export const PAL: Palette = { paper: '#ffffff', ink: '#000000', accent: '#e3261a' };
@@ -10,7 +10,7 @@ export const SIZE = { w: 600, h: 840 };
 const INVARIANT_TIMEOUT_MS = 60_000;
 
 export function render(def: PatternDef, params: Record<string, number>, seed: number): string {
-  return serialize(def.generate(params, seed, SIZE), PAL);
+  return serialize(generateSafe(def, params, seed, SIZE), PAL);
 }
 
 /** The five invariants every flowshape pattern must satisfy. */

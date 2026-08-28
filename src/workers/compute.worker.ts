@@ -6,7 +6,14 @@ interface Req { id: number; patternId: string; params: Params; seed: number; siz
 
 self.onmessage = (e: MessageEvent<Req>) => {
   const { id, patternId, params, seed, size } = e.data;
-  const def = getPattern(patternId);
-  const node = def ? generateSafe(def, params, seed, size) : null;
-  (self as unknown as Worker).postMessage({ id, node });
+  try {
+    const def = getPattern(patternId);
+    if (!def) {
+      (self as unknown as Worker).postMessage({ id, node: null, error: `unknown pattern: ${patternId}` });
+      return;
+    }
+    (self as unknown as Worker).postMessage({ id, node: generateSafe(def, params, seed, size) });
+  } catch (err) {
+    (self as unknown as Worker).postMessage({ id, node: null, error: String(err) });
+  }
 };
