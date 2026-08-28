@@ -152,8 +152,8 @@ Heavy patterns (differential growth; flow field at high line counts) run `genera
 
 ## 8. Hosting & repo
 
-- Static site. Any static host; default: GitHub Pages via Actions from `Jossifresben/flowshape` (custom domain flowshape.art). No server, no env vars.
-- MIT license, public repo. CITATION.cff optional later if it grows scholarly use.
+- Static site deployed on **Netlify** (build: `vite build`, publish `dist/`, custom domain flowshape.art). No server, no env vars.
+- Repo: `Jossifresben/flowshape`, **private during development**, flipped public with an MIT license at launch. CITATION.cff optional later if it grows scholarly use.
 
 ## 9. Phase 2 (explicitly out of launch scope)
 
