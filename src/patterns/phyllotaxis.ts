@@ -23,7 +23,7 @@ export const phyllotaxis = definePattern({
     const cx = size.w / 2;
     const cy = size.h / 2;
     // Fit the outermost point inside the short half-dimension with a 6% margin.
-    const maxR = Math.min(size.w, size.h) * 0.35;
+    const maxR = Math.min(size.w, size.h) * 0.47;
     const scale = maxR / Math.pow(points - 1, exp);
     const children = [];
     for (let n = 0; n < points; n++) {

@@ -5,7 +5,7 @@ import type { PatternDef, Params } from './registry';
  * pattern's shape. Randomizing them just makes results noisier without
  * making them more interesting, so Randomize leaves them alone.
  */
-const COSMETIC_KEYS = new Set(['strokeWidth', 'opacity']);
+const COSMETIC_KEYS = new Set(['strokeWidth', 'opacity', 'size']);
 
 /**
  * Produce a new params object for `def` with every non-cosmetic param set to

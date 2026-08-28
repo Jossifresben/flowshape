@@ -1,4 +1,5 @@
 import type { SvgNode } from '../core/svg';
+import { el } from '../core/svg';
 import { RESERVED } from '../core/reserved';
 
 export type Family = 'points' | 'curves' | 'fields' | 'attractors' | 'tilings' | 'growth';
@@ -30,13 +31,20 @@ export interface PatternDef {
   generate(params: Params, seed: number, size: Size): SvgNode;
 }
 
+/** Injected into every pattern: scales the artwork within the frame. */
+export const SIZE_PARAM: ParamDef = {
+  key: 'size', kind: 'float', min: 0.2, max: 1.6, step: 0.01, default: 1, label: 'common.size',
+};
+
 const registry = new Map<string, PatternDef>();
 
 export function definePattern(def: PatternDef): PatternDef {
   if (registry.has(def.id)) throw new Error(`duplicate pattern id: ${def.id}`);
   for (const p of def.params) {
     if (RESERVED.has(p.key)) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
+    if (p.key === SIZE_PARAM.key) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
   }
+  def.params.push(SIZE_PARAM);
   registry.set(def.id, def);
   return def;
 }
@@ -75,5 +83,15 @@ export function generateSafe(
   seed: number,
   size: Size,
 ): SvgNode {
-  return def.generate(clampParams(def, { ...defaultParams(def), ...raw }), seed, size);
+  const clamped = clampParams(def, { ...defaultParams(def), ...raw });
+  const { size: s = 1, ...rest } = clamped;
+  const node = def.generate(rest, seed, size);
+  if (s === 1) return node;
+  const cx = size.w / 2, cy = size.h / 2;
+  return {
+    ...node,
+    children: [
+      el('g', { transform: `translate(${cx} ${cy}) scale(${s}) translate(${-cx} ${-cy})` }, node.children),
+    ],
+  };
 }

@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import '../../src/patterns/index';
-import { listPatterns } from '../../src/patterns/registry';
+import { listPatterns, generateSafe } from '../../src/patterns/registry';
 import { RESERVED } from '../../src/core/reserved';
 
 const patterns = listPatterns();
+const FRAME = { w: 600, h: 840 };
 
 describe('pattern registry as a whole', () => {
   it('registers all 12 launch patterns at phase 1', () => {
@@ -43,6 +44,31 @@ describe('pattern registry as a whole', () => {
         expect(pd.default, `${p.id}.${pd.key} default below min`).toBeGreaterThanOrEqual(pd.min);
         expect(pd.default, `${p.id}.${pd.key} default above max`).toBeLessThanOrEqual(pd.max);
       }
+    }
+  });
+
+  it('every pattern has a universal size param', () => {
+    for (const p of patterns) {
+      const sizeParam = p.params.find((pd) => pd.key === 'size');
+      expect(sizeParam, `${p.id} missing size param`).toBeDefined();
+      expect(sizeParam!.kind).toBe('float');
+      expect(sizeParam!.default).toBe(1);
+    }
+  });
+
+  it('generateSafe wraps children in a scaling <g> only when size !== 1', () => {
+    for (const p of patterns) {
+      const scaled = generateSafe(p, { size: 0.5 }, 1, FRAME);
+      expect(scaled.children, `${p.id} scaled root should have exactly one child`).toHaveLength(1);
+      const wrapper = scaled.children[0]!;
+      expect(wrapper.tag, `${p.id} scaled root's child should be a <g>`).toBe('g');
+      expect(String(wrapper.attrs['transform']), `${p.id} <g> transform should scale(0.5)`).toContain(
+        'scale(0.5)',
+      );
+
+      const unscaled = generateSafe(p, { size: 1 }, 1, FRAME);
+      const hasGWrapper = unscaled.children.length === 1 && unscaled.children[0]!.tag === 'g';
+      expect(hasGWrapper, `${p.id} size:1 should return the ungrouped tree`).toBe(false);
     }
   });
 });

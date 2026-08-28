@@ -25,15 +25,15 @@ describe('registry', () => {
   });
 
   it('builds default params from defs', () => {
-    expect(defaultParams(dummy)).toEqual({ n: 3, wobble: 0.5 });
+    expect(defaultParams(dummy)).toEqual({ n: 3, wobble: 0.5, size: 1 });
   });
 });
 
 describe('clampParams', () => {
   it('clamps to range, rounds ints, defaults NaN/missing', () => {
-    expect(clampParams(dummy, { n: 99, wobble: -3 })).toEqual({ n: 10, wobble: 0 });
-    expect(clampParams(dummy, { n: 4.7 })).toEqual({ n: 5, wobble: 0.5 });
-    expect(clampParams(dummy, { n: NaN, wobble: 0.25 })).toEqual({ n: 3, wobble: 0.25 });
+    expect(clampParams(dummy, { n: 99, wobble: -3 })).toEqual({ n: 10, wobble: 0, size: 1 });
+    expect(clampParams(dummy, { n: 4.7 })).toEqual({ n: 5, wobble: 0.5, size: 1 });
+    expect(clampParams(dummy, { n: NaN, wobble: 0.25 })).toEqual({ n: 3, wobble: 0.25, size: 1 });
   });
 });
 
@@ -70,9 +70,9 @@ const kinds = definePattern({
 
 describe('bool/enum kinds', () => {
   it('clamps bool to 0/1 and enum to option range', () => {
-    expect(clampParams(kinds, { flag: 0.7, mode: 9 })).toEqual({ flag: 1, mode: 2 });
-    expect(clampParams(kinds, { flag: 0.2, mode: -1 })).toEqual({ flag: 0, mode: 0 });
-    expect(clampParams(kinds, {})).toEqual({ flag: 1, mode: 0 });
+    expect(clampParams(kinds, { flag: 0.7, mode: 9 })).toEqual({ flag: 1, mode: 2, size: 1 });
+    expect(clampParams(kinds, { flag: 0.2, mode: -1 })).toEqual({ flag: 0, mode: 0, size: 1 });
+    expect(clampParams(kinds, {})).toEqual({ flag: 1, mode: 0, size: 1 });
   });
 });
 

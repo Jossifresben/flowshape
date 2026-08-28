@@ -18,7 +18,7 @@ export const maurer = definePattern({
     const n = p['n']!;
     const cx = size.w / 2;
     const cy = size.h / 2;
-    const R = Math.min(size.w, size.h) * 0.34;
+    const R = Math.min(size.w, size.h) * 0.44;
     const walk: string[] = [];
     for (let k = 0; k <= 360; k++) {
       const th = k * p['d']! * D2R;

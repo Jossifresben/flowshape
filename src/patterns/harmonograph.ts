@@ -25,7 +25,7 @@ export const harmonograph = definePattern({
     const d1 = p['damping']!, d2 = d1 * 0.75;
     const det = p['detune']!;
     const cx = size.w / 2, cy = size.h / 2;
-    const A = Math.min(size.w, size.h) * 0.17;
+    const A = Math.min(size.w, size.h) * 0.22;
     const dt = 0.02;
     const steps = Math.floor(p['duration']! / dt);
     let d = '';

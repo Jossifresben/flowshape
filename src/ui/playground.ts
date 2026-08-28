@@ -139,7 +139,10 @@ export function mountPlayground(root: HTMLElement): () => void {
     seedRow.append(rand);
     panel.append(seedRow);
 
-    for (const pd of def.params) {
+    const orderedParams = [...def.params].sort((a, b) =>
+      (a.key === 'size' ? -1 : 0) - (b.key === 'size' ? -1 : 0),
+    );
+    for (const pd of orderedParams) {
       const v = params[pd.key]!;
       if (pd.kind === 'bool') {
         panel.append(checkboxRow(pd, v, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
