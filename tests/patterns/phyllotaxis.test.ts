@@ -39,4 +39,8 @@ describe('phyllotaxis', () => {
       }
     }
   });
+
+  it('matches the committed snapshot (URL permanence guarantee)', () => {
+    expect(serialize(phyllotaxis.generate(defaultParams(phyllotaxis), 1, size), pal)).toMatchSnapshot();
+  });
 });

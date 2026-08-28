@@ -1,4 +1,5 @@
 import type { SvgNode } from '../core/svg';
+import { RESERVED } from '../core/url-state';
 
 export type Family = 'points' | 'curves' | 'fields' | 'attractors' | 'tilings' | 'growth';
 
@@ -21,6 +22,8 @@ export interface PatternDef {
   phase: 1 | 2;
   heavy: boolean;
   params: ParamDef[];
+  /** Show the seed control; set when generate actually consumes the seed. */
+  usesSeed?: boolean;
   /** Pure and deterministic: same inputs ⇒ identical tree. Colors as role tokens. */
   generate(params: Params, seed: number, size: Size): SvgNode;
 }
@@ -29,6 +32,9 @@ const registry = new Map<string, PatternDef>();
 
 export function definePattern(def: PatternDef): PatternDef {
   if (registry.has(def.id)) throw new Error(`duplicate pattern id: ${def.id}`);
+  for (const p of def.params) {
+    if (RESERVED.has(p.key)) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
+  }
   registry.set(def.id, def);
   return def;
 }

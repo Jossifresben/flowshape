@@ -1,4 +1,4 @@
-import type { ColorState } from '../poster/palettes';
+export interface ColorState { pal?: string; bg?: string; ink?: string; acc?: string }
 
 export interface AppState {
   patternId: string;
@@ -9,19 +9,22 @@ export interface AppState {
   lang: 'en' | 'es';
 }
 
-const RESERVED = new Set(['v', 'seed', 'pal', 'bg', 'ink', 'acc', 'theme', 'lang']);
+export const RESERVED = new Set(['v', 'seed', 'pal', 'bg', 'ink', 'acc', 'theme', 'lang']);
 
 export function encodeState(s: AppState): string {
   const q = new URLSearchParams();
   q.set('v', '1');
   q.set('seed', String(s.seed));
-  for (const [k, v] of Object.entries(s.params)) q.set(k, String(Math.round(v * 10000) / 10000));
   if (s.color.pal) q.set('pal', s.color.pal);
   if (s.color.bg) q.set('bg', s.color.bg);
   if (s.color.ink) q.set('ink', s.color.ink);
   if (s.color.acc) q.set('acc', s.color.acc);
   if (s.theme !== 'light') q.set('theme', s.theme);
   if (s.lang !== 'en') q.set('lang', s.lang);
+  for (const [k, v] of Object.entries(s.params)) {
+    if (RESERVED.has(k)) continue;
+    q.set(k, String(Math.round(v * 10000) / 10000));
+  }
   return `#/p/${encodeURIComponent(s.patternId)}?${q.toString()}`;
 }
 
@@ -41,8 +44,14 @@ export function decodeState(hash: string): AppState | null {
   const bg = q.get('bg'); if (bg) color.bg = bg;
   const ink = q.get('ink'); if (ink) color.ink = ink;
   const acc = q.get('acc'); if (acc) color.acc = acc;
+  let patternId: string;
+  try {
+    patternId = decodeURIComponent(m[1]!);
+  } catch {
+    return null;
+  }
   return {
-    patternId: decodeURIComponent(m[1]!),
+    patternId,
     seed: Number.isFinite(seedRaw) && seedRaw > 0 ? Math.floor(seedRaw) : 1,
     params,
     color,

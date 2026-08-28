@@ -36,3 +36,18 @@ describe('clampParams', () => {
     expect(clampParams(dummy, { n: NaN, wobble: 0.25 })).toEqual({ n: 3, wobble: 0.25 });
   });
 });
+
+describe('reserved keys', () => {
+  it('rejects params with reserved keys', () => {
+    expect(() =>
+      definePattern({
+        id: 'bad-reserved',
+        family: 'curves',
+        phase: 1,
+        heavy: false,
+        params: [{ key: 'seed', kind: 'int', min: 0, max: 1, step: 1, default: 0, label: 'x' }],
+        generate: (_p, _s, size) => el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }),
+      }),
+    ).toThrow(/reserved/);
+  });
+});

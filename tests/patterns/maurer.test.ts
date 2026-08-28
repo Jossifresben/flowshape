@@ -37,4 +37,8 @@ describe('maurer', () => {
       }
     }
   });
+
+  it('matches the committed snapshot (URL permanence guarantee)', () => {
+    expect(serialize(maurer.generate(defaultParams(maurer), 1, size), pal)).toMatchSnapshot();
+  });
 });

@@ -1,7 +1,7 @@
 import { el } from '../core/svg';
 import { definePattern } from './registry';
 
-const GOLDEN = 137.50776405;
+const GOLDEN = 137.5078;
 
 export const phyllotaxis = definePattern({
   id: 'phyllotaxis',
@@ -10,7 +10,7 @@ export const phyllotaxis = definePattern({
   heavy: false,
   params: [
     { key: 'points', kind: 'int', min: 50, max: 4000, step: 10, default: 1500, label: 'phyllotaxis.points' },
-    { key: 'angle', kind: 'float', min: 90, max: 180, step: 0.01, default: GOLDEN, label: 'phyllotaxis.angle' },
+    { key: 'angle', kind: 'float', min: 90, max: 180, step: 0.0001, default: GOLDEN, label: 'phyllotaxis.angle' },
     { key: 'radialExp', kind: 'float', min: 0.35, max: 1, step: 0.01, default: 0.5, label: 'phyllotaxis.radialExp' },
     { key: 'dotMin', kind: 'float', min: 0.2, max: 6, step: 0.1, default: 1, label: 'phyllotaxis.dotMin' },
     { key: 'dotGrow', kind: 'float', min: 0, max: 0.01, step: 0.0001, default: 0.003, label: 'phyllotaxis.dotGrow' },

@@ -36,4 +36,16 @@ describe('url state', () => {
     expect(s!.params['angle']).toBe(12);
     expect(s!.params['points']).toBeUndefined(); // non-numeric dropped
   });
+
+  it('returns null (never throws) on malformed percent-escapes', () => {
+    expect(decodeState('#/p/%')).toBeNull();
+    expect(decodeState('#/p/%E0%A4%A')).toBeNull();
+    expect(decodeState('#/p/%C0%80')).toBeNull();
+  });
+
+  it('ignores params that collide with reserved keys', () => {
+    const hash = encodeState({ ...state, params: { seed: 7, angle: 12 } });
+    expect(decodeState(hash)!.seed).toBe(71203);
+    expect(decodeState(hash)!.params).toEqual({ angle: 12 });
+  });
 });

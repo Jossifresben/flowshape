@@ -15,7 +15,8 @@ export const PALETTES: PaletteDef[] = [
 
 const HEX = /^[0-9a-fA-F]{6}$/;
 
-export interface ColorState { pal?: string; bg?: string; ink?: string; acc?: string }
+export type { ColorState } from '../core/url-state';
+import type { ColorState } from '../core/url-state';
 
 export function resolvePalette(c: ColorState, theme: 'light' | 'dark'): Palette {
   const fallback = theme === 'dark' ? PALETTES[1]! : PALETTES[0]!;
