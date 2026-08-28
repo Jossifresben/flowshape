@@ -56,6 +56,26 @@ describe('generateSafe', () => {
   });
 });
 
+const kinds = definePattern({
+  id: 'kinds-probe',
+  family: 'curves',
+  phase: 1,
+  heavy: false,
+  params: [
+    { key: 'flag', kind: 'bool', min: 0, max: 1, step: 1, default: 1, label: 'x' },
+    { key: 'mode', kind: 'enum', min: 0, max: 2, step: 1, default: 0, label: 'x', options: ['a', 'b', 'c'] },
+  ],
+  generate: (_p, _s, size) => el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }),
+});
+
+describe('bool/enum kinds', () => {
+  it('clamps bool to 0/1 and enum to option range', () => {
+    expect(clampParams(kinds, { flag: 0.7, mode: 9 })).toEqual({ flag: 1, mode: 2 });
+    expect(clampParams(kinds, { flag: 0.2, mode: -1 })).toEqual({ flag: 0, mode: 0 });
+    expect(clampParams(kinds, {})).toEqual({ flag: 1, mode: 0 });
+  });
+});
+
 describe('reserved keys', () => {
   it('rejects params with reserved keys', () => {
     expect(() =>

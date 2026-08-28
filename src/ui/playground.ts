@@ -2,7 +2,7 @@ import { getPattern, defaultParams, clampParams, generateSafe } from '../pattern
 import { serialize } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette } from '../poster/palettes';
-import { sliderRow, paletteRow } from './controls';
+import { sliderRow, paletteRow, checkboxRow, selectRow } from './controls';
 
 const DEFAULT_STATE: AppState = {
   patternId: 'phyllotaxis',
@@ -74,7 +74,14 @@ export function mountPlayground(root: HTMLElement): void {
     }
 
     for (const pd of def.params) {
-      panel.append(sliderRow(pd, params[pd.key]!, (v) => setParam(pd.key, v)));
+      const v = params[pd.key]!;
+      if (pd.kind === 'bool') {
+        panel.append(checkboxRow(pd, v, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
+      } else if (pd.kind === 'enum') {
+        panel.append(selectRow(pd, v, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
+      } else {
+        panel.append(sliderRow(pd, v, (nv) => setParam(pd.key, nv)));
+      }
     }
     panel.append(paletteRow(state.color, (c) => setState({ color: c })));
 

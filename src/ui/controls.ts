@@ -31,6 +31,48 @@ export function sliderRow(
   return row;
 }
 
+export function checkboxRow(
+  def: ParamDef,
+  value: number,
+  onChange: (v: number) => void,
+): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'ctl-row ctl-inline';
+  const label = document.createElement('span');
+  label.className = 'ctl-label';
+  label.textContent = def.label.split('.').pop()!.toUpperCase();
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.checked = value === 1;
+  input.addEventListener('change', () => onChange(input.checked ? 1 : 0));
+  row.append(label, input);
+  return row;
+}
+
+export function selectRow(
+  def: ParamDef,
+  value: number,
+  onChange: (v: number) => void,
+): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'ctl-row';
+  const label = document.createElement('span');
+  label.className = 'ctl-label';
+  label.textContent = def.label.split('.').pop()!.toUpperCase();
+  const select = document.createElement('select');
+  select.className = 'ctl-select';
+  (def.options ?? []).forEach((opt, i) => {
+    const o = document.createElement('option');
+    o.value = String(i);
+    o.textContent = opt.split('.').pop()!;
+    if (i === value) o.selected = true;
+    select.append(o);
+  });
+  select.addEventListener('change', () => onChange(Number(select.value)));
+  row.append(label, select);
+  return row;
+}
+
 export function paletteRow(
   current: ColorState,
   onChange: (c: ColorState) => void,

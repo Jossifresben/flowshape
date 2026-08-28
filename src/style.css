@@ -47,3 +47,9 @@ body {
 .pal-chip.selected { border-color: var(--ink); }
 .pal-chip span { width: 22px; height: 22px; display: block; border: 1px solid var(--line); }
 input[type='range'] { accent-color: var(--ink); }
+.ctl-inline { flex-direction: row; justify-content: space-between; align-items: center; }
+.ctl-select {
+  font-family: var(--font-mono); font-size: 12px; padding: 6px 8px;
+  border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+}
+input[type='checkbox'] { accent-color: var(--ink); }

@@ -5,12 +5,14 @@ export type Family = 'points' | 'curves' | 'fields' | 'attractors' | 'tilings' |
 
 export interface ParamDef {
   key: string;
-  kind: 'int' | 'float';
+  kind: 'int' | 'float' | 'bool' | 'enum';
   min: number;
   max: number;
   step: number;
   default: number;
   label: string; // i18n key
+  /** enum only: option labels (i18n keys); value is the index. */
+  options?: string[];
 }
 
 export type Params = Record<string, number>;
@@ -59,6 +61,8 @@ export function clampParams(def: PatternDef, raw: Params): Params {
     if (v === undefined || Number.isNaN(v)) v = p.default;
     v = Math.min(p.max, Math.max(p.min, v));
     if (p.kind === 'int') v = Math.round(v);
+    if (p.kind === 'bool') v = v >= 0.5 ? 1 : 0;
+    if (p.kind === 'enum') v = Math.round(Math.min(p.max, Math.max(0, v)));
     out[p.key] = v;
   }
   return out;
