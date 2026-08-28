@@ -1,9 +1,19 @@
-import { getPattern, defaultParams, clampParams, generateSafe, listPatterns, type PatternDef } from '../patterns/registry';
+import { getPattern, defaultParams, clampParams, generateSafe, listPatterns, type PatternDef, type ParamDef } from '../patterns/registry';
 import { randomParams } from '../patterns/randomize';
 import { serialize, type SvgNode } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
-import { resolvePalette } from '../poster/palettes';
-import { sliderRow, paletteRow, checkboxRow, selectRow } from './controls';
+import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palettes';
+import { sliderRow, checkboxRow, selectRow } from './controls';
+
+/** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
+ *  Their `label` has no '.' so `sliderRow`'s i18n-key splitting is a no-op
+ *  and the text renders as-is. */
+const COLOR_PARAM_DEFS: Record<keyof typeof COLOR_DEFAULTS, ParamDef> = {
+  hue: { key: 'hue', kind: 'float', min: 0, max: 360, step: 1, default: COLOR_DEFAULTS.hue, label: 'HUE' },
+  chroma: { key: 'chroma', kind: 'float', min: 0, max: 0.22, step: 0.005, default: COLOR_DEFAULTS.chroma, label: 'CHROMA' },
+  paperL: { key: 'paperL', kind: 'float', min: 0.04, max: 0.96, step: 0.01, default: COLOR_DEFAULTS.paperL, label: 'PAPER' },
+  accentShift: { key: 'accentShift', kind: 'float', min: 0, max: 180, step: 1, default: COLOR_DEFAULTS.accentShift, label: 'ACCENT SHIFT' },
+};
 
 const DEFAULT_STATE: AppState = {
   patternId: 'phyllotaxis',
@@ -151,7 +161,19 @@ export function mountPlayground(root: HTMLElement): () => void {
         panel.append(sliderRow(pd, v, (nv) => setParam(pd.key, nv)));
       }
     }
-    panel.append(paletteRow(state.color, (c) => setState({ color: c })));
+    const colorHeading = document.createElement('div');
+    colorHeading.className = 'ctl-section-heading';
+    colorHeading.textContent = 'COLOUR';
+    panel.append(colorHeading);
+
+    function setColor(key: keyof ColorState, v: number): void {
+      setState({ color: { ...state.color, [key]: v } });
+    }
+    for (const key of ['hue', 'chroma', 'paperL', 'accentShift'] as const) {
+      const def2 = COLOR_PARAM_DEFS[key];
+      const v = state.color[key] ?? COLOR_DEFAULTS[key];
+      panel.append(sliderRow(def2, v, (nv) => setColor(key, nv)));
+    }
 
     root.append(stage, panel);
   }

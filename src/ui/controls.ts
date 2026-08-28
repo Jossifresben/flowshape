@@ -1,5 +1,4 @@
 import type { ParamDef } from '../patterns/registry';
-import { PALETTES, type ColorState } from '../poster/palettes';
 
 export function sliderRow(
   def: ParamDef,
@@ -70,26 +69,5 @@ export function selectRow(
   });
   select.addEventListener('change', () => onChange(Number(select.value)));
   row.append(label, select);
-  return row;
-}
-
-export function paletteRow(
-  current: ColorState,
-  onChange: (c: ColorState) => void,
-): HTMLElement {
-  const row = document.createElement('div');
-  row.className = 'pal-row';
-  for (const p of PALETTES) {
-    const b = document.createElement('button');
-    b.className = 'pal-chip' + (current.pal === p.id ? ' selected' : '');
-    b.title = p.name;
-    for (const c of [p.paper, p.ink, p.accent]) {
-      const sw = document.createElement('span');
-      sw.style.background = c;
-      b.append(sw);
-    }
-    b.addEventListener('click', () => onChange({ pal: p.id }));
-    row.append(b);
-  }
   return row;
 }

@@ -12,12 +12,14 @@
  */
 import '../src/patterns/index';
 import { listPatterns, generateSafe, defaultParams } from '../src/patterns/registry';
-import { serialize, type Palette } from '../src/core/svg';
+import { serialize } from '../src/core/svg';
+import { resolvePalette } from '../src/poster/palettes';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-const THUMB_PALETTE: Palette = { paper: '#17171a', ink: '#ececea', accent: '#e3261a' };
+/** Site-default colours, so thumbnails always match what a fresh visit renders. */
+const THUMB_PALETTE = resolvePalette({});
 const THUMB_SIZE = { w: 240, h: 320 };
 const THUMB_SEED = 1;
 

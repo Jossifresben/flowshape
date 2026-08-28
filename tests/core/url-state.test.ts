@@ -5,7 +5,7 @@ const state: AppState = {
   patternId: 'phyllotaxis',
   seed: 71203,
   params: { points: 1500, angle: 137.51 },
-  color: { pal: 'navy-gold' },
+  color: { hue: 40, chroma: 0.08, paperL: 0.2, accentShift: 30 },
   lang: 'es',
 };
 

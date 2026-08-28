@@ -6,4 +6,5 @@
 export const RESERVED = new Set([
   'v', 'seed', 'pal', 'bg', 'ink', 'acc', 'theme', 'lang',
   'layout', 'format', 'title', 'caption',
+  'hue', 'chroma', 'paperL', 'accentShift',
 ]);
