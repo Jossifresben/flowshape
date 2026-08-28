@@ -1,3 +1,5 @@
+import { RESERVED } from './reserved';
+
 export interface ColorState { pal?: string; bg?: string; ink?: string; acc?: string }
 
 export interface AppState {
@@ -9,7 +11,7 @@ export interface AppState {
   lang: 'en' | 'es';
 }
 
-export const RESERVED = new Set(['v', 'seed', 'pal', 'bg', 'ink', 'acc', 'theme', 'lang']);
+export { RESERVED } from './reserved';
 
 export function encodeState(s: AppState): string {
   const q = new URLSearchParams();

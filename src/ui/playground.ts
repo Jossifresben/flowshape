@@ -1,4 +1,4 @@
-import { getPattern, defaultParams, clampParams } from '../patterns/registry';
+import { getPattern, defaultParams, clampParams, generateSafe } from '../patterns/registry';
 import { serialize } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette } from '../poster/palettes';
@@ -15,7 +15,7 @@ const DEFAULT_STATE: AppState = {
 
 export function mountPlayground(root: HTMLElement): void {
   let state = decodeState(location.hash) ?? DEFAULT_STATE;
-  let stage: HTMLDivElement;
+  let stage!: HTMLDivElement;
 
   function setState(next: Partial<AppState>): void {
     state = { ...state, ...next };
@@ -27,10 +27,9 @@ export function mountPlayground(root: HTMLElement): void {
   function renderStage(): void {
     const def = getPattern(state.patternId);
     if (!def) return;
-    const params = clampParams(def, { ...defaultParams(def), ...state.params });
     const pal = resolvePalette(state.color, state.theme);
     stage.style.background = pal.paper;
-    stage.innerHTML = serialize(def.generate(params, state.seed, { w: 600, h: 840 }), pal);
+    stage.innerHTML = serialize(generateSafe(def, state.params, state.seed, { w: 600, h: 840 }), pal);
   }
   function setParam(key: string, v: number): void {
     state = { ...state, params: { ...state.params, [key]: v } };
@@ -53,7 +52,7 @@ export function mountPlayground(root: HTMLElement): void {
     stage = document.createElement('div');
     stage.className = 'stage';
     stage.style.background = pal.paper;
-    stage.innerHTML = serialize(def.generate(params, state.seed, { w: 600, h: 840 }), pal);
+    stage.innerHTML = serialize(generateSafe(def, state.params, state.seed, { w: 600, h: 840 }), pal);
 
     const panel = document.createElement('div');
     panel.className = 'panel';

@@ -1,5 +1,5 @@
 import type { SvgNode } from '../core/svg';
-import { RESERVED } from '../core/url-state';
+import { RESERVED } from '../core/reserved';
 
 export type Family = 'points' | 'curves' | 'fields' | 'attractors' | 'tilings' | 'growth';
 
@@ -62,4 +62,14 @@ export function clampParams(def: PatternDef, raw: Params): Params {
     out[p.key] = v;
   }
   return out;
+}
+
+/** The only sanctioned way to run a pattern: clamps raw (URL/worker) params first. */
+export function generateSafe(
+  def: PatternDef,
+  raw: Params,
+  seed: number,
+  size: Size,
+): SvgNode {
+  return def.generate(clampParams(def, { ...defaultParams(def), ...raw }), seed, size);
 }

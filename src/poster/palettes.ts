@@ -1,4 +1,6 @@
 import type { Palette } from '../core/svg';
+import type { ColorState } from '../core/url-state';
+export type { ColorState } from '../core/url-state';
 
 export interface PaletteDef extends Palette { id: string; name: string }
 
@@ -14,9 +16,6 @@ export const PALETTES: PaletteDef[] = [
 ];
 
 const HEX = /^[0-9a-fA-F]{6}$/;
-
-export type { ColorState } from '../core/url-state';
-import type { ColorState } from '../core/url-state';
 
 export function resolvePalette(c: ColorState, theme: 'light' | 'dark'): Palette {
   const fallback = theme === 'dark' ? PALETTES[1]! : PALETTES[0]!;
