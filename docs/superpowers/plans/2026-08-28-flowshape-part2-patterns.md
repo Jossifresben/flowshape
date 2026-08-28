@@ -1833,6 +1833,15 @@ git add -A && git commit -m "feat: pattern switcher; all 13 launch patterns wire
 
 ---
 
+## Post-implementation tuning (commit de74904)
+
+Visual QA in a real browser after Task 18 found three patterns weak at their planned defaults. Fixed by changing default values and two slider ranges only — no algorithm changes. If you re-run this plan from scratch, apply these instead of the values written above:
+
+- **stipple**: `maxGap` default 16 → **22**, `contrast` default 0.6 → **0.15**. At 0.6 the fBm swamped the radial vignette and the field read as a muddy blotch; at 0.15 it reads as a clean radial density gradient with subtle organic variation.
+- **clifford**: `dotSize` default 0.55 → **0.85**, `opacity` default 0.45 → **0.7**. 12k subsampled dots at 0.55px read as a thin wireframe rather than the attractor's characteristic dense veil.
+- **diffgrowth**: `iterations` default 340 → **500** with `max` 500 → **600**; `repulsion` default 13 → **18** with `max` 20 → **26**. At 340/13 the coral filled barely a third of the poster. The ranges were raised alongside the defaults so neither slider sits pinned at its own maximum.
+- **`tests/patterns/harness.ts`**: added `INVARIANT_TIMEOUT_MS = 60_000` passed as the third argument to all five `it(...)` calls. A `heavy` pattern runs a full simulation per invariant (defaults plus every single-param extreme), which exceeds vitest's 5 s default once diffgrowth's ceiling rises. This is a property of the harness, not of one pattern. diffgrowth's test file now takes ~12 s; the rest of the suite is unaffected.
+
 ## Self-Review (done at write time)
 
 - **Spec coverage (Part 2 scope):** 13 launch shapes ✓ (2 from Part 1 + Tasks 6–16 = 13); hardening items a/b-partial/c-deviation/d/f/g/h ✓ (Task 1–2; generic-params (b) deliberately dropped — bracket access with `!` is established style across 13 modules now, revisit only if it actually bites; lazy manifest (c) documented deviation in header); worker (e) ✓ Task 17; RESERVED future keys (i) ✓ Task 1 includes Part 3 keys.
