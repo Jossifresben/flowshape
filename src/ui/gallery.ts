@@ -67,7 +67,7 @@ export function mountGallery(root: HTMLElement): void {
 
   const headline = document.createElement('h1');
   headline.className = 'gal-headline';
-  headline.innerHTML = 'Shape mathematics<br>into posters.';
+  headline.innerHTML = 'Shape mathematics<br>into art.';
 
   const stats = document.createElement('div');
   stats.className = 'gal-stats';

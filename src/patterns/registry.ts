@@ -86,11 +86,15 @@ export function generateSafe(
   const clamped = clampParams(def, { ...defaultParams(def), ...raw });
   const { size: s = 1, ...rest } = clamped;
   const node = def.generate(rest, seed, size);
-  if (s === 1) return node;
+  const paperRect = el('rect', { x: 0, y: 0, width: size.w, height: size.h, fill: 'paper' });
+  if (s === 1) {
+    return { ...node, children: [paperRect, ...node.children] };
+  }
   const cx = size.w / 2, cy = size.h / 2;
   return {
     ...node,
     children: [
+      paperRect,
       el('g', { transform: `translate(${cx} ${cy}) scale(${s}) translate(${-cx} ${-cy})` }, node.children),
     ],
   };

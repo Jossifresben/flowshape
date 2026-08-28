@@ -59,16 +59,45 @@ describe('pattern registry as a whole', () => {
   it('generateSafe wraps children in a scaling <g> only when size !== 1', () => {
     for (const p of patterns) {
       const scaled = generateSafe(p, { size: 0.5 }, 1, FRAME);
-      expect(scaled.children, `${p.id} scaled root should have exactly one child`).toHaveLength(1);
-      const wrapper = scaled.children[0]!;
-      expect(wrapper.tag, `${p.id} scaled root's child should be a <g>`).toBe('g');
+      expect(scaled.children, `${p.id} scaled root should have paper rect + wrapper`).toHaveLength(2);
+      const wrapper = scaled.children[1]!;
+      expect(wrapper.tag, `${p.id} scaled root's second child should be a <g>`).toBe('g');
       expect(String(wrapper.attrs['transform']), `${p.id} <g> transform should scale(0.5)`).toContain(
         'scale(0.5)',
       );
 
       const unscaled = generateSafe(p, { size: 1 }, 1, FRAME);
-      const hasGWrapper = unscaled.children.length === 1 && unscaled.children[0]!.tag === 'g';
+      const hasGWrapper = unscaled.children[1]?.tag === 'g';
       expect(hasGWrapper, `${p.id} size:1 should return the ungrouped tree`).toBe(false);
+    }
+  });
+
+  it('generateSafe prepends an unscaled full-frame paper rect', () => {
+    for (const p of patterns) {
+      const unscaled = generateSafe(p, {}, 1, FRAME);
+      const paperRect = unscaled.children[0]!;
+      expect(paperRect.tag, `${p.id} first child should be the paper rect`).toBe('rect');
+      expect(paperRect.attrs['fill'], `${p.id} paper rect fill`).toBe('paper');
+      expect(paperRect.attrs['x'], `${p.id} paper rect x`).toBe(0);
+      expect(paperRect.attrs['y'], `${p.id} paper rect y`).toBe(0);
+      expect(paperRect.attrs['width'], `${p.id} paper rect width`).toBe(FRAME.w);
+      expect(paperRect.attrs['height'], `${p.id} paper rect height`).toBe(FRAME.h);
+
+      const scaled = generateSafe(p, { size: 0.5 }, 1, FRAME);
+      const scaledPaperRect = scaled.children[0]!;
+      expect(scaledPaperRect.tag, `${p.id} scaled: first child should still be the paper rect`).toBe(
+        'rect',
+      );
+      expect(scaledPaperRect.attrs['fill'], `${p.id} scaled paper rect fill`).toBe('paper');
+      expect(scaledPaperRect.attrs['width'], `${p.id} scaled paper rect stays unscaled (full frame width)`).toBe(
+        FRAME.w,
+      );
+      expect(scaledPaperRect.attrs['height'], `${p.id} scaled paper rect stays unscaled (full frame height)`).toBe(
+        FRAME.h,
+      );
+
+      const g = scaled.children[1]!;
+      expect(g.tag, `${p.id} artwork should be inside the <g>`).toBe('g');
     }
   });
 });

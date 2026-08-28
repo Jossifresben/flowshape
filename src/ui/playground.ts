@@ -56,7 +56,6 @@ export function mountPlayground(root: HTMLElement): () => void {
 
   function fillStage(def: PatternDef): void {
     const pal = resolvePalette(state.color);
-    stage.style.background = pal.paper;
     if (def.heavy) {
       stage.classList.add('computing');
       computeInWorker((node) => {

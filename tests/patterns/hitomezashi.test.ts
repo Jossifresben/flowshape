@@ -8,7 +8,11 @@ standardPatternTests(hitomezashi, { maxElements: 2600 });
 describe('hitomezashi specifics', () => {
   it('fillParity toggles the rect fills', () => {
     const base = defaultParams(hitomezashi);
-    expect(render(hitomezashi, { ...base, fillParity: 1 }, 4)).toContain('<rect');
-    expect(render(hitomezashi, { ...base, fillParity: 0 }, 4)).not.toContain('<rect');
+    const on = render(hitomezashi, { ...base, fillParity: 1 }, 4).match(/<rect/g) ?? [];
+    const off = render(hitomezashi, { ...base, fillParity: 0 }, 4).match(/<rect/g) ?? [];
+    // Every render carries exactly one <rect>: the paper background. fillParity
+    // adds grid-cell rects on top of that when enabled.
+    expect(on.length).toBeGreaterThan(1);
+    expect(off.length).toBe(1);
   });
 });
