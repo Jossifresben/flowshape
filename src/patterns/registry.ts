@@ -62,7 +62,7 @@ export function clampParams(def: PatternDef, raw: Params): Params {
     v = Math.min(p.max, Math.max(p.min, v));
     if (p.kind === 'int') v = Math.round(v);
     if (p.kind === 'bool') v = v >= 0.5 ? 1 : 0;
-    if (p.kind === 'enum') v = Math.round(Math.min(p.max, Math.max(0, v)));
+    if (p.kind === 'enum') v = Math.round(Math.min(p.max, Math.max(p.min, v)));
     out[p.key] = v;
   }
   return out;
