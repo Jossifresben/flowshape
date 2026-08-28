@@ -1,4 +1,4 @@
-import { getPattern, defaultParams, clampParams, generateSafe, type PatternDef } from '../patterns/registry';
+import { getPattern, defaultParams, clampParams, generateSafe, listPatterns, type PatternDef } from '../patterns/registry';
 import { serialize, type SvgNode } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette } from '../poster/palettes';
@@ -78,6 +78,20 @@ export function mountPlayground(root: HTMLElement): void {
 
     const panel = document.createElement('div');
     panel.className = 'panel';
+
+    const patternSel = document.createElement('select');
+    patternSel.className = 'ctl-select';
+    for (const def2 of listPatterns().filter((x) => x.phase === 1).sort((a, b) => a.id.localeCompare(b.id))) {
+      const o = document.createElement('option');
+      o.value = def2.id;
+      o.textContent = def2.id;
+      if (def2.id === state.patternId) o.selected = true;
+      patternSel.append(o);
+    }
+    patternSel.addEventListener('change', () =>
+      setState({ patternId: patternSel.value, params: {} }),
+    );
+    panel.append(patternSel);
 
     if (def.usesSeed) {
       const seedRow = document.createElement('div');
