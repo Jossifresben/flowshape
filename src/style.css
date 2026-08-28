@@ -99,7 +99,7 @@ input[type='checkbox'] { accent-color: var(--ink); }
 .gal-thumb {
   background: #ffffff; border: 1px solid var(--line);
 }
-.gal-thumb svg { width: 100%; height: auto; display: block; }
+.gal-thumb img { width: 100%; height: auto; display: block; }
 .gal-card:hover .gal-thumb { border-color: var(--ink); }
 .gal-meta {
   display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px;

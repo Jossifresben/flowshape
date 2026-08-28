@@ -1,6 +1,5 @@
 import { listPatterns, type Family } from '../patterns/registry';
 import { encodeState } from '../core/url-state';
-import { THUMBS } from '../generated/thumbs';
 
 /** Display name for each pattern id. Falls back to the id when absent. */
 export const NAMES: Record<string, string> = {
@@ -132,7 +131,14 @@ export function mountGallery(root: HTMLElement): void {
 
       const thumbBox = document.createElement('div');
       thumbBox.className = 'gal-thumb';
-      thumbBox.innerHTML = THUMBS[def.id] ?? '';
+      const img = document.createElement('img');
+      img.src = `/thumbs/${def.id}.svg`;
+      img.alt = '';
+      img.width = 240;
+      img.height = 320;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      thumbBox.append(img);
 
       const meta = document.createElement('div');
       meta.className = 'gal-meta';
