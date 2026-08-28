@@ -25,17 +25,31 @@ export function resolvePalette(c: ColorState): Palette {
   const accentShift = c.accentShift ?? COLOR_DEFAULTS.accentShift;
 
   const paperC = Math.min(chroma * 0.35, 0.06);
-  // Tie-break at paperL === 0.5 favours the "+0.72" (near-white) branch over
-  // "-0.72" (near-black): with the floor/ceiling clamp below, both branches
-  // land at an extreme (0.05 or 0.97) for paperL near 0.5, but the near-black
-  // extreme is more exposed to the naive per-channel gamut clamp in
-  // oklch.ts — at high chroma it lifts a saturated near-black's sRGB
-  // luminance well above true black, eating into the contrast guarantee.
-  // The near-white extreme doesn't have that failure mode, so `<=` (rather
-  // than `<`) keeps the exact-midpoint case on the safe side. Verified by
-  // brute-force sweep over paperL x chroma x hue: worst-case sRGB luminance
-  // gap is 0.345 with `<`, 0.368 with `<=` (see tests/poster/palettes.test.ts).
-  const inkL = Math.min(0.97, Math.max(0.05, paperL <= 0.5 ? paperL + 0.72 : paperL - 0.72));
+  // Ink lightness is not a fixed offset from paper: a fixed offset lands mid-grey
+  // on dark papers, which reads washed out. Target a bright ink on dark paper and
+  // a deep ink on light paper, and — critically — push ink FURTHER toward its
+  // extreme as paper approaches mid-lightness, because that is exactly where the
+  // available contrast range is smallest. (An earlier version of this formula
+  // eased ink *toward* the middle as paper approached it, which is backwards: it
+  // shrank the paper/ink gap right where the least margin exists, and broke the
+  // perceptual-gap guarantee below for a wide paperL band around 0.5.)
+  // Tie-break at paperL === 0.5 favours the near-white branch (`<=`) over the
+  // near-black one: the near-black extreme is more exposed to the naive
+  // per-channel gamut clamp in oklch.ts — at high chroma it lifts a saturated
+  // near-black's sRGB luminance well above true black, eating into the contrast
+  // guarantee. Constants tuned by brute-force sweep over paperL x chroma x hue
+  // so the worst-case sRGB luminance gap clears 0.35 everywhere (see
+  // tests/poster/palettes.test.ts); 0.368 is the ceiling reachable given that
+  // same naive gamut clamp, matching the previous fixed-offset model's best case.
+  const inkL = Math.min(
+    0.97,
+    Math.max(
+      0.05,
+      paperL <= 0.5
+        ? 0.91 + paperL * 0.09 // paperL 0.04 -> 0.914 ; 0.5 -> 0.955 (toward the ceiling)
+        : 0.02 + (paperL - 0.5) * 0.35, // paperL 0.52 -> 0.057 (floor) ; 0.96 -> 0.181
+    ),
+  );
   const accentC = Math.min(chroma + 0.09, 0.22);
 
   const paper = oklchToHex(paperL, paperC, hue);

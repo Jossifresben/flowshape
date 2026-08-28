@@ -20,14 +20,13 @@ describe('resolvePalette', () => {
     expect(pr).toBeLessThan(40);
     expect(pg).toBeLessThan(40);
     expect(pb).toBeLessThan(40);
-    // Li = paperL + 0.72 (OKLab lightness), which is *not* linear in sRGB —
-    // at the default paperL of 0.09 this lands ink around sRGB 193, a light
-    // grey rather than literal white. Still >190 sRGB points of contrast
-    // against the near-black paper (see the luminance-gap test below for
-    // the actual readability guarantee).
-    expect(ir).toBeGreaterThan(180);
-    expect(ig).toBeGreaterThan(180);
-    expect(ib).toBeGreaterThan(180);
+    // Li = 0.91 + paperL * 0.09 (OKLab lightness) for paperL <= 0.5, which is
+    // *not* linear in sRGB — at the default paperL of 0.09 this lands ink
+    // around sRGB 228 (#e4e4e4), crisp and near-white rather than mid-grey.
+    // (See the luminance-gap test below for the actual readability guarantee.)
+    expect(ir).toBeGreaterThan(220);
+    expect(ig).toBeGreaterThan(220);
+    expect(ib).toBeGreaterThan(220);
   });
 
   it('chroma: 0 gives greys for paper and ink (accent keeps its baked-in +0.09 chroma by design, so it always registers even in monochrome mode)', () => {
