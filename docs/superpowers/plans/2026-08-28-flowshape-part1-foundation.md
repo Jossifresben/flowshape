@@ -10,6 +10,8 @@
 
 **Roadmap (separate plans, in order):** Part 2 = remaining 11 launch patterns + workers. Part 3 = poster composer, formats, SVG/PNG export, gallery with build-time thumbnails. Part 4 = explain-the-math content EN/ES, i18n pass, Netlify deploy. Do not build ahead of the current plan.
 
+**Part 2 kickoff items (from final review of Part 1, commit 07666fa):** (a) add `generateSafe(def, rawParams, seed, size)` to the registry (clamp inside the contract) and make UI + worker call only it; (b) make PatternDef generic over param keys for compile-time key safety; (c) replace import-side-effect registration with a lazy `id → () => import(...)` manifest; (d) extend `ParamDef.kind` with `bool`/`enum` (Maurer `envelope` becomes bool; touches controls.ts, clampParams, encodeState); (e) wire `heavy` to the compute worker; (f) extract RESERVED into `core/reserved.ts` so pattern modules don't import url-state; (g) tidy palettes.ts ColorState re-export to top of file; (h) definite-assignment `!` on playground's `stage`; (i) extend RESERVED with `layout`/`format`/`title`/`caption` in the same commit Part 3 introduces them. Part 4: responsive layout (panel is fixed 320px — unusable at phone widths), `prefers-color-scheme` default, CSP header, fonts preconnect.
+
 **Conventions for every task:** run commands from the repo root `/Users/jfresco16/Google Drive/Claude/shapeit`. Commit after each task with the message given. Never `git push` — Hermes authorizes pushes explicitly, per message.
 
 ---
