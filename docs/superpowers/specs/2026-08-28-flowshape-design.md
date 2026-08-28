@@ -111,6 +111,7 @@ interface PatternDef {
 - `v` is the schema version; decoding unknown/missing params falls back to defaults (old links keep working).
 - Params round to sensible precision to keep URLs short. Title/caption URL-encoded.
 - Every control change replaces the URL (history.replaceState); "Share link" copies it.
+- **Short links (Part 3):** "Share link" also offers a branded short URL `flowshape.art/s/<code>` backed by a Netlify Function + Netlify Blobs KV (code → full URL, 301 redirect). Self-hosted deliberately: a third-party shortener would tie link permanence to someone else's free tier (CleanURI is the documented no-key fallback if Functions are ever dropped). This is the one narrow exception to "no backend": a single stateless function with a KV write, no accounts, no PII beyond the URL itself.
 
 ### 4.4 Workers
 
