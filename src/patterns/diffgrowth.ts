@@ -9,8 +9,8 @@ export const diffgrowth = definePattern({
   heavy: true,
   usesSeed: true,
   params: [
-    { key: 'iterations', kind: 'int', min: 50, max: 500, step: 10, default: 340, label: 'diffgrowth.iterations' },
-    { key: 'repulsion', kind: 'float', min: 8, max: 20, step: 0.5, default: 13, label: 'diffgrowth.repulsion' },
+    { key: 'iterations', kind: 'int', min: 50, max: 600, step: 10, default: 500, label: 'diffgrowth.iterations' },
+    { key: 'repulsion', kind: 'float', min: 8, max: 26, step: 0.5, default: 18, label: 'diffgrowth.repulsion' },
     { key: 'rings', kind: 'int', min: 0, max: 4, step: 1, default: 2, label: 'diffgrowth.rings' },
     { key: 'strokeWidth', kind: 'float', min: 0.5, max: 3, step: 0.1, default: 1.4, label: 'diffgrowth.strokeWidth' },
   ],

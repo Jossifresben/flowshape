@@ -21,8 +21,8 @@ export const clifford = definePattern({
     { key: 'variant', kind: 'enum', min: 0, max: 6, step: 1, default: 4, label: 'clifford.variant', options: ['clifford.v1', 'clifford.v2', 'clifford.v3', 'clifford.v4', 'clifford.v5', 'clifford.v6', 'clifford.v7'] },
     { key: 'iterations', kind: 'int', min: 20000, max: 200000, step: 5000, default: 120000, label: 'clifford.iterations' },
     { key: 'maxDots', kind: 'int', min: 4000, max: 12000, step: 500, default: 12000, label: 'clifford.maxDots' },
-    { key: 'dotSize', kind: 'float', min: 0.3, max: 1.5, step: 0.05, default: 0.55, label: 'clifford.dotSize' },
-    { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.45, label: 'clifford.opacity' },
+    { key: 'dotSize', kind: 'float', min: 0.3, max: 1.5, step: 0.05, default: 0.85, label: 'clifford.dotSize' },
+    { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.7, label: 'clifford.opacity' },
   ],
   generate(p, _seed, size) {
     const [a, b, c, d] = SETS[p['variant']!]!;
