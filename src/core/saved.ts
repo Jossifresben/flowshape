@@ -57,8 +57,10 @@ export const SV = 1;
  *  availability probe. */
 export const PROBE_KEY = `${SAVED_KEY}:probe`;
 
-const MAX_HASH_LEN = 4096;
-const MAX_TITLE_LEN = 200;
+/** Exported so the UI layer can cap its own inputs against the same numbers
+ *  rather than hardcoding a second copy that could drift from this one. */
+export const MAX_HASH_LEN = 4096;
+export const MAX_TITLE_LEN = 200;
 
 interface Store { sv: number; items: SavedItem[] }
 
@@ -227,10 +229,18 @@ function mutate(fn: (items: SavedItem[]) => Result<SavedItem[]>): Result<void> {
   return write(next.value);
 }
 
+/** The write-side twin of `isItem`'s bounds. Without this a write succeeds,
+ *  `isItem` filters the record out on the very next read, and the caller has
+ *  been told the save worked — indistinguishable from data loss. */
+function validTitle(title: string): string | null {
+  const clean = title.trim();
+  return clean && clean.length <= MAX_TITLE_LEN ? clean : null;
+}
+
 /** Saves `hash` if it is not saved, removes it if it is. */
 export function toggle(hash: string, title: string): Result<'saved' | 'removed'> {
-  if (!kindOf(hash)) return { ok: false, reason: 'invalid' };
-  const clean = title.trim();
+  if (!kindOf(hash) || hash.length > MAX_HASH_LEN) return { ok: false, reason: 'invalid' };
+  const clean = validTitle(title);
   if (!clean) return { ok: false, reason: 'invalid' };
   let outcome: 'saved' | 'removed' = 'saved';
   const r = mutate((items) => {
@@ -245,7 +255,7 @@ export function toggle(hash: string, title: string): Result<'saved' | 'removed'>
 }
 
 export function rename(hash: string, title: string): Result<void> {
-  const clean = title.trim();
+  const clean = validTitle(title);
   if (!clean) return { ok: false, reason: 'invalid' };
   return mutate((items) => {
     if (!items.some((i) => i.hash === hash)) return { ok: false, reason: 'missing' };

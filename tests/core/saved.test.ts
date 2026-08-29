@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   list, isSaved, kindOf, isAvailable, storageState, readState, SAVED_KEY, PROBE_KEY,
-  toggle, rename, remove, reset, exportJSON, importJSON, type SavedItem,
+  toggle, rename, remove, reset, exportJSON, importJSON, MAX_HASH_LEN, MAX_TITLE_LEN, type SavedItem,
 } from '../../src/core/saved';
 
 /** Minimal in-memory stand-in for the Storage interface. */
@@ -322,6 +322,33 @@ describe('saved — mutations', () => {
     expect(list()[0]!.title).toBe('after');
     expect(rename(HASH_P, '   ')).toEqual({ ok: false, reason: 'invalid' });
     expect(list()[0]!.title).toBe('after');
+  });
+
+  it('rejects an over-long rename and leaves the existing record unchanged', () => {
+    toggle(HASH_P, 'before');
+    const tooLong = 'x'.repeat(MAX_TITLE_LEN + 1);
+    expect(rename(HASH_P, tooLong)).toEqual({ ok: false, reason: 'invalid' });
+    // The return value alone would not have caught a write that silently
+    // succeeded and then vanished on the next read.
+    expect(list()[0]!.title).toBe('before');
+  });
+
+  it('rejects an over-long title on toggle and saves nothing', () => {
+    const tooLong = 'x'.repeat(MAX_TITLE_LEN + 1);
+    expect(toggle(HASH_P, tooLong)).toEqual({ ok: false, reason: 'invalid' });
+    expect(list()).toEqual([]);
+  });
+
+  it('rejects an over-long hash on toggle and saves nothing', () => {
+    const tooLongHash = `#/p/${'y'.repeat(MAX_HASH_LEN)}?v=1`;
+    expect(toggle(tooLongHash, 'x')).toEqual({ ok: false, reason: 'invalid' });
+    expect(list()).toEqual([]);
+  });
+
+  it('accepts a title of exactly the maximum length and it survives a round-trip', () => {
+    const boundary = 'x'.repeat(MAX_TITLE_LEN);
+    expect(toggle(HASH_P, boundary)).toEqual({ ok: true, value: 'saved' });
+    expect(list()[0]!.title).toBe(boundary);
   });
 
   it('reports a rename or removal of something not saved', () => {
