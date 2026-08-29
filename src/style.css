@@ -139,6 +139,7 @@ input[type='checkbox'] { accent-color: var(--ink); }
 }
 .saved-title { font-size: 13px; letter-spacing: 0.12em; margin: 0; }
 .saved-count { font-family: var(--font-mono); font-size: 10px; color: var(--gray); }
+.saved-tools { margin-left: auto; display: flex; gap: 8px; }
 .saved-notice { padding: 0 32px 16px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
 .saved-notice p { max-width: 52ch; color: var(--gray); font-size: 13px; margin: 0; }
 .saved-empty {

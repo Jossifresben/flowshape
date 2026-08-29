@@ -1,4 +1,4 @@
-import { list, readState, reset, rename, remove, importJSON, SV } from '../core/saved';
+import { list, readState, reset, rename, remove, importJSON, exportJSON, SAVED_KEY, SV } from '../core/saved';
 import { currentLang, t, type Lang } from '../i18n';
 import { buildNav } from './nav';
 import { buildFooter } from './footer';
@@ -70,6 +70,58 @@ export function mountSaved(root: HTMLElement): () => void {
   count.className = 'saved-count';
   head.append(heading, count);
 
+  const tools = document.createElement('div');
+  tools.className = 'saved-tools';
+
+  const exportBtn = document.createElement('button');
+  exportBtn.type = 'button';
+  exportBtn.className = 'btn';
+  exportBtn.textContent = t('saved.export', lang);
+  exportBtn.addEventListener('click', () => {
+    const doc = exportJSON();
+    // Refuses on an unreadable store rather than handing over an empty file
+    // that looks like a valid backup. The visitor might then hit Reset —
+    // which is offered on exactly that state — and lose everything.
+    if (!doc.ok) { showToast(t('saved.exportFailed', lang)); return; }
+    const blob = new Blob([doc.value], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'flowshape-favourites.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  const importInput = document.createElement('input');
+  importInput.type = 'file';
+  importInput.accept = 'application/json,.json';
+  importInput.hidden = true;
+  importInput.addEventListener('change', async () => {
+    const file = importInput.files?.[0];
+    importInput.value = '';           // so re-picking the same file fires again
+    if (!file) return;
+    const r = importJSON(await file.text());
+    if (!r.ok) {
+      showToast(t(r.reason === 'future' ? 'saved.importFuture' : 'saved.importFailed', lang));
+      return;
+    }
+    render();
+    showToast(
+      t('saved.imported', lang)
+        .replace('{added}', String(r.value.added))
+        .replace('{skipped}', String(r.value.skipped)),
+    );
+  });
+
+  const importBtn = document.createElement('button');
+  importBtn.type = 'button';
+  importBtn.className = 'btn';
+  importBtn.textContent = t('saved.import', lang);
+  importBtn.addEventListener('click', () => importInput.click());
+
+  tools.append(exportBtn, importBtn, importInput);
+  head.append(tools);
+
   const grid = document.createElement('div');
   grid.className = 'gal-grid';
 
@@ -133,7 +185,18 @@ export function mountSaved(root: HTMLElement): () => void {
   render();
   root.append(buildNav(lang, 'saved'), head, notice, grid, buildFooter(lang));
 
-  return () => { observer.disconnect(); stopSavedWorker(); };
+  // Another tab saving or deleting must be reflected here. `storage` fires
+  // only in the tabs that did not make the change, which is exactly right.
+  const onStorage = (e: StorageEvent): void => {
+    if (e.key === null || e.key === SAVED_KEY) render();
+  };
+  window.addEventListener('storage', onStorage);
+
+  return () => {
+    window.removeEventListener('storage', onStorage);
+    observer.disconnect();
+    stopSavedWorker();
+  };
 }
 
 const KIND_KEY: Record<Kind, string> = {
