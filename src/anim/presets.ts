@@ -1,4 +1,41 @@
 import type { ModRoute } from './mapping';
+import type { FeatureKey } from '../audio/features';
+
+/** Colour is deliberately NOT a ModRoute: `hue`/`chroma` aren't ParamDefs —
+ *  they're OKLCH controls resolved by `resolvePalette` (see
+ *  src/poster/palettes.ts), so they can't be reached by `applyRoutes`, which
+ *  only ever modulates a pattern's own declared param ranges. A `ColourRoute`
+ *  is the same *kind* of thing as a `ModRoute` (data: which feature drives
+ *  what, and how far) but targets the two colour controls the audio spike
+ *  proved out instead of a param key.
+ *
+ *  hue: interpolated linearly from `from` → `to` (degrees) as the driving
+ *  feature goes 0 → 1 — NOT additive like ModRoute.depth, because a hue
+ *  sweep across a fixed span reads as "timbre", where an additive offset
+ *  would just be an arbitrary rotation with no fixed endpoints.
+ *  chroma: scaled from 0 → `max` as the driving feature goes 0 → 1, so
+ *  silence (feature 0) always resolves to `max`'s zero — i.e. plain
+ *  monochrome ink. That decay-to-monochrome property is what made the
+ *  audio-spike mapping (centroid→hue, level→chroma) read as tasteful rather
+ *  than gimmicky, and it must survive here: never let chroma have a floor
+ *  above 0. */
+export interface ColourRoute {
+  hue: { feature: FeatureKey; from: number; to: number };
+  chroma: { feature: FeatureKey; max: number };
+}
+
+/** The standard colour mapping, applied by the stage's COLOUR toggle over
+ *  whichever preset is active (see src/ui/animate.ts). This mirrors the
+ *  audio-spike finding verbatim: spectral centroid ("bright") sweeps hue
+ *  250°(blue)→30°(orange), and level drives chroma up from 0. Individual
+ *  presets may set their own `colour` block instead (the field exists for
+ *  that), but none do yet — one shared mapping was simpler to reason about
+ *  and verify than hand-tuning colour for 50-odd preset entries, and it
+ *  already carries the property (silence → monochrome) that mattered. */
+export const DEFAULT_COLOUR_ROUTE: ColourRoute = {
+  hue: { feature: 'bright', from: 250, to: 30 },
+  chroma: { feature: 'level', max: 0.16 },
+};
 
 export interface EventSpec {
   kind: 'reseed' | 'flip' | 'step';
@@ -15,6 +52,10 @@ export interface AnimPreset {
   label: { en: string; es: string };
   routes: ModRoute[];
   event?: EventSpec;
+  /** Optional per-preset override of the colour mapping applied when the
+   *  stage's COLOUR toggle is on (see DEFAULT_COLOUR_ROUTE above). Absent
+   *  by default. */
+  colour?: ColourRoute;
 }
 
 /** Curated audio mappings, tuned by eye against music and voice. Convention:

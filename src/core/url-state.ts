@@ -31,6 +31,10 @@ export interface AppState {
   stage?: '169' | '916' | '11';
   apre?: string;
   aint?: number;
+  /** Stage-only COLOUR toggle. Default off; a shared link preserves it like
+   *  apre/aint do. Never read outside view === 'a' — the poster path has no
+   *  concept of it. */
+  acol?: boolean;
 }
 
 export { RESERVED } from './reserved';
@@ -55,6 +59,7 @@ export function encodeState(s: AppState): string {
     if (s.stage !== undefined && s.stage !== '169') q.set('stage', s.stage);
     if (s.apre !== undefined) q.set('apre', s.apre);
     if (s.aint !== undefined && s.aint !== 1) q.set('aint', String(Math.round(s.aint * 100) / 100));
+    if (s.acol) q.set('acol', '1');
   }
   for (const [k, v] of Object.entries(s.params)) {
     if (RESERVED.has(k)) continue;
@@ -110,6 +115,7 @@ export function decodeState(hash: string): AppState | null {
       const n = Number(aintRaw);
       state.aint = Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 1;
     }
+    if (q.get('acol') === '1') state.acol = true;
   }
   return state;
 }

@@ -95,4 +95,18 @@ describe('animate view state', () => {
     expect(s.stage).toBeUndefined();
     expect(s.aint).toBe(1);
   });
+  it('round-trips the colour toggle and omits it when off', () => {
+    const on = decodeState(encodeState({
+      patternId: 'harmonograph', seed: 9, params: {}, color: {}, lang: 'en',
+      view: 'a', acol: true,
+    }))!;
+    expect(on.acol).toBe(true);
+    const hashOff = encodeState({
+      patternId: 'harmonograph', seed: 9, params: {}, color: {}, lang: 'en',
+      view: 'a', acol: false,
+    });
+    expect(hashOff).not.toContain('acol');
+    const off = decodeState(hashOff)!;
+    expect(off.acol).toBeUndefined();
+  });
 });

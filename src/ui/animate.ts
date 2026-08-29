@@ -1,13 +1,13 @@
 import { getPattern, defaultParams, clampParams, generateSafe, type PatternDef } from '../patterns/registry';
 import { decodeState, encodeState, type AppState } from '../core/url-state';
 import { resolvePalette } from '../poster/palettes';
-import type { SvgNode } from '../core/svg';
+import type { SvgNode, Palette } from '../core/svg';
 import { FeaturePipeline, ZERO_FRAME, type FeatureFrame } from '../audio/features';
 import { detectOnsets, estimateTempo, beatGrid, LiveOnsetDetector } from '../audio/onsets';
 import { fileRig, micRig, type AudioRig } from '../audio/sources';
 import { BeatClock, phaseAt, frameParams } from '../anim/engine';
 import { drawTree } from '../anim/canvas-render';
-import { presetsFor, type AnimPreset } from '../anim/presets';
+import { presetsFor, DEFAULT_COLOUR_ROUTE, type AnimPreset } from '../anim/presets';
 import { pickMimeType, probeMimeTypes, StageRecorder, downloadBlob } from '../anim/recorder';
 import { AnimWorkerClient } from '../anim/worker-client';
 import { chipRow } from './controls';
@@ -64,6 +64,11 @@ export function mountAnimate(root: HTMLElement): () => void {
   let preset: AnimPreset = presets.find((p) => p.id === state.apre) ?? presets[0]!;
   let intensity = state.aint ?? 1;
   let stageId: '169' | '916' | '11' = state.stage ?? '169';
+  // Colour is opt-in and off by default (monochrome stays the default look).
+  // With it off, `paletteFor` always returns this exact `pal` instance —
+  // never a freshly-resolved one — so output is byte-identical to before
+  // colour existed.
+  let colourOn = state.acol ?? false;
   const baseParams = clampParams(def, { ...defaultParams(def), ...state.params });
   const pal = resolvePalette(state.color);
 
@@ -102,7 +107,9 @@ export function mountAnimate(root: HTMLElement): () => void {
   const back = document.createElement('a');
   back.textContent = t.back;
   back.className = 'anim-back';
-  back.href = encodeState({ ...state, view: undefined, stage: undefined, apre: undefined, aint: undefined });
+  back.href = encodeState({
+    ...state, view: undefined, stage: undefined, apre: undefined, aint: undefined, acol: undefined,
+  });
 
   const title = document.createElement('h1');
   title.textContent = (NAMES[def.id] ?? def.id).toUpperCase();
@@ -151,6 +158,19 @@ export function mountAnimate(root: HTMLElement): () => void {
   intensityInput.value = String(intensity);
   intensityInput.addEventListener('input', () => { intensity = Number(intensityInput.value); syncUrl(); });
   intensityRow.append(intensityHead, intensityInput);
+
+  // colour — off by default; monochrome stays the default look. A <label>
+  // row, like checkboxRow in controls.ts, so the whole row is one tap target.
+  const colourRow = document.createElement('label');
+  colourRow.className = 'ctl-row ctl-inline';
+  const colourLabel = document.createElement('span');
+  colourLabel.className = 'ctl-label';
+  colourLabel.textContent = t.colour;
+  const colourInput = document.createElement('input');
+  colourInput.type = 'checkbox';
+  colourInput.checked = colourOn;
+  colourInput.addEventListener('change', () => { colourOn = colourInput.checked; syncUrl(); });
+  colourRow.append(colourLabel, colourInput);
 
   // source
   const drop = document.createElement('button');
@@ -246,7 +266,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   privacy.className = 'anim-privacy';
   privacy.textContent = t.privacy;
 
-  panel.append(back, title, aspectLabel, aspectChips, presetLabel, presetChips, intensityRow,
+  panel.append(back, title, aspectLabel, aspectChips, presetLabel, presetChips, intensityRow, colourRow,
     drop, fileInput, demoBtn, micBtn, playBtn, scrub, recBtn, fsBtn, status, privacy);
   wrap.append(stageEl, panel);
   root.append(wrap);
@@ -267,7 +287,7 @@ export function mountAnimate(root: HTMLElement): () => void {
 
   function syncUrl(): void {
     history.replaceState(null, '', encodeState({
-      ...state, view: 'a', stage: stageId, apre: preset.id, aint: intensity,
+      ...state, view: 'a', stage: stageId, apre: preset.id, aint: intensity, acol: colourOn,
     }));
   }
 
@@ -315,9 +335,29 @@ export function mountAnimate(root: HTMLElement): () => void {
   let skipOdd = false;
   let flip = false;
 
-  function draw(node: SvgNode): void {
+  function draw(node: SvgNode, framePal: Palette): void {
     ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
-    drawTree(ctx, node, pal);
+    drawTree(ctx, node, framePal);
+  }
+
+  const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
+
+  /** Colour on the animated stage only, and only through a preset — never
+   *  automatically (spec constraint). `hue`/`chroma` aren't ParamDefs (see
+   *  ColourRoute's comment in anim/presets.ts), so this is the one place
+   *  that reaches them: derive a ColorState from the base state plus the
+   *  routed features and hand it to the SAME resolvePalette the poster path
+   *  uses — no colour logic is duplicated or forked for the stage.
+   *  With the toggle off this returns the exact `pal` computed once at
+   *  mount, so output is byte-identical to before colour existed. */
+  function paletteFor(features: FeatureFrame): Palette {
+    if (!colourOn) return pal;
+    const route = preset.colour ?? DEFAULT_COLOUR_ROUTE;
+    const hue = route.hue.from + (route.hue.to - route.hue.from) * clamp01(features[route.hue.feature]);
+    // level → chroma, scaled by intensity: silence (feature 0) or intensity
+    // 0 both resolve to chroma 0 — plain monochrome ink either way.
+    const chroma = clamp01(features[route.chroma.feature]) * route.chroma.max * intensity;
+    return resolvePalette({ ...state.color, hue, chroma });
   }
 
   function tick(now: number): void {
@@ -353,6 +393,7 @@ export function mountAnimate(root: HTMLElement): () => void {
       def: def!, baseParams, baseSeed: state.seed, preset, intensity,
       features, phase: phaseAt(tSec, bpm), beatIndex,
     });
+    const framePal = paletteFor(features);
 
     if (def!.heavy && workerClient) {
       // Beat-ahead double buffer: request the NEXT event window's tree early,
@@ -373,14 +414,14 @@ export function mountAnimate(root: HTMLElement): () => void {
           if (node && heavyPendingIdx === wantIdx) heavyReady = { idx: wantIdx, node };
         });
       }
-      if (heavyTree) draw(heavyTree);
+      if (heavyTree) draw(heavyTree, framePal);
       else { // paper until the first tree lands
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.fillStyle = pal.paper;
+        ctx.fillStyle = framePal.paper;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
     } else {
-      draw(generateSafe(def!, params, seed, userSize));
+      draw(generateSafe(def!, params, seed, userSize), framePal);
     }
 
     costEma = costEma * 0.9 + (performance.now() - t0) * 0.1;
