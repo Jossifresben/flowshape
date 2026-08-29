@@ -12,6 +12,7 @@ export const helix = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
+  anim: { continuous: ['turns', 'radiusFraction', 'depthFade', 'strokeWidth'], usesPhase: true },
   params: [
     { key: 'turns', kind: 'float', min: 2, max: 12, step: 0.1, default: 6, label: 'helix.turns' },
     { key: 'radiusFraction', kind: 'float', min: 0.08, max: 0.4, step: 0.01, default: 0.22, label: 'helix.radiusFraction' },
@@ -25,6 +26,7 @@ export const helix = definePattern({
     const rungEvery = p['rungEvery']!;
     const depthFade = p['depthFade']!;
     const strokeWidth = p['strokeWidth']!;
+    const spin = (p['phase'] ?? 0) * 2 * Math.PI;
 
     const cx = size.w / 2;
     const radius = radiusFraction * Math.min(size.w, size.h);
@@ -47,14 +49,14 @@ export const helix = definePattern({
     // Rungs drawn first so the strands render on top of them.
     const children: SvgNode[] = [];
     for (let k = 0; k <= N; k += rungEvery) {
-      const a = sample(0, k);
-      const b = sample(Math.PI, k);
+      const a = sample(spin, k);
+      const b = sample(Math.PI + spin, k);
       const d = `M${r2(a.x)} ${r2(a.y)}L${r2(b.x)} ${r2(b.y)}`;
       children.push(el('path', { d, fill: 'none', stroke: 'ink', 'stroke-width': r2(strokeWidth * 0.7) }));
     }
 
     // Two strands, each split into short segments so stroke width can fake depth.
-    for (const phase of [0, Math.PI]) {
+    for (const phase of [spin, Math.PI + spin]) {
       let prev = sample(phase, 0);
       for (let k = 1; k <= N; k++) {
         const cur = sample(phase, k);

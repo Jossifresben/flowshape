@@ -8,6 +8,7 @@ export const phyllotaxis = definePattern({
   family: 'points',
   phase: 1,
   heavy: false,
+  anim: { continuous: ['radialExp', 'dotMin', 'dotGrow'], usesPhase: true },
   params: [
     { key: 'points', kind: 'int', min: 50, max: 4000, step: 10, default: 1500, label: 'phyllotaxis.points' },
     { key: 'angle', kind: 'float', min: 90, max: 180, step: 0.0001, default: GOLDEN, label: 'phyllotaxis.angle' },
@@ -28,7 +29,7 @@ export const phyllotaxis = definePattern({
     const children = [];
     for (let n = 0; n < points; n++) {
       const r = scale * Math.pow(n, exp);
-      const a = n * angleRad;
+      const a = n * angleRad + (p['phase'] ?? 0) * 2 * Math.PI;
       const accent = p['accentEvery']! > 0 && n % p['accentEvery']! === 0;
       children.push(
         el('circle', {
