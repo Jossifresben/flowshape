@@ -59,8 +59,8 @@ const BLOCKS: Block[] = [
   {
     kind: 'p',
     text: [
-      'Record it and download an MP4 with your audio in it, ready to post as it is. That file is encoded in your browser as well — nothing is uploaded to produce it.',
-      'Grábalo y descarga un MP4 con tu audio dentro, listo para publicar tal cual. Ese archivo también se codifica en tu navegador: no se sube nada para generarlo.',
+      'Record it and download a video file with your audio in it, ready to post as it is. That file is encoded in your browser as well — nothing is uploaded to produce it.',
+      'Grábalo y descarga un archivo de vídeo con tu audio dentro, listo para publicar tal cual. Ese archivo también se codifica en tu navegador: no se sube nada para generarlo.',
     ],
   },
   {
