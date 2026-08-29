@@ -7,13 +7,10 @@
 | [url-state.md](url-state.md) | The URL schema and the compatibility rules that keep old links working |
 | [audio-visualizer.md](audio-visualizer.md) | The animated audio-reactive stage: analysis, mapping, renderer, export (in development) |
 | [research/](research/) | Verified mathematical catalogues the patterns were selected from |
-| [superpowers/specs/](superpowers/specs/) | Approved design specifications, part by part |
-| [superpowers/plans/](superpowers/plans/) | The task-by-task implementation plans built from those specs |
 
 Start with [architecture.md](architecture.md) if you intend to change code, and
 [patterns.md](patterns.md) if you intend to add a pattern.
 
-The `research/` and `superpowers/` folders are a working record rather than
-polished reference: they document what was decided, what was rejected, and why.
-Where a plan and the code disagree, the code is right — the plans were written
-before the work, and several were revised mid-flight.
+The `research/` folder is a working record rather than polished reference: it
+documents the formulas each pattern was built from, along with candidate shapes
+that were considered and cut. Where it and the code disagree, the code is right.

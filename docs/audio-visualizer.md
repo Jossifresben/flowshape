@@ -1,11 +1,9 @@
 # The animated stage (audio visualizer)
 
 > **Status: in development.** Specced, planned, and de-risked by a working
-> spike; the analysis layer is built and tested. It is **not** on `main` yet and
-> not live on flowshape.art. This document describes the approved design — the
-> authority is
-> [the spec](superpowers/specs/2026-08-29-flowshape-part4-audio-visualizer-design.md)
-> and [the implementation plan](superpowers/plans/2026-08-29-flowshape-part4-audio-visualizer.md).
+> spike; the analysis layer (`src/audio/`) is built and tested. It is **not** on
+> `main` yet and not live on flowshape.art. This document describes the approved
+> design; where it and the shipped code eventually disagree, the code is right.
 
 Take any pattern you have tuned, feed it audio — a dropped file or the
 microphone — and it moves with the sound. The live screen is the product;

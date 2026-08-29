@@ -152,7 +152,6 @@ docs/         architecture, patterns, URL schema, audio visualizer, specs and pl
 - **[docs/url-state.md](docs/url-state.md)** — the URL schema and its compatibility rules
 - **[docs/audio-visualizer.md](docs/audio-visualizer.md)** — the animated stage design
 - **[docs/research/](docs/research/)** — the verified maths catalogues the patterns were built from
-- **[docs/superpowers/](docs/superpowers/)** — design specs and implementation plans, part by part
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — conventions, tests, and what a new pattern must satisfy
 
 ## Inspiration and credits

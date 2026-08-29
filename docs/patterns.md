@@ -234,7 +234,7 @@ band i = filled annular sector, radii [r₀ᵢ, r₁ᵢ], angles [a₀, a₀+swe
 
 This pattern is a direct homage to Josef Müller-Brockmann's 1955 Tonhalle poster for a Beethoven concert — one of the defining images of Swiss graphic design: nothing but a handful of bold black arcs radiating from a shared center, drawn to suggest the intensity of the music with no illustration at all. The construction here is stripped to its geometric essentials: each band is a filled annular sector — a ring segment, like a slice cut from a very fat donut — with zero stroke, so the picture reads purely as opposed flat shapes rather than outlined circles. That flat-fill approach is deliberate: everything else in this pattern set draws with strokes; this is the one built entirely from solid ink shapes.
 
-**Source.** Müller-Brockmann, J. (1955) Tonhalle concert poster ("Beethoven") — concentric-arc design lineage; band-thickness progression per bookofshapes.com competitive research, Part 3 (2026) · [reference](https://commons.wikimedia.org/wiki/File:Josef_M%C3%BCller-Brockmann._beethoven_poster(1955).jpg)
+**Source.** Müller-Brockmann, J. (1955) Tonhalle concert poster ("Beethoven") — concentric-arc design lineage; the band-thickness power law is this project's own parameterisation · [reference](https://commons.wikimedia.org/wiki/File:Josef_M%C3%BCller-Brockmann._beethoven_poster(1955).jpg)
 
 **Parameters.** `bandCount`, `minThickness`, `maxThickness`, `growthExponent`, `gap`, `startAngle`, `sweepAngle`, `accentEvery` — each one annotated in the explanation document above.
 

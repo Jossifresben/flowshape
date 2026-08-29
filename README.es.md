@@ -152,7 +152,6 @@ docs/         arquitectura, patrones, esquema de URL, visualizador de audio, spe
 - **[docs/url-state.md](docs/url-state.md)** — el esquema de URL y sus reglas de compatibilidad
 - **[docs/audio-visualizer.md](docs/audio-visualizer.md)** — el diseño del escenario animado
 - **[docs/research/](docs/research/)** — los catálogos matemáticos verificados de los que salieron los patrones
-- **[docs/superpowers/](docs/superpowers/)** — especificaciones de diseño y planes de implementación, parte por parte
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — convenciones, tests y qué debe cumplir un patrón nuevo
 
 ## Inspiración y créditos
