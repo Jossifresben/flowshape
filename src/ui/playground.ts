@@ -17,6 +17,7 @@ import { t, patternName, currentLang, type Lang } from '../i18n';
 import { panelNav } from './nav';
 import { buildFooter, REPO_URL } from './footer';
 import { copyOrSelect } from './clipboard';
+import { favouriteButton, type FavouriteControl } from './star';
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their labels are real i18n keys, like every other control's. */
@@ -136,6 +137,7 @@ export function mountPlayground(root: HTMLElement): () => void {
   let state = readState();
   let stage!: HTMLDivElement;
   let generation = 0;
+  let favourite: FavouriteControl | null = null;
 
   // Cache of the last generated (pre-colour) node tree, keyed on everything
   // that affects *geometry* (pattern, params, seed) but deliberately NOT
@@ -159,6 +161,8 @@ export function mountPlayground(root: HTMLElement): () => void {
     const hash = encodeState(state);
     history.replaceState(null, '', hash);
     rememberState(state.patternId, hash);
+    // replaceState fires no hashchange, so the star has to be told.
+    favourite?.sync();
   }
 
   function setState(next: Partial<AppState>): void {
@@ -349,7 +353,8 @@ export function mountPlayground(root: HTMLElement): () => void {
       );
     });
 
-    actions.append(rand, explainBtn, animateBtn, posterBtn);
+    favourite = favouriteButton(lang, () => location.hash);
+    actions.append(rand, explainBtn, animateBtn, posterBtn, favourite.el);
     panel.append(actions);
 
     if (def.usesSeed) {

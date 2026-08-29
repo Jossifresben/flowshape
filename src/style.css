@@ -350,3 +350,8 @@ a.gal-wordmark { text-decoration: none; }
   width: auto; height: auto;
   box-shadow: 0 2px 28px rgb(0 0 0 / 0.4);
 }
+
+.btn.star { font-size: 15px; line-height: 1; padding: 6px 10px; }
+.btn.star.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn.star:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.star.failed { border-color: var(--accent); color: var(--accent); }
