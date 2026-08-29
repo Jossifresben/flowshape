@@ -50,3 +50,27 @@ export const SHOWCASE: ShowcaseEntry[] = [
   { hash: '#/p/tumbling?v=1&seed=54166&hue=15&paperL=0.08&accentShift=130&cell=24&flipChance=0.54&coherence=0.45&voidChance=0&render=0&hatchDensity=11&faceShading=0.71&strokeWidth=0.95&size=1&phase=0' },
   { hash: '#/p/voxel?v=1&seed=68182&hue=266&chroma=0.115&paperL=0.08&accentShift=130&shape=1&dimension=14&gap=0.09&shellOnly=1&scatter=0.53&faceShading=0.75&depthShading=0.55&strokeWidth=0.75&size=1.17&phase=0' },
 ];
+
+/** Curated posters. Same idea as SHOWCASE but `#/c/` hashes, rendered through
+ *  the composer so a card shows layout, colourway and type block rather than
+ *  bare artwork. */
+export const SHOWCASE_POSTERS: ShowcaseEntry[] = [];
+
+/**
+ * Curated videos: recordings from the animate stage, served as static files
+ * from `public/showcase/`.
+ *
+ * Unlike designs and posters, a video is NOT a hash — it is a real file, so it
+ * carries its own poster frame and an optional link back to the live stage.
+ */
+export interface ShowcaseVideo {
+  /** Absolute site path, e.g. `/showcase/voronoi-drift.mp4`. */
+  src: string;
+  /** First-frame image, same folder. Shown before playback and where autoplay is refused. */
+  poster: string;
+  /** Optional `#/a/` hash, so the card can link through to the live stage. */
+  hash?: string;
+  title?: Pair;
+}
+
+export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [];
