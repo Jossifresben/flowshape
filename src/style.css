@@ -19,6 +19,7 @@ body {
 
 #app.view-playground { display: flex; height: 100vh; }
 #app.view-gallery,
+#app.view-showcase,
 #app.view-about,
 #app.view-saved { display: block; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
 .stage { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--fog); }
@@ -133,6 +134,31 @@ input[type='checkbox'] { accent-color: var(--ink); }
 }
 .gal-name { font-size: 13px; font-weight: 700; color: var(--ink); }
 .gal-family { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--gray); }
+
+/* --- curated gallery (#/gallery) --- */
+
+/* A showcase card is just `.gal-thumb` + `.gal-name`, no `.gal-meta` wrapper
+ * — there is no family/kind badge here, every entry is a design. `.gal-meta`
+ * normally supplies the 8px gap above the name; restore it for the flatter
+ * structure without touching `.gal-name` itself, which the pattern grid also
+ * uses nested inside `.gal-meta`. */
+.gal-card > .gal-name { display: block; margin-top: 8px; }
+
+.show-head { padding: 44px 32px 28px; }
+.show-title { margin: 0; font-size: 13px; letter-spacing: 0.12em; }
+.show-subtitle { margin: 12px 0 0; color: var(--gray); font-size: 15px; max-width: 640px; }
+.show-empty { grid-column: 1 / -1; color: var(--gray); font-size: 13px; }
+
+/* The pattern grid's `.gal-thumb` holds a static `<img>`; a showcase card
+ * renders its artwork live into the box, same as `#/saved` — so it needs the
+ * live-render sizing/state rules `.saved-thumb` already defines. */
+.show-thumb { background: var(--paper); overflow: hidden; }
+.show-thumb svg { display: block; width: 100%; height: 100%; }
+.show-thumb.gone {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 3 / 4; color: var(--gray); font-family: var(--font-mono); font-size: 10px;
+}
+.show-thumb.computing { opacity: 0.55; transition: opacity 0.15s; }
 
 /* --- saved page --- */
 
