@@ -9,9 +9,10 @@ import type { Pair } from '../i18n';
  * carries, so an entry is the artwork rather than a description of it, and
  * adding one is a single line.
  *
- * `title` is optional. Without it the card falls back to `autoTitle`, which is
- * already bilingual, so naming an entry is a deliberate act rather than a
- * chore. `tests/content/showcase.test.ts` asserts every hash still decodes to
+ * `title` is optional. Without it the card shows the pattern's own name, which
+ * is already bilingual, so naming an entry is a deliberate act rather than a
+ * chore. Two entries of the same pattern therefore read alike — that is
+ * accepted: the artwork distinguishes them, and a `title` settles it if not. `tests/content/showcase.test.ts` asserts every hash still decodes to
  * a registered pattern, because these are hand-written URLs and that is
  * exactly where a typo enters.
  */
