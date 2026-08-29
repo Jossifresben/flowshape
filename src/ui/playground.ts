@@ -4,6 +4,7 @@ import { serialize, type SvgNode } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palettes';
 import { sliderRow, checkboxRow, selectRow } from './controls';
+import { NAMES } from './gallery';
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their `label` has no '.' so `sliderRow`'s i18n-key splitting is a no-op
@@ -150,7 +151,7 @@ export function mountPlayground(root: HTMLElement): () => void {
     for (const def2 of listPatterns().filter((x) => x.phase === 1).sort((a, b) => a.id.localeCompare(b.id))) {
       const o = document.createElement('option');
       o.value = def2.id;
-      o.textContent = def2.id;
+      o.textContent = NAMES[def2.id] ?? def2.id;
       if (def2.id === state.patternId) o.selected = true;
       patternSel.append(o);
     }

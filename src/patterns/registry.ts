@@ -2,7 +2,7 @@ import type { SvgNode } from '../core/svg';
 import { el } from '../core/svg';
 import { RESERVED } from '../core/reserved';
 
-export type Family = 'points' | 'curves' | 'fields' | 'attractors' | 'tilings' | 'growth' | 'isometric';
+export type Family = 'points' | 'curves' | 'fields' | 'tilings' | 'growth' | 'isometric';
 
 export interface ParamDef {
   key: string;
@@ -44,9 +44,13 @@ export function definePattern(def: PatternDef): PatternDef {
     if (RESERVED.has(p.key)) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
     if (p.key === SIZE_PARAM.key) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
   }
-  def.params.push(SIZE_PARAM);
-  registry.set(def.id, def);
-  return def;
+  // Build a new params array with a fresh copy of SIZE_PARAM: pushing the
+  // shared SIZE_PARAM object itself would let every pattern's `size` entry
+  // alias the same object, so mutating one (e.g. clampParams touching it)
+  // would mutate all of them. Also avoids mutating the caller's array.
+  const withSize: PatternDef = { ...def, params: [...def.params, { ...SIZE_PARAM }] };
+  registry.set(withSize.id, withSize);
+  return withSize;
 }
 
 export function getPattern(id: string): PatternDef | undefined {

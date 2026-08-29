@@ -27,9 +27,13 @@ export const chirp = definePattern({
     const strokeWidth = p['strokeWidth']!;
 
     const W = size.w - 2 * MARGIN;
-    const usableHeight = size.h - 2 * MARGIN;
+    // Inset the row band by the maximum envelope amplitude (reached at u=1,
+    // where env = amplitude * (0.06 + 0.94) = amplitude) so the sine sweep
+    // stays inside the frame at every amplitude instead of clipping the top
+    // and bottom rows.
+    const usableHeight = size.h - 2 * MARGIN - 2 * amplitude;
     const rowSpacing = usableHeight / Math.max(1, lineCount - 1);
-    const yTop = MARGIN;
+    const yTop = MARGIN + amplitude;
 
     const children: SvgNode[] = [];
     for (let i = 0; i < lineCount; i++) {

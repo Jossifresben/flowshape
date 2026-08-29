@@ -31,14 +31,13 @@ export const FAMILY_LABELS: Record<Family, string> = {
   points: 'Points & Meshes',
   curves: 'Curves',
   fields: 'Fields',
-  attractors: 'Attractors',
   tilings: 'Tilings',
   growth: 'Growth',
   isometric: 'Isometric',
 };
 
 /** Canonical family display order for the filter chips. */
-const FAMILY_ORDER: Family[] = ['points', 'curves', 'fields', 'attractors', 'tilings', 'isometric', 'growth'];
+const FAMILY_ORDER: Family[] = ['points', 'curves', 'fields', 'tilings', 'isometric', 'growth'];
 
 function patternHref(id: string): string {
   return encodeState({
