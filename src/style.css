@@ -33,10 +33,42 @@ body {
   font-family: var(--font-mono); font-size: 11px; padding: 8px 14px;
   border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer;
 }
+/* --- collapsible sidebar sections ---
+   Native <details>/<summary>: disclosure, Enter/Space on the focused summary
+   and the screen-reader announcement all come from the platform. The summary
+   keeps the exact type, colour and rule the old static headings had; only the
+   +/- marker and the pointer affordance are new. */
 .ctl-section-heading {
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--gray);
   border-top: 1px solid var(--line); padding-top: 16px; margin-top: 4px;
 }
+summary.ctl-section-heading {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 2px; cursor: pointer; list-style: none; user-select: none;
+}
+summary.ctl-section-heading::-webkit-details-marker { display: none; }
+summary.ctl-section-heading::after {
+  content: '+'; font-size: 13px; line-height: 1; color: var(--gray);
+}
+.ctl-section[open] > summary.ctl-section-heading::after { content: '\2013'; }
+summary.ctl-section-heading:hover { color: var(--ink); }
+summary.ctl-section-heading:hover::after { color: var(--ink); }
+summary.ctl-section-heading:focus-visible { outline: 1px solid var(--ink); outline-offset: 3px; }
+.ctl-section-body {
+  display: flex; flex-direction: column; gap: 16px; padding-top: 14px;
+}
+
+/* --- three-up action row (randomize / math / animate) ---
+   Equal 1fr tracks with minmax(0,...) so the row can never push the panel
+   wider than the viewport at 320px. */
+.panel-actions {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;
+}
+.panel-actions .btn {
+  padding: 10px 4px; text-align: center; letter-spacing: 0.08em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.panel-seed { align-self: flex-start; }
 input[type='range'] { accent-color: var(--ink); }
 .ctl-inline { flex-direction: row; justify-content: space-between; align-items: center; }
 .ctl-select {
@@ -176,7 +208,7 @@ input[type='checkbox'] { accent-color: var(--ink); }
 .anim-back { font-size: 11px; text-decoration: none; color: var(--gray); }
 .anim-back:hover { color: var(--ink); }
 .anim-label { margin-top: 6px; }
-.anim-btn, .anim-drop, .anim-enter {
+.anim-btn, .anim-drop {
   font: inherit; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
   padding: 8px 10px; cursor: pointer; text-align: center;
   background: none; border: 1px solid var(--ink); color: var(--ink);
@@ -215,6 +247,14 @@ input[type='checkbox'] { accent-color: var(--ink); }
   .custom-size select { min-height: 44px; padding: 12px 8px; }
 
   /* Animate stage controls (Part 4) — same touch-target treatment as .btn. */
-  .anim-btn, .anim-drop, .anim-enter { min-height: 44px; min-width: 44px; padding: 14px 14px; }
+  .anim-btn, .anim-drop { min-height: 44px; min-width: 44px; padding: 14px 14px; }
   .anim-scrub { height: 44px; }
+
+  /* The three-up action row keeps the 44px height but not .btn's 14px side
+     padding — three labels have to share a 280px panel at 320px. */
+  .panel-actions .btn { min-height: 44px; min-width: 0; padding: 13px 4px; }
+
+  /* Section summaries are controls too — give them a full tap target without
+     disturbing the 16px rule-to-text rhythm above them. */
+  summary.ctl-section-heading { min-height: 44px; padding-bottom: 10px; }
 }

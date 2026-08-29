@@ -5,7 +5,7 @@ import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palettes';
 import { rememberState, forgetState } from '../core/persist';
 import { PRESETS } from '../patterns/presets';
-import { sliderRow, checkboxRow, selectRow, chipRow } from './controls';
+import { sliderRow, checkboxRow, selectRow, chipRow, sectionRow } from './controls';
 import { NAMES } from './gallery';
 import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
 import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
@@ -123,6 +123,46 @@ async function renderMathTab(id: string): Promise<HTMLElement> {
   }
   wrap.innerHTML = renderMarkdown(doc.body) + renderCitation(doc.source, doc.url);
   return wrap;
+}
+
+/** Every piece of sidebar chrome, EN/ES — same shape as `STR` in animate.ts.
+ *  The action-row buttons carry two strings each: a short mono label that lets
+ *  three buttons share one line down to a 320px panel, and the full wording,
+ *  which becomes the accessible name and the tooltip. */
+const STR = {
+  en: {
+    back: '\u2190 All patterns',
+    seed: 'SEED',
+    randomize: 'RANDOM', randomizeFull: 'Randomize',
+    math: 'MATH', mathFull: 'Explain the math',
+    animate: 'ANIMATE', animateFull: 'Animate this pattern',
+    parameters: 'PARAMETERS', colour: 'COLOUR', format: 'FORMAT', exportH: 'EXPORT',
+    custom: 'Custom\u2026',
+    exportSvg: 'Export SVG', exportPng: 'Export PNG', rendering: 'Rendering\u2026',
+    reset: 'Reset to sample',
+  },
+  es: {
+    back: '\u2190 Todos los patrones',
+    seed: 'SEMILLA',
+    randomize: 'AZAR', randomizeFull: 'Aleatorizar',
+    math: 'F\u00d3RMULA', mathFull: 'Explicar las matem\u00e1ticas',
+    animate: 'ANIMAR', animateFull: 'Animar este patr\u00f3n',
+    parameters: 'PAR\u00c1METROS', colour: 'COLOR', format: 'FORMATO', exportH: 'EXPORTAR',
+    custom: 'Personalizado\u2026',
+    exportSvg: 'Exportar SVG', exportPng: 'Exportar PNG', rendering: 'Renderizando\u2026',
+    reset: 'Volver al ejemplo',
+  },
+} as const;
+
+/** One button in the three-up action row: short visible label, full wording
+ *  kept as the accessible name so nothing is lost to the abbreviation. */
+function actionButton(short: string, full: string): HTMLButtonElement {
+  const b = document.createElement('button');
+  b.className = 'btn';
+  b.textContent = short;
+  b.title = full;
+  b.setAttribute('aria-label', full);
+  return b;
 }
 
 const DEFAULT_STATE: AppState = {
@@ -293,18 +333,13 @@ export function mountPlayground(root: HTMLElement): () => void {
     const panel = document.createElement('div');
     panel.className = 'panel';
 
+    const t = STR[state.lang];
+
     const backLink = document.createElement('a');
     backLink.className = 'gal-back-link';
     backLink.href = '#/';
-    backLink.textContent = '← All patterns';
+    backLink.textContent = t.back;
     panel.append(backLink);
-
-    const animateBtn = document.createElement('button');
-    animateBtn.className = 'anim-enter';
-    animateBtn.textContent = state.lang === 'es' ? 'ANIMAR →' : 'ANIMATE →';
-    animateBtn.addEventListener('click', () => {
-      location.hash = encodeState({ ...state, view: 'a' });
-    });
 
     const patternSel = document.createElement('select');
     patternSel.className = 'ctl-select';
@@ -320,17 +355,12 @@ export function mountPlayground(root: HTMLElement): () => void {
     );
     panel.append(patternSel);
 
-    const seedRow = document.createElement('div');
-    seedRow.className = 'ctl-row';
-    if (def.usesSeed) {
-      const seedVal = document.createElement('span');
-      seedVal.className = 'ctl-value';
-      seedVal.textContent = `SEED ${state.seed}`;
-      seedRow.append(seedVal);
-    }
-    const rand = document.createElement('button');
-    rand.className = 'btn';
-    rand.textContent = 'Randomize';
+    // The three things a visitor reaches for constantly, side by side above
+    // the fold instead of three stacked full-width buttons.
+    const actions = document.createElement('div');
+    actions.className = 'panel-actions';
+
+    const rand = actionButton(t.randomize, t.randomizeFull);
     rand.addEventListener('click', () => {
       if (def.usesSeed) {
         setState({ seed: 1 + Math.floor(Math.random() * 99999) });
@@ -338,14 +368,8 @@ export function mountPlayground(root: HTMLElement): () => void {
         setState({ params: randomParams(def, Math.random, state.params) });
       }
     });
-    seedRow.append(rand);
-    panel.append(seedRow);
 
-    const explainRow = document.createElement('div');
-    explainRow.className = 'ctl-row';
-    const explainBtn = document.createElement('button');
-    explainBtn.className = 'btn';
-    explainBtn.textContent = 'Explain the math';
+    const explainBtn = actionButton(t.math, t.mathFull);
     explainBtn.addEventListener('click', () => {
       openModal({
         title: NAMES[state.patternId] ?? state.patternId,
@@ -355,35 +379,64 @@ export function mountPlayground(root: HTMLElement): () => void {
         ],
       });
     });
-    explainRow.append(explainBtn);
-    panel.append(explainRow);
 
+    const animateBtn = actionButton(t.animate, t.animateFull);
+    animateBtn.addEventListener('click', () => {
+      location.hash = encodeState({ ...state, view: 'a' });
+    });
+
+    actions.append(rand, explainBtn, animateBtn);
+    panel.append(actions);
+
+    if (def.usesSeed) {
+      const seedVal = document.createElement('div');
+      seedVal.className = 'ctl-label panel-seed';
+      seedVal.textContent = `${t.seed} ${state.seed}`;
+      panel.append(seedVal);
+    }
+
+    // --- parameters -------------------------------------------------------
     const orderedParams = [...def.params].sort((a, b) =>
       (a.key === 'size' ? -1 : 0) - (b.key === 'size' ? -1 : 0),
     );
+    const paramRows: HTMLElement[] = [];
     for (const pd of orderedParams) {
       if (pd.hidden) continue;
       const v = params[pd.key]!;
       if (pd.kind === 'bool') {
-        panel.append(checkboxRow(pd, v, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
+        paramRows.push(checkboxRow(pd, v, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
       } else if (pd.kind === 'enum') {
-        panel.append(selectRow(pd, v, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
+        paramRows.push(selectRow(pd, v, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
       } else {
-        panel.append(sliderRow(pd, v, (nv) => setParam(pd.key, nv)));
+        paramRows.push(sliderRow(pd, v, (nv) => setParam(pd.key, nv)));
       }
     }
-    const formatHeading = document.createElement('div');
-    formatHeading.className = 'ctl-section-heading';
-    formatHeading.textContent = 'FORMAT';
-    panel.append(formatHeading);
+    // A pattern with nothing but hidden params gets no empty disclosure.
+    if (paramRows.length > 0) {
+      const paramsSec = sectionRow('params', t.parameters, true);
+      paramsSec.body.append(...paramRows);
+      panel.append(paramsSec.el);
+    }
+
+    // --- colour (deliberately after the parameters: colour follows shape) ---
+    const colourSec = sectionRow('colour', t.colour, true);
+    for (const key of ['hue', 'chroma', 'paperL', 'accentShift'] as const) {
+      const def2 = COLOR_PARAM_DEFS[key];
+      const v = state.color[key] ?? COLOR_DEFAULTS[key];
+      colourSec.body.append(sliderRow(def2, v, (nv) => setColor(key, nv)));
+    }
+    panel.append(colourSec.el);
+
+    // --- format -----------------------------------------------------------
+    const formatSec = sectionRow('format', t.format, false);
 
     const currentFormat = state.format ?? DEFAULT_FORMAT;
     for (const group of ['iso', 'us', 'other'] as const) {
       const items = FORMATS.filter((f) => f.group === group).map((f) => ({ id: f.id, label: f.label }));
-      panel.append(chipRow(items, currentFormat, (id) => setState({ format: id })));
+      formatSec.body.append(chipRow(items, currentFormat, (id) => setState({ format: id })));
     }
-    panel.append(
-      chipRow([{ id: 'custom', label: 'Custom…' }], currentFormat, () => setState({ format: 'custom' })),
+    formatSec.body.append(
+      chipRow([{ id: 'custom', label: t.custom }], currentFormat, () => setState({ format: 'custom' })),
     );
 
     if (state.format === 'custom') {
@@ -411,57 +464,25 @@ export function mountPlayground(root: HTMLElement): () => void {
       }
       unitSel.addEventListener('change', () => setState({ cu: unitSel.value as Unit }));
       customRow.append(wInput, xSpan, hInput, unitSel);
-      panel.append(customRow);
+      formatSec.body.append(customRow);
     }
 
     const phys = physicalSize(state);
     const physLabel = document.createElement('div');
     physLabel.className = 'ctl-value';
     physLabel.textContent = `${phys.wmm} × ${phys.hmm} mm`;
-    panel.append(physLabel);
+    formatSec.body.append(physLabel);
+    panel.append(formatSec.el);
 
-    const colorHeading = document.createElement('div');
-    colorHeading.className = 'ctl-section-heading';
-    colorHeading.textContent = 'COLOUR';
-    panel.append(colorHeading);
-
-    for (const key of ['hue', 'chroma', 'paperL', 'accentShift'] as const) {
-      const def2 = COLOR_PARAM_DEFS[key];
-      const v = state.color[key] ?? COLOR_DEFAULTS[key];
-      panel.append(sliderRow(def2, v, (nv) => setColor(key, nv)));
-    }
-
-    // Once a pattern's state has been remembered (any change), the gallery
-    // card for it points at that remembered state instead of the curated
-    // preset — so give a way back for patterns that have one.
-    const preset = PRESETS[state.patternId];
-    if (preset) {
-      const resetRow = document.createElement('div');
-      resetRow.className = 'ctl-row';
-      const resetBtn = document.createElement('button');
-      resetBtn.className = 'btn';
-      resetBtn.textContent = 'Reset to sample';
-      resetBtn.addEventListener('click', () => {
-        forgetState(state.patternId);
-        setState({ seed: preset.seed ?? 1, params: preset.params ?? {}, color: preset.color ?? {} });
-      });
-      resetRow.append(resetBtn);
-      panel.append(resetRow);
-    }
-
-    panel.append(animateBtn);
-
-    const exportHeading = document.createElement('div');
-    exportHeading.className = 'ctl-section-heading';
-    exportHeading.textContent = 'EXPORT';
-    panel.append(exportHeading);
+    // --- export -----------------------------------------------------------
+    const exportSec = sectionRow('export', t.exportH, false);
 
     const exportRow = document.createElement('div');
     exportRow.className = 'ctl-row';
 
     const svgBtn = document.createElement('button');
     svgBtn.className = 'btn';
-    svgBtn.textContent = 'Export SVG';
+    svgBtn.textContent = t.exportSvg;
 
     const dpiSel = document.createElement('select');
     dpiSel.className = 'ctl-select';
@@ -476,7 +497,7 @@ export function mountPlayground(root: HTMLElement): () => void {
 
     const pngBtn = document.createElement('button');
     pngBtn.className = 'btn';
-    pngBtn.textContent = 'Export PNG';
+    pngBtn.textContent = t.exportPng;
 
     const exportError = document.createElement('div');
     exportError.className = 'ctl-value export-error';
@@ -505,7 +526,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       if (!lastNode) return;
       const originalText = pngBtn.textContent;
       pngBtn.disabled = true;
-      pngBtn.textContent = 'Rendering…';
+      pngBtn.textContent = t.rendering;
       exportError.textContent = '';
       try {
         const pal = resolvePalette(state.color);
@@ -524,7 +545,28 @@ export function mountPlayground(root: HTMLElement): () => void {
     });
 
     exportRow.append(svgBtn, dpiSel, pngBtn);
-    panel.append(exportRow, exportError);
+    exportSec.body.append(exportRow, exportError);
+    panel.append(exportSec.el);
+
+    // Once a pattern's state has been remembered (any change), the gallery
+    // card for it points at that remembered state instead of the curated
+    // preset — so give a way back for patterns that have one. Stays outside
+    // every disclosure: it resets seed, params AND colour, so it belongs to
+    // none of them.
+    const preset = PRESETS[state.patternId];
+    if (preset) {
+      const resetRow = document.createElement('div');
+      resetRow.className = 'ctl-row';
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'btn';
+      resetBtn.textContent = t.reset;
+      resetBtn.addEventListener('click', () => {
+        forgetState(state.patternId);
+        setState({ seed: preset.seed ?? 1, params: preset.params ?? {}, color: preset.color ?? {} });
+      });
+      resetRow.append(resetBtn);
+      panel.append(resetRow);
+    }
 
     root.append(stage, panel);
   }

@@ -1,4 +1,5 @@
 import type { ParamDef } from '../patterns/registry';
+import { recallSection, rememberSection } from '../core/persist';
 
 export function sliderRow(
   def: ParamDef,
@@ -89,4 +90,35 @@ export function selectRow(
   select.addEventListener('change', () => onChange(Number(select.value)));
   row.append(label, select);
   return row;
+}
+
+/**
+ * A collapsible sidebar section.
+ *
+ * Native `<details>`/`<summary>`: the disclosure behaviour, keyboard handling
+ * (Enter/Space on a focused summary) and the screen-reader announcement all
+ * come from the platform — no JS beyond remembering the state.
+ *
+ * `id` keys the localStorage memory; `defaultOpen` applies only until the
+ * visitor has toggled the section themselves.
+ */
+export function sectionRow(
+  id: string,
+  title: string,
+  defaultOpen: boolean,
+): { el: HTMLDetailsElement; body: HTMLElement } {
+  const el = document.createElement('details');
+  el.className = 'ctl-section';
+  el.open = recallSection(id) ?? defaultOpen;
+
+  const summary = document.createElement('summary');
+  summary.className = 'ctl-section-heading';
+  summary.textContent = title;
+
+  const body = document.createElement('div');
+  body.className = 'ctl-section-body';
+
+  el.append(summary, body);
+  el.addEventListener('toggle', () => rememberSection(id, el.open));
+  return { el, body };
 }

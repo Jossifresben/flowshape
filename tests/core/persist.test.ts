@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { rememberState, recallState, forgetState } from '../../src/core/persist';
+import { rememberState, recallState, forgetState, rememberSection, recallSection } from '../../src/core/persist';
 
 /** Minimal in-memory stand-in for the Storage interface. */
 function makeStubStorage(): Storage {
@@ -60,6 +60,41 @@ describe('persist', () => {
     });
   });
 
+  describe('sidebar section memory', () => {
+    beforeEach(() => {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        value: makeStubStorage(),
+      });
+    });
+
+    it('returns null for a section that has never been toggled', () => {
+      expect(recallSection('format')).toBeNull();
+    });
+
+    it('round-trips both open and closed', () => {
+      rememberSection('format', true);
+      expect(recallSection('format')).toBe(true);
+      rememberSection('format', false);
+      expect(recallSection('format')).toBe(false);
+    });
+
+    it('keeps sections independent of one another and of pattern state', () => {
+      rememberSection('params', true);
+      rememberSection('export', false);
+      rememberState('bands', '#/p/bands?v=1&seed=1');
+      expect(recallSection('params')).toBe(true);
+      expect(recallSection('export')).toBe(false);
+      expect(recallSection('bands')).toBeNull();
+      expect(recallState('bands')).toBe('#/p/bands?v=1&seed=1');
+    });
+
+    it('treats an unrecognised stored value as no memory at all', () => {
+      globalThis.localStorage.setItem('flowshape:section:format', 'yes');
+      expect(recallSection('format')).toBeNull();
+    });
+  });
+
   describe('failure resilience', () => {
     it('recallState returns null rather than throwing when localStorage access throws', () => {
       Object.defineProperty(globalThis, 'localStorage', {
@@ -93,6 +128,29 @@ describe('persist', () => {
       });
 
       expect(() => forgetState('bands')).not.toThrow();
+    });
+
+    it('recallSection returns null rather than throwing when localStorage access throws', () => {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        get(): Storage {
+          throw new DOMException('The operation is insecure.', 'SecurityError');
+        },
+      });
+
+      expect(() => recallSection('format')).not.toThrow();
+      expect(recallSection('format')).toBeNull();
+    });
+
+    it('rememberSection does not throw when localStorage access throws', () => {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        get(): Storage {
+          throw new DOMException('The operation is insecure.', 'SecurityError');
+        },
+      });
+
+      expect(() => rememberSection('format', true)).not.toThrow();
     });
 
     it('rememberState does not throw when setItem itself throws (quota exceeded)', () => {
