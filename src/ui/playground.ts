@@ -51,20 +51,31 @@ export function mountPlayground(root: HTMLElement): () => void {
 
   let worker: Worker | null = null;
   let workerReq = 0;
-  function computeInWorker(onNode: (node: SvgNode) => void): void {
-    if (!worker) {
-      worker = new Worker(new URL('../workers/compute.worker.ts', import.meta.url), { type: 'module' });
-      worker.onerror = () => {
-        stage.classList.remove('computing');
-        stage.innerHTML = '';
-        stage.textContent = 'Could not render this pattern.';
-      };
-    }
+  // At most one request in flight plus one pending: while the worker is busy,
+  // a new request overwrites `pendingRequest` instead of queuing behind it,
+  // so a drag can never build an unbounded backlog. On response, the pending
+  // request (the LAST one the user made) is dispatched immediately.
+  let workerBusy = false;
+  let pendingRequest: (() => void) | null = null;
+
+  function dispatchPending(): void {
+    if (!pendingRequest) return;
+    const next = pendingRequest;
+    pendingRequest = null;
+    next();
+  }
+
+  function dispatchToWorker(onNode: (node: SvgNode) => void): void {
+    workerBusy = true;
     const myGeneration = generation;
     const myKey = nodeKey();
     const target = stage;
     const id = ++workerReq;
-    worker.onmessage = (e: MessageEvent<{ id: number; node: SvgNode | null; error?: string }>) => {
+    worker!.onmessage = (e: MessageEvent<{ id: number; node: SvgNode | null; error?: string }>) => {
+      // Always free the worker (and dispatch whatever is pending) first, so a
+      // stale/discarded response or a failure can never wedge the queue.
+      workerBusy = false;
+      dispatchPending();
       if (e.data.id !== workerReq || myGeneration !== generation || target !== stage) return;
       target.classList.remove('computing');
       if (!e.data.node) {
@@ -76,7 +87,25 @@ export function mountPlayground(root: HTMLElement): () => void {
       lastKey = myKey;
       onNode(e.data.node);
     };
-    worker.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: { w: 600, h: 840 } });
+    worker!.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: { w: 600, h: 840 } });
+  }
+
+  function computeInWorker(onNode: (node: SvgNode) => void): void {
+    if (!worker) {
+      worker = new Worker(new URL('../workers/compute.worker.ts', import.meta.url), { type: 'module' });
+      worker.onerror = () => {
+        workerBusy = false;
+        stage.classList.remove('computing');
+        stage.innerHTML = '';
+        stage.textContent = 'Could not render this pattern.';
+        dispatchPending();
+      };
+    }
+    if (workerBusy) {
+      pendingRequest = () => dispatchToWorker(onNode);
+      return;
+    }
+    dispatchToWorker(onNode);
   }
 
   function fillStage(def: PatternDef): void {
