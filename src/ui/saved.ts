@@ -2,6 +2,13 @@ import { list, readState, reset } from '../core/saved';
 import { currentLang, t, type Lang } from '../i18n';
 import { buildNav } from './nav';
 import { buildFooter } from './footer';
+import { decodeState } from '../core/url-state';
+import { getPattern, generateSafe } from '../patterns/registry';
+import { serialize } from '../core/svg';
+import { resolvePalette } from '../poster/palettes';
+import { renderSize } from '../poster/formats';
+// `kind` is derived from the hash, never stored — a stored copy could contradict it.
+import { kindOf, type SavedItem, type Kind } from '../core/saved';
 
 /** Mounts the saved page. Returns a teardown, because this view registers a
  *  `storage` listener and an IntersectionObserver that must not outlive it. */
@@ -24,6 +31,8 @@ export function mountSaved(root: HTMLElement): () => void {
 
   const notice = document.createElement('div');
   notice.className = 'saved-notice';
+
+  let observer = new IntersectionObserver(onVisible, { rootMargin: '200px' });
 
   // `readState()` reports only what READING found, so 'quota' cannot appear
   // here — a full store still reads fine. Quota is reported by the star, from
@@ -69,23 +78,92 @@ export function mountSaved(root: HTMLElement): () => void {
   function render(): void {
     const items = list();
     count.textContent = `${items.length} ${t('saved.count', lang)}`;
+    observer.disconnect();
+    observer = new IntersectionObserver(onVisible, { rootMargin: '200px' });
     grid.innerHTML = '';
     renderNotice();
     if (items.length === 0) { renderEmpty(); return; }
-    for (const item of items) grid.append(buildCard(item, lang, render));
+    for (const item of items) grid.append(buildCard(item, lang, observer));
   }
 
   render();
   root.append(buildNav(lang, 'saved'), head, notice, grid, buildFooter(lang));
 
-  return () => { /* listeners are added in a later task */ };
+  return () => { observer.disconnect(); };
 }
 
-/** Placeholder until Task 12 gives cards their thumbnail. */
-function buildCard(item: { hash: string; title: string }, _lang: Lang, _refresh: () => void): HTMLElement {
-  const card = document.createElement('a');
-  card.className = 'gal-card';
-  card.href = item.hash;
-  card.textContent = item.title;
+const KIND_KEY: Record<Kind, string> = {
+  p: 'saved.kindP', a: 'saved.kindA', c: 'saved.kindC',
+};
+
+/** The render size a saved hash implies. Designs and posters follow their
+ *  paper format; an animation follows its stage aspect. Both go through the
+ *  same normalised short edge, so a card is one code path. */
+function sizeFor(state: NonNullable<ReturnType<typeof decodeState>>): { w: number; h: number } {
+  if (state.view !== 'a') return renderSize(state);
+  const stage = state.stage ?? '169';
+  const ratio = stage === '169' ? 16 / 9 : stage === '916' ? 9 / 16 : 1;
+  return ratio >= 1 ? { w: Math.round(600 * ratio), h: 600 } : { w: 600, h: Math.round(600 / ratio) };
+}
+
+/** Renders a saved item's artwork, live. Heavy patterns are deferred to a
+ *  later task; for now they simply render on the main thread. */
+function renderThumb(box: HTMLElement, item: SavedItem, lang: Lang): void {
+  const state = decodeState(item.hash);
+  const def = state ? getPattern(state.patternId) : undefined;
+  if (!state || !def) {
+    box.classList.add('gone');
+    box.textContent = t('saved.gone', lang);
+    return;
+  }
+  const size = sizeFor(state);
+  box.style.aspectRatio = `${size.w} / ${size.h}`;
+  try {
+    const node = generateSafe(def, state.params, state.seed, size);
+    box.innerHTML = serialize(node, resolvePalette(state.color));
+  } catch {
+    box.classList.add('gone');
+    box.textContent = t('saved.gone', lang);
+  }
+}
+
+/** Renders a card the first time it comes near the viewport, then stops
+ *  watching it — a card is generated once per mount, never again on scroll. */
+function onVisible(entries: IntersectionObserverEntry[], obs: IntersectionObserver): void {
+  for (const entry of entries) {
+    if (!entry.isIntersecting) continue;
+    const el = entry.target as HTMLElement & { render?: () => void };
+    obs.unobserve(el);
+    el.render?.();
+  }
+}
+
+function buildCard(item: SavedItem, lang: Lang, observer: IntersectionObserver): HTMLElement {
+  const card = document.createElement('div');
+  card.className = 'gal-card saved-card';
+
+  const link = document.createElement('a');
+  link.className = 'saved-link';
+  link.href = item.hash;
+
+  const box = document.createElement('div');
+  box.className = 'gal-thumb saved-thumb';
+  // Rendering is deferred to the observer: a card off screen costs nothing,
+  // and a saved card costs exactly what its playground render cost.
+  (box as HTMLElement & { render?: () => void }).render = () => renderThumb(box, item, lang);
+  observer.observe(box);
+
+  const meta = document.createElement('div');
+  meta.className = 'gal-meta';
+  const name = document.createElement('span');
+  name.className = 'gal-name saved-name';
+  name.textContent = item.title;
+  const kind = document.createElement('span');
+  kind.className = 'gal-family';
+  kind.textContent = t(KIND_KEY[kindOf(item.hash)!], lang);
+  meta.append(name, kind);
+
+  link.append(box);
+  card.append(link, meta);
   return card;
 }

@@ -145,6 +145,15 @@ input[type='checkbox'] { accent-color: var(--ink); }
   grid-column: 1 / -1; display: flex; flex-direction: column; gap: 16px;
   align-items: flex-start; color: var(--gray); font-size: 13px;
 }
+.saved-card { display: flex; flex-direction: column; }
+.saved-link { display: block; color: inherit; text-decoration: none; }
+.saved-thumb { background: var(--paper); overflow: hidden; }
+.saved-thumb svg { display: block; width: 100%; height: 100%; }
+.saved-thumb.gone {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 3 / 4; color: var(--gray); font-family: var(--font-mono); font-size: 10px;
+}
+.saved-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
