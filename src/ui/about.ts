@@ -52,15 +52,29 @@ const BLOCKS: Block[] = [
   {
     kind: 'p',
     text: [
-      'Give a pattern an audio file or your microphone and it becomes a live visual. The weight of the bass, the brightness of the timbre and the attack of each onset drive its parameters, and a pattern with nothing continuous to move instead rebuilds itself on the beat. It plays on a 16:9, 9:16 or 1:1 stage you can record.',
-      'Dale a un patrón un archivo de audio o tu micrófono y se convierte en un visual en vivo. El peso de los graves, el brillo del timbre y el ataque de cada golpe gobiernan sus parámetros, y un patrón que no tenga nada continuo que mover se reconstruye a sí mismo al ritmo. Se reproduce en un escenario 16:9, 9:16 o 1:1 que puedes grabar.',
+      'Give a pattern an audio file or your microphone and it becomes a live visual. The weight of the bass, the brightness of the timbre and the attack of each onset drive its parameters, and a pattern with nothing continuous to move instead rebuilds itself on the beat. It plays on a stage sized 16:9 for a screen, 9:16 for a phone, or 1:1.',
+      'Dale a un patrón un archivo de audio o tu micrófono y se convierte en un visual en vivo. El peso de los graves, el brillo del timbre y el ataque de cada golpe gobiernan sus parámetros, y un patrón que no tenga nada continuo que mover se reconstruye a sí mismo al ritmo. Se reproduce en un escenario 16:9 para pantalla, 9:16 para móvil o 1:1.',
     ],
   },
   {
     kind: 'p',
     text: [
-      'The audio never leaves your browser — there is nowhere to send it. This part is still in development.',
-      'El audio nunca sale de tu navegador: no hay adónde enviarlo. Esta parte todavía está en desarrollo.',
+      'Record it and download an MP4 with your audio in it, ready to post as it is. That file is encoded in your browser as well — nothing is uploaded to produce it.',
+      'Grábalo y descarga un MP4 con tu audio dentro, listo para publicar tal cual. Ese archivo también se codifica en tu navegador: no se sube nada para generarlo.',
+    ],
+  },
+  {
+    kind: 'p',
+    text: [
+      'Your audio never leaves your browser. It is analysed as it plays, and there is nowhere to send it.',
+      'Tu audio nunca sale del navegador. Se analiza mientras suena, y no hay adónde enviarlo.',
+    ],
+  },
+  {
+    kind: 'p',
+    text: [
+      'The animated stage is in development and is not live on the site yet.',
+      'El escenario animado está en desarrollo y todavía no está publicado en el sitio.',
     ],
   },
   { kind: 'h2', text: ['The rules it keeps', 'Las reglas que respeta'] },
