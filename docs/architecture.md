@@ -115,6 +115,30 @@ rewrites the URL with `replaceState` and dispatches a language event; the router
 listens and re-mounts the current view. The i18n module deliberately does not
 import `url-state` — the gallery and about page have no poster state at all.
 
+## Saved work
+
+Favourites live in `localStorage` under `flowshape:saved`. A favourite is simply a
+saved hash — `{ hash, title, savedAt }` — because the URL already describes a
+creation completely, so nothing about the artwork is duplicated and a thumbnail
+can never go stale against a changed generator. `kind` (design, animation,
+poster) is derived from the hash with `routeOf`, never stored: a stored copy
+could contradict its own hash.
+
+`core/saved.ts` deliberately inverts `core/persist.ts`'s contract. Persist may
+swallow a storage failure silently, because losing a remembered slider position
+costs nothing. Saved work is the visitor's own, so every mutation returns a
+`Result` and a save that did not happen is reported. Reading never writes and
+never destroys: an unreadable store degrades to an empty list and is left byte
+for byte, and `reset()` — the one destructive call — refuses outright on a store
+written by a *newer* schema, so a stale cached bundle can never discard work it
+merely cannot parse.
+
+`#/saved` renders each card's artwork live through the same `generateSafe` path
+the playground uses, lazily behind an `IntersectionObserver`. Only `diffgrowth`
+is `heavy`, and at 661 ms against a 3 ms median for every other pattern it goes
+through the compute worker; without that, one saved favourite froze the page for
+seconds.
+
 ## Content
 
 Each pattern has `src/content/explain/<id>.<en|es>.md`: YAML front matter with

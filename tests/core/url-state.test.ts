@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { encodeState, decodeState, RESERVED, type AppState } from '../../src/core/url-state';
+import { encodeState, decodeState, routeOf, RESERVED, type AppState } from '../../src/core/url-state';
 import { posterFilename } from '../../src/poster/export';
 
 const state: AppState = {
@@ -154,6 +154,23 @@ describe('composer state', () => {
   it('ignores a nonsense colorway index rather than throwing', () => {
     expect(decodeState('#/c/voxel?v=1&seed=1&cway=abc')!.cway).toBeUndefined();
     expect(decodeState('#/c/voxel?v=1&seed=1&cway=-3')!.cway).toBeUndefined();
+  });
+});
+
+describe('routeOf', () => {
+  it('returns the route letter for each view, defaulting the playground to p', () => {
+    expect(routeOf('#/p/timestable?v=1&seed=1')).toBe('p');
+    expect(routeOf('#/a/voronoi?v=1&seed=9&stage=916')).toBe('a');
+    expect(routeOf('#/c/girih?v=1&seed=4&sk=3')).toBe('c');
+  });
+
+  it('returns null for anything decodeState rejects', () => {
+    expect(routeOf('#/nope')).toBeNull();
+    expect(routeOf('')).toBeNull();
+    expect(routeOf('#/p/%E0%A4%A?v=1')).toBeNull();
+    // An embedded newline defeats decodeState's `.` (no /s flag), so this
+    // must be rejected too, not just truncated by a looser check.
+    expect(routeOf('#/p/x?v=1\n&seed=2')).toBeNull();
   });
 });
 

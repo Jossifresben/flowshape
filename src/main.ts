@@ -5,6 +5,7 @@ import { mountGallery } from './ui/gallery';
 import { mountAnimate } from './ui/animate';
 import { mountAbout } from './ui/about';
 import { mountComposer } from './ui/poster';
+import { mountSaved } from './ui/saved';
 import { decodeState } from './core/url-state';
 import { LANG_EVENT } from './i18n';
 
@@ -16,8 +17,10 @@ const app = document.querySelector<HTMLDivElement>('#app')!;
 // listener and re-render playground with default state on every navigation).
 let cleanup: (() => void) | null = null;
 
-function setView(name: 'gallery' | 'playground' | 'about' | 'animate' | 'composer'): void {
-  app.classList.remove('view-gallery', 'view-playground', 'view-about', 'view-animate', 'view-composer');
+function setView(name: 'gallery' | 'playground' | 'about' | 'animate' | 'composer' | 'saved'): void {
+  app.classList.remove(
+    'view-gallery', 'view-playground', 'view-about', 'view-animate', 'view-composer', 'view-saved',
+  );
   app.classList.add(`view-${name}`);
 }
 
@@ -31,6 +34,11 @@ function route(): void {
   if (location.hash.startsWith('#/about')) {
     setView('about');
     mountAbout(app);
+    return;
+  }
+  if (location.hash.startsWith('#/saved')) {
+    setView('saved');
+    cleanup = mountSaved(app);
     return;
   }
   const state = decodeState(location.hash);

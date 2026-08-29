@@ -1,5 +1,4 @@
 import { getPattern, defaultParams, clampParams, generateSafe, listPatterns, type PatternDef, type ParamDef } from '../patterns/registry';
-import { randomParams } from '../patterns/randomize';
 import { serialize, type SvgNode } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palettes';
@@ -7,15 +6,12 @@ import { rememberState, forgetState } from '../core/persist';
 import { PRESETS } from '../patterns/presets';
 import { sliderRow, checkboxRow, selectRow, chipRow, sectionRow, dimRow } from './controls';
 import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
-import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
-import { openModal } from './modal';
-import { composerUrl } from './poster';
-import { loadSource } from '../content/source';
-import { loadExplain } from '../content/explain';
-import { renderMarkdown, renderCitation } from './markdown';
+import { buildExportRow } from './export-row';
+import { buildActionsRow } from './panel-actions';
 import { t, patternName, paramLabel, currentLang, type Lang } from '../i18n';
 import { panelNav } from './nav';
-import { buildFooter, REPO_URL } from './footer';
+import { buildFooter } from './footer';
+import { favouriteButton, type FavouriteControl } from './star';
 
 /** "Only in RENDER · Ribbons" — the gate's own label plus the option(s) that
  *  switch a dimmed control back on. Built entirely from labels the pattern
@@ -42,114 +38,6 @@ const COLOR_PARAM_DEFS: Record<keyof typeof COLOR_DEFAULTS, ParamDef> = {
   accentShift: { key: 'accentShift', kind: 'float', min: 0, max: 180, step: 1, default: COLOR_DEFAULTS.accentShift, label: 'color.accentShift' },
 };
 
-function placeholderTab(text: string): HTMLElement {
-  const p = document.createElement('p');
-  p.textContent = text;
-  return p;
-}
-
-function codeWord(text: string): HTMLElement {
-  const c = document.createElement('code');
-  c.textContent = text;
-  return c;
-}
-
-/** Copies `text` to the clipboard; falls back to selecting `target`'s
- *  contents (so the user can copy manually) when the clipboard API is
- *  unavailable or the permission is denied. Returns whether the clipboard
- *  itself was written to. */
-async function copyOrSelect(text: string, target: HTMLElement): Promise<boolean> {
-  try {
-    if (!navigator.clipboard) throw new Error('clipboard API unavailable');
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      const range = document.createRange();
-      range.selectNodeContents(target);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    } catch {
-      // Nothing more we can do — the button label still tells the user what happened.
-    }
-    return false;
-  }
-}
-
-/** Builds the Code tab: the pattern's real, un-rewritten source, a short
- *  preamble naming the helpers a reader needs, and a Copy button. */
-async function renderCodeTab(id: string, lang: Lang): Promise<HTMLElement> {
-  const wrap = document.createElement('div');
-  const source = await loadSource(id);
-  if (source === null) {
-    wrap.append(placeholderTab(t('code.missing', lang)));
-    return wrap;
-  }
-
-  const preamble = document.createElement('p');
-  preamble.className = 'code-preamble';
-  const repoLink = document.createElement('a');
-  repoLink.href = REPO_URL;
-  repoLink.target = '_blank';
-  repoLink.rel = 'noopener noreferrer';
-  repoLink.textContent = t('code.repo', lang);
-  preamble.append(
-    t('code.preambleA', lang),
-    codeWord('el'), '/', codeWord('serialize'), t('code.preambleB', lang), codeWord('core/svg'),
-    t('code.preambleC', lang),
-    codeWord('mulberry32'), '/', codeWord('deriveSeed'), t('code.preambleB', lang), codeWord('core/prng'),
-    t('code.preambleD', lang), repoLink, '.',
-  );
-
-  const pre = document.createElement('pre');
-  pre.textContent = source;
-
-  const copyRow = document.createElement('div');
-  copyRow.className = 'ctl-row';
-  const copyBtn = document.createElement('button');
-  copyBtn.className = 'btn';
-  copyBtn.textContent = t('code.copy', lang);
-  let copyResetTimer = 0;
-  copyBtn.addEventListener('click', async () => {
-    const wroteToClipboard = await copyOrSelect(source, pre);
-    if (copyResetTimer) clearTimeout(copyResetTimer);
-    copyBtn.textContent = t(wroteToClipboard ? 'code.copied' : 'code.selected', lang);
-    copyResetTimer = window.setTimeout(() => {
-      copyBtn.textContent = t('code.copy', lang);
-    }, 2000);
-  });
-  copyRow.append(copyBtn);
-
-  wrap.append(preamble, copyRow, pre);
-  return wrap;
-}
-
-/** Builds the Math tab: the pattern's explanation content (formula, plain-
- *  language meaning, per-parameter notes) rendered from markdown, plus its
- *  citation as a link, in the reader's language. */
-async function renderMathTab(id: string, lang: Lang): Promise<HTMLElement> {
-  const wrap = document.createElement('div');
-  const doc = await loadExplain(id, lang);
-  if (doc === null) {
-    wrap.append(placeholderTab(t('math.missing', lang)));
-    return wrap;
-  }
-  wrap.innerHTML = renderMarkdown(doc.body) + renderCitation(doc.source, doc.url);
-  return wrap;
-}
-
-/** One button in the three-up action row: short visible label, full wording
- *  kept as the accessible name so nothing is lost to the abbreviation. */
-function actionButton(short: string, full: string): HTMLButtonElement {
-  const b = document.createElement('button');
-  b.className = 'btn';
-  b.textContent = short;
-  b.title = full;
-  b.setAttribute('aria-label', full);
-  return b;
-}
-
 const DEFAULT_STATE: AppState = {
   patternId: 'phyllotaxis',
   seed: 1,
@@ -174,6 +62,7 @@ export function mountPlayground(root: HTMLElement): () => void {
   let state = readState();
   let stage!: HTMLDivElement;
   let generation = 0;
+  let favourite: FavouriteControl | null = null;
 
   // Cache of the last generated (pre-colour) node tree, keyed on everything
   // that affects *geometry* (pattern, params, seed) but deliberately NOT
@@ -197,6 +86,8 @@ export function mountPlayground(root: HTMLElement): () => void {
     const hash = encodeState(state);
     history.replaceState(null, '', hash);
     rememberState(state.patternId, hash);
+    // replaceState fires no hashchange, so the star has to be told.
+    favourite?.sync();
   }
 
   function setState(next: Partial<AppState>): void {
@@ -330,7 +221,11 @@ export function mountPlayground(root: HTMLElement): () => void {
     const panel = document.createElement('div');
     panel.className = 'panel';
 
-    panel.append(panelNav(lang));
+    // Built before the nav so the star can live beside share rather than in
+    // the action grid, where a fifth item left a hole in a 3-column row and an
+    // icon-only control read as a button missing its label.
+    favourite = favouriteButton(lang, () => location.hash);
+    panel.append(panelNav(lang, favourite.el));
 
     const patternSel = document.createElement('select');
     patternSel.className = 'ctl-select';
@@ -348,47 +243,7 @@ export function mountPlayground(root: HTMLElement): () => void {
 
     // The three things a visitor reaches for constantly, side by side above
     // the fold instead of three stacked full-width buttons.
-    const actions = document.createElement('div');
-    actions.className = 'panel-actions';
-
-    const rand = actionButton(t('pg.randomizeShort', lang), t('pg.randomize', lang));
-    rand.addEventListener('click', () => {
-      if (def.usesSeed) {
-        setState({ seed: 1 + Math.floor(Math.random() * 99999) });
-      } else {
-        setState({ params: randomParams(def, Math.random, state.params) });
-      }
-    });
-
-    const explainBtn = actionButton(t('pg.explainShort', lang), t('pg.explain', lang));
-    explainBtn.addEventListener('click', () => {
-      openModal({
-        title: patternName(state.patternId, lang),
-        tabs: [
-          { id: 'math', label: t('modal.math', lang), render: () => renderMathTab(state.patternId, lang) },
-          { id: 'code', label: t('modal.code', lang), render: () => renderCodeTab(state.patternId, lang) },
-        ],
-      });
-    });
-
-    const animateBtn = actionButton(t('pg.animateShort', lang), t('pg.animate', lang));
-    animateBtn.addEventListener('click', () => {
-      location.hash = encodeState({ ...state, view: 'a' });
-    });
-
-    const posterBtn = actionButton(t('pg.posterShort', lang), t('pg.poster', lang));
-    posterBtn.addEventListener('click', () => {
-      // Its own window, per the brief: the composer is a separate surface and
-      // the playground keeps its state and its scroll position.
-      window.open(
-        `${location.pathname}${location.search}${composerUrl(state)}`,
-        '_blank',
-        'noopener',
-      );
-    });
-
-    actions.append(rand, explainBtn, animateBtn, posterBtn);
-    panel.append(actions);
+    panel.append(buildActionsRow(def, state, lang, setState));
 
     if (def.usesSeed) {
       const seedVal = document.createElement('div');
@@ -488,78 +343,12 @@ export function mountPlayground(root: HTMLElement): () => void {
     panel.append(formatSec.el);
 
     // --- export -----------------------------------------------------------
-    const exportSec = sectionRow('export', t('pg.export', lang), false);
-
-    const exportRow = document.createElement('div');
-    exportRow.className = 'ctl-row';
-
-    const svgBtn = document.createElement('button');
-    svgBtn.className = 'btn';
-    svgBtn.textContent = t('pg.exportSvg', lang);
-
-    const dpiSel = document.createElement('select');
-    dpiSel.className = 'ctl-select';
-    for (const dpi of [150, 300]) {
-      const px = pixelDimensions(phys, dpi);
-      const o = document.createElement('option');
-      o.value = String(dpi);
-      o.textContent = `${dpi} dpi · ${px.w} × ${px.h}`;
-      if (dpi === 300) o.selected = true;
-      dpiSel.append(o);
-    }
-
-    const pngBtn = document.createElement('button');
-    pngBtn.className = 'btn';
-    pngBtn.textContent = t('pg.exportPng', lang);
-
-    const exportError = document.createElement('div');
-    exportError.className = 'ctl-value export-error';
-    exportError.textContent = '';
-
-    if (!lastNode) {
-      svgBtn.disabled = true;
-      pngBtn.disabled = true;
-      onExportReady = () => {
-        svgBtn.disabled = false;
-        pngBtn.disabled = false;
-      };
-    } else {
-      onExportReady = null;
-    }
-
-    svgBtn.addEventListener('click', () => {
-      if (!lastNode) return;
-      const pal = resolvePalette(state.color);
-      const svg = toSvgString(lastNode, pal, phys);
-      const name = exportFilename(state.patternId, state.seed, state.format ?? DEFAULT_FORMAT, 'svg');
-      downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), name);
-    });
-
-    pngBtn.addEventListener('click', async () => {
-      if (!lastNode) return;
-      const originalText = pngBtn.textContent;
-      pngBtn.disabled = true;
-      pngBtn.textContent = t('pg.rendering', lang);
-      exportError.textContent = '';
-      try {
-        const pal = resolvePalette(state.color);
-        const svg = toSvgString(lastNode, pal, phys);
-        const dpi = Number(dpiSel.value);
-        const px = pixelDimensions(phys, dpi);
-        const blob = await toPngBlob(svg, px);
-        const name = exportFilename(state.patternId, state.seed, state.format ?? DEFAULT_FORMAT, 'png');
-        downloadBlob(blob, name);
-      } catch (err) {
-        exportError.textContent = err instanceof Error ? err.message : String(err);
-      } finally {
-        pngBtn.disabled = false;
-        pngBtn.textContent = originalText;
-      }
-    });
-
-    exportRow.append(svgBtn, dpiSel, pngBtn);
-    exportSec.body.append(exportRow, exportError);
-    panel.append(exportSec.el);
+    // `getNode` reads the live `lastNode`, not a value snapshot: a heavy
+    // pattern's node can land asynchronously (via the worker) after this row
+    // is built, and the buttons must see that instead of a stale null.
+    const exportRow = buildExportRow(state, phys, lang, () => lastNode);
+    onExportReady = lastNode ? null : exportRow.markReady;
+    panel.append(exportRow.el);
 
     // Once a pattern's state has been remembered (any change), the gallery
     // card for it points at that remembered state instead of the curated
