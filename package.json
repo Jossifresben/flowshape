@@ -29,6 +29,7 @@
     "build": "tsc --noEmit && vite build",
     "thumbs": "vite-node scripts/build-thumbs.ts",
     "og": "vite-node scripts/build-og.ts && node scripts/shoot-og.mjs",
+    "set-version": "node scripts/set-version.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
