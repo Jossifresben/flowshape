@@ -299,6 +299,13 @@ export function mountPlayground(root: HTMLElement): () => void {
     backLink.textContent = '← All patterns';
     panel.append(backLink);
 
+    const animateBtn = document.createElement('button');
+    animateBtn.className = 'anim-enter';
+    animateBtn.textContent = state.lang === 'es' ? 'ANIMAR →' : 'ANIMATE →';
+    animateBtn.addEventListener('click', () => {
+      location.hash = encodeState({ ...state, view: 'a' });
+    });
+
     const patternSel = document.createElement('select');
     patternSel.className = 'ctl-select';
     for (const def2 of listPatterns().filter((x) => x.phase === 1).sort((a, b) => a.id.localeCompare(b.id))) {
@@ -441,6 +448,8 @@ export function mountPlayground(root: HTMLElement): () => void {
       resetRow.append(resetBtn);
       panel.append(resetRow);
     }
+
+    panel.append(animateBtn);
 
     const exportHeading = document.createElement('div');
     exportHeading.className = 'ctl-section-heading';

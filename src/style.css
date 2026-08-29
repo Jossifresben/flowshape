@@ -159,6 +159,38 @@ input[type='checkbox'] { accent-color: var(--ink); }
 
 /* --- mobile: touch targets (pointer-precision dependent, not viewport-width) --- */
 
+/* --- animate stage (Part 4) --- */
+.view-animate .anim-wrap { display: flex; height: 100vh; }
+.anim-stage {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  background: #000; min-width: 0;
+}
+.anim-stage canvas { max-width: 100%; max-height: 100%; display: block; }
+.anim-panel {
+  width: 280px; flex-shrink: 0; padding: 20px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px;
+  border-left: 1px solid var(--line);
+  font-family: var(--font-mono);
+}
+.anim-panel h1 { font-size: 14px; letter-spacing: 0.08em; margin: 0; color: var(--ink); }
+.anim-back { font-size: 11px; text-decoration: none; color: var(--gray); }
+.anim-back:hover { color: var(--ink); }
+.anim-label { margin-top: 6px; }
+.anim-btn, .anim-drop, .anim-enter {
+  font: inherit; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
+  padding: 8px 10px; cursor: pointer; text-align: center;
+  background: none; border: 1px solid var(--ink); color: var(--ink);
+}
+.anim-drop { border-style: dashed; border-color: var(--line); }
+.anim-btn.recording { color: var(--accent); border-color: var(--accent); }
+.anim-scrub { width: 100%; }
+.anim-privacy { font-size: 10px; opacity: 0.6; margin: 4px 0 0; color: var(--gray); }
+.anim-status { font-size: 11px; min-height: 14px; color: var(--gray); }
+@media (max-width: 720px) {
+  .view-animate .anim-wrap { flex-direction: column; }
+  .anim-panel { width: auto; }
+}
+
 @media (pointer: coarse) {
   .btn { min-height: 44px; min-width: 44px; padding: 14px 14px; }
   .ctl-select { min-height: 44px; padding: 12px 8px; }
@@ -181,4 +213,8 @@ input[type='checkbox'] { accent-color: var(--ink); }
   .chip { min-height: 44px; padding: 15px 14px; }
   .custom-size input,
   .custom-size select { min-height: 44px; padding: 12px 8px; }
+
+  /* Animate stage controls (Part 4) — same touch-target treatment as .btn. */
+  .anim-btn, .anim-drop, .anim-enter { min-height: 44px; min-width: 44px; padding: 14px 14px; }
+  .anim-scrub { height: 44px; }
 }
