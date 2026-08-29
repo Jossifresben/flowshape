@@ -153,6 +153,7 @@ input[type='checkbox'] { accent-color: var(--ink); }
   display: flex; align-items: center; justify-content: center;
   aspect-ratio: 3 / 4; color: var(--gray); font-family: var(--font-mono); font-size: 10px;
 }
+.saved-thumb.computing { opacity: 0.55; transition: opacity 0.15s; }
 .saved-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }

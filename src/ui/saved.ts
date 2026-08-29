@@ -4,11 +4,54 @@ import { buildNav } from './nav';
 import { buildFooter } from './footer';
 import { decodeState } from '../core/url-state';
 import { getPattern, generateSafe } from '../patterns/registry';
-import { serialize } from '../core/svg';
+import { serialize, type SvgNode } from '../core/svg';
 import { resolvePalette } from '../poster/palettes';
 import { renderSize } from '../poster/formats';
+import { AnimWorkerClient } from '../anim/worker-client';
 // `kind` is derived from the hash, never stored — a stored copy could contradict it.
 import { kindOf, type SavedItem, type Kind } from '../core/saved';
+
+let worker: AnimWorkerClient | null = null;
+const queue: Array<() => void> = [];
+let busy = false;
+
+function pump(): void {
+  if (busy) return;
+  const next = queue.shift();
+  if (!next) return;
+  busy = true;
+  next();
+}
+
+/** One shared worker for the whole page, one request at a time. A saved grid
+ *  can hold many heavy items and each is a full generation, so they are
+ *  serialised rather than raced. Built on `AnimWorkerClient` — the id-
+ *  correlated wrapper the animation stage already uses against
+ *  `compute.worker.ts` — rather than a second hand-rolled `postMessage`
+ *  protocol. */
+function computeHeavy(
+  patternId: string, params: Record<string, number>, seed: number,
+  size: { w: number; h: number }, onNode: (node: SvgNode | null) => void,
+): void {
+  queue.push(() => {
+    worker ??= new AnimWorkerClient();
+    worker.request(patternId, params, seed, size).then((node) => {
+      busy = false;
+      onNode(node);
+      pump();
+    });
+  });
+  pump();
+}
+
+/** Terminates the shared worker. Called from the view's teardown so leaving
+ *  the page does not leave a thread running. */
+export function stopSavedWorker(): void {
+  worker?.dispose();
+  worker = null;
+  queue.length = 0;
+  busy = false;
+}
 
 /** Mounts the saved page. Returns a teardown, because this view registers a
  *  `storage` listener and an IntersectionObserver that must not outlive it. */
@@ -89,7 +132,7 @@ export function mountSaved(root: HTMLElement): () => void {
   render();
   root.append(buildNav(lang, 'saved'), head, notice, grid, buildFooter(lang));
 
-  return () => { observer.disconnect(); };
+  return () => { observer.disconnect(); stopSavedWorker(); };
 }
 
 const KIND_KEY: Record<Kind, string> = {
@@ -106,8 +149,12 @@ function sizeFor(state: NonNullable<ReturnType<typeof decodeState>>): { w: numbe
   return ratio >= 1 ? { w: Math.round(600 * ratio), h: 600 } : { w: 600, h: Math.round(600 / ratio) };
 }
 
-/** Renders a saved item's artwork, live. Heavy patterns are deferred to a
- *  later task; for now they simply render on the main thread. */
+/** Renders a saved item's artwork, live. A `heavy` pattern (currently just
+ *  `diffgrowth`) is routed through the shared compute worker instead of
+ *  running inline: at default params it costs ~660ms and on a real saved
+ *  hash with non-default params it has measured over 4s on the main thread,
+ *  against a few ms for every other pattern — inline, one heavy card would
+ *  freeze the whole grid while it computes. */
 function renderThumb(box: HTMLElement, item: SavedItem, lang: Lang): void {
   const state = decodeState(item.hash);
   const def = state ? getPattern(state.patternId) : undefined;
@@ -118,6 +165,15 @@ function renderThumb(box: HTMLElement, item: SavedItem, lang: Lang): void {
   }
   const size = sizeFor(state);
   box.style.aspectRatio = `${size.w} / ${size.h}`;
+  if (def.heavy) {
+    box.classList.add('computing');
+    computeHeavy(state.patternId, state.params, state.seed, size, (node) => {
+      box.classList.remove('computing');
+      if (!node) { box.classList.add('gone'); box.textContent = t('saved.gone', lang); return; }
+      box.innerHTML = serialize(node, resolvePalette(state.color));
+    });
+    return;
+  }
   try {
     const node = generateSafe(def, state.params, state.seed, size);
     box.innerHTML = serialize(node, resolvePalette(state.color));
