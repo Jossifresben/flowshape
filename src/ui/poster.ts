@@ -1,6 +1,6 @@
 import { getPattern, generateSafe } from '../patterns/registry';
 import { decodeState, encodeState, type AppState } from '../core/url-state';
-import { serialize, type Palette } from '../core/svg';
+import { serialize, el, type Palette, type SvgNode } from '../core/svg';
 import { sheet } from '../compose/units';
 import { SKELETONS } from '../compose/skeletons';
 import { variantsFor, findVariant, type Variant } from '../compose/variants';
@@ -46,14 +46,47 @@ export function composerModel(state: AppState, measure: Measure = approxMeasure(
   const data = posterData(def, state);
   const hideText = state.notext === true;
 
-  const renderWith = (v: Variant, c: Colorway): RenderResult => {
-    const artwork = generateSafe(def, state.params, state.seed, artworkSize(sh, v.skeleton));
-    return renderPoster({ sheet: sh, skeleton: v.skeleton, colorway: c, data, artwork, measure, hideText });
+  // Artwork is deterministic in (params, seed, size), so the same size never
+  // needs generating twice — and the skeletons collapse to far fewer distinct
+  // sizes than there are variants.
+  const artCache = new Map<string, SvgNode>();
+  const artFor = (v: Variant): SvgNode => {
+    const size = artworkSize(sh, v.skeleton);
+    const key = `${size.w}x${size.h}`;
+    let node = artCache.get(key);
+    if (!node) {
+      node = generateSafe(def, state.params, state.seed, size);
+      artCache.set(key, node);
+    }
+    return node;
   };
+
+  const renderWith = (v: Variant, c: Colorway): RenderResult =>
+    renderPoster({
+      sheet: sh, skeleton: v.skeleton, colorway: c, data,
+      artwork: artFor(v), measure, hideText,
+    });
 
   // Offer only layouts that fit the sheet *and* can take this pattern's name,
   // so browsing never lands on a sheet that refuses to render.
-  const variants = variantsFor(SKELETONS, sh.ratio).filter((v) => renderWith(v, colorways[0]!).ok);
+  //
+  // The probe uses an EMPTY artwork of the right size, never the real thing.
+  // `renderPoster` only ever returns !ok for title fitting ('title-too-long' /
+  // 'title-needs-one-line') and otherwise just places the artwork node into a
+  // region, so its contents cannot change the verdict. Generating real artwork
+  // once per variant made this loop O(variants) full pattern runs: for
+  // diffgrowth — the one `heavy` pattern, a full simulation per call — that was
+  // 68 runs and ~73 s of synchronous main-thread work, which presents as a
+  // blank, frozen page rather than a slow one.
+  const probe = (v: Variant): RenderResult => {
+    const size = artworkSize(sh, v.skeleton);
+    return renderPoster({
+      sheet: sh, skeleton: v.skeleton, colorway: colorways[0]!, data,
+      artwork: el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }, []),
+      measure, hideText,
+    });
+  };
+  const variants = variantsFor(SKELETONS, sh.ratio).filter((v) => probe(v).ok);
   const variant = findVariant(variants, state.layout) ?? variants[0]!;
   const colorway = colorways[state.cway ?? 0] ?? colorways[0]!;
 
