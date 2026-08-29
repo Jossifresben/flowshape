@@ -34,6 +34,15 @@ describe('variantsFor', () => {
     expect(variantsFor(SKELETONS, 1.414)[0]!.id).toBe('3a.s0.d0.a0');
   });
 
+  it('shows every distinct layout before repeating one', () => {
+    // Consecutive steps must change the layout, not a detail of it: nesting by
+    // skeleton made the first several steps look identical to each other.
+    const vs = variantsFor(SKELETONS, 1.414);
+    const fitting = SKELETONS.filter((s) => vs.some((v) => v.skeleton.id === s.id)).length;
+    const firstPass = vs.slice(0, fitting).map((v) => v.skeleton.id);
+    expect(new Set(firstPass).size).toBe(fitting);
+  });
+
   it('keeps every id unique', () => {
     const ids = variantsFor(SKELETONS, 1.414).map((v) => v.id);
     expect(new Set(ids).size).toBe(ids.length);

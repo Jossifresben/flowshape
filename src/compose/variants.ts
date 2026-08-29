@@ -34,9 +34,10 @@ function decorationsFor(s: Skeleton): Skeleton['decoration'][] {
  * reads as cheap.
  */
 export function variantsFor(skeletons: Skeleton[], ratio: number): Variant[] {
-  const out: Variant[] = [];
+  const perSkeleton: Variant[][] = [];
   for (const base of skeletons) {
     if (!fitsSheet(base, ratio)) continue;
+    const out: Variant[] = [];
     const splits = base.artwork === 'full' ? [0] : SPLIT_OFFSETS;
     const decos = decorationsFor(base);
     const accents = base.altAccent ? [base.accent, base.altAccent] : [base.accent];
@@ -55,6 +56,20 @@ export function variantsFor(skeletons: Skeleton[], ratio: number): Variant[] {
         });
       });
     });
+    perSkeleton.push(out);
+  }
+  // Round-robin across skeletons rather than exhausting one before the next.
+  // Nested order put a layout's own variations adjacent, so the first several
+  // steps changed only an accent or a crop mark - browsing read as broken
+  // because consecutive sheets looked identical. This way one pass through the
+  // list shows every distinct layout first, and the refinements come after.
+  const out: Variant[] = [];
+  const deepest = perSkeleton.reduce((n, list) => Math.max(n, list.length), 0);
+  for (let i = 0; i < deepest; i++) {
+    for (const list of perSkeleton) {
+      const v = list[i];
+      if (v) out.push(v);
+    }
   }
   return out;
 }

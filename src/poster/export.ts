@@ -33,6 +33,12 @@ export function exportFilename(patternId: string, seed: number, format: string, 
   return `flowshape-${patternId}-${seed}-${format}.${ext}`;
 }
 
+/** Composer output. Carries the layout variant so two posters from one seed do
+ *  not collide in the download folder (handover section 8). */
+export function posterFilename(patternId: string, seed: number, layout: string, ext: 'svg' | 'png'): string {
+  return `flowshape-${patternId}-${seed}-${layout}.${ext}`;
+}
+
 /** Rasterise an SVG string to PNG. Browser-only: needs Image and canvas. */
 export function toPngBlob(svg: string, px: { w: number; h: number }): Promise<Blob> {
   return new Promise((resolve, reject) => {

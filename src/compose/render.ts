@@ -136,9 +136,15 @@ const UI_FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 const MONO_FONT = "'IBM Plex Mono', Menlo, monospace";
 
 /** Derived tints (handover section 2). Computed against whatever field the type
- *  sits on, rather than authored per ground, so a new colorway needs no new hex. */
+ *  sits on, rather than authored per ground, so a new colorway needs no new hex.
+ *
+ *  These are for type on a clean ground. Type sitting *on artwork* gets the
+ *  `_ON_ART` pair instead: a scrim can only do so much against a busy lattice,
+ *  and a 0.58-alpha mono label over one is unreadable however dark the scrim. */
 const BODY_ALPHA = 0.78;
 const LABEL_ALPHA = 0.58;
+const BODY_ALPHA_ON_ART = 1;
+const LABEL_ALPHA_ON_ART = 0.92;
 
 interface TypeOpts {
   size: number;
@@ -188,19 +194,22 @@ function titleLines(fit: Fit, x: number, top: number, fill: string, anchor?: 'st
 /** Wrapped body copy. Returns the y the next block may start at. */
 function paragraph(
   text: string, x: number, top: number, width: number, size: number,
-  fill: string, measure: Measure, anchor?: 'start' | 'end',
+  fill: string, measure: Measure, opacity: number, anchor?: 'start' | 'end',
 ) {
   const lines = wrap(text, width, size, measure);
   const lh = size * 1.55;
   const nodes = lines.map((line, i) =>
-    tx(line, x, top + size + i * lh, { size, fill, opacity: BODY_ALPHA, anchor }));
+    tx(line, x, top + size + i * lh, { size, fill, opacity, anchor }));
   return { nodes, bottom: top + size + Math.max(0, lines.length - 1) * lh };
 }
 
-function monoLine(text: string, x: number, y: number, sh: Sheet, fill: string, anchor?: 'start' | 'end') {
+function monoLine(
+  text: string, x: number, y: number, sh: Sheet, fill: string,
+  opacity: number, anchor?: 'start' | 'end',
+) {
   // Uppercase is applied here, never stored in the data.
   return tx(text.toUpperCase(), x, y, {
-    size: u(sh, 21), fill, mono: true, tracking: 0.12, opacity: LABEL_ALPHA, anchor,
+    size: u(sh, 21), fill, mono: true, tracking: 0.12, opacity, anchor,
   });
 }
 
@@ -214,6 +223,8 @@ interface Ctx {
   content: Rect;
   fg: string;
   accent: string;
+  bodyAlpha: number;
+  labelAlpha: number;
 }
 
 function buildTitle(ctx: Ctx): { nodes: SvgNode[]; bottom: number } | null {
@@ -246,8 +257,8 @@ function buildTitle(ctx: Ctx): { nodes: SvgNode[]; bottom: number } | null {
   if (showDesc && d.description) {
     const size = u(sh, 25);
     const para = split
-      ? paragraph(d.description, content.x + content.w, content.y + codeInset, descW, size, ctx.fg, measure, 'end')
-      : paragraph(d.description, content.x, bottom + u(sh, 44), descW, size, ctx.fg, measure);
+      ? paragraph(d.description, content.x + content.w, content.y + codeInset, descW, size, ctx.fg, measure, ctx.bodyAlpha, 'end')
+      : paragraph(d.description, content.x, bottom + u(sh, 44), descW, size, ctx.fg, measure, ctx.bodyAlpha);
     nodes.push(...para.nodes);
     bottom = Math.max(bottom, para.bottom);
   }
@@ -261,8 +272,8 @@ function buildData(ctx: Ctx, top: number): SvgNode[] {
   if (s.data === 'label-pair') {
     const y = Math.min(top + u(sh, 44), content.y + content.h - u(sh, 24));
     return [
-      monoLine(`FORM: ${d.formLabel}`, content.x, y, sh, fg),
-      monoLine(`MODE: ${d.modeLabel}`, content.x, y + u(sh, 34), sh, fg),
+      monoLine(`FORM: ${d.formLabel}`, content.x, y, sh, fg, ctx.labelAlpha),
+      monoLine(`MODE: ${d.modeLabel}`, content.x, y + u(sh, 34), sh, fg, ctx.labelAlpha),
     ];
   }
 
@@ -282,7 +293,7 @@ function buildData(ctx: Ctx, top: number): SvgNode[] {
       if (!p) continue;
       const x = content.x + col * i;
       nodes.push(tx(p.key.toUpperCase(), x, y + u(sh, 40), {
-        size: u(sh, 19), fill: fg, mono: true, tracking: 0.12, opacity: LABEL_ALPHA,
+        size: u(sh, 19), fill: fg, mono: true, tracking: 0.12, opacity: ctx.labelAlpha,
       }));
       nodes.push(tx(p.value, x, y + u(sh, 76), {
         size: u(sh, 26), fill: fg, mono: true, weight: 500,
@@ -304,8 +315,8 @@ function buildData(ctx: Ctx, top: number): SvgNode[] {
     tx(String(d.seed), content.x + u(sh, 24), y + boxH * 0.62, {
       size: Math.min(u(sh, 120), boxH * 0.6), fill: fg, weight: 700, tracking: -0.045,
     }),
-    monoLine(`FORM: ${d.formLabel}`, divider + u(sh, 24), y + boxH * 0.42, sh, fg),
-    monoLine(`MODE: ${d.modeLabel}`, divider + u(sh, 24), y + boxH * 0.56, sh, fg),
+    monoLine(`FORM: ${d.formLabel}`, divider + u(sh, 24), y + boxH * 0.42, sh, fg, ctx.labelAlpha),
+    monoLine(`MODE: ${d.modeLabel}`, divider + u(sh, 24), y + boxH * 0.56, sh, fg, ctx.labelAlpha),
   ];
 }
 
@@ -351,8 +362,20 @@ function buildAccent(ctx: Ctx, titleBottom: number): SvgNode[] {
 }
 
 /**
- * Section 3d's scrim. Not optional where a layout puts type over artwork: the
- * stops keep light type clear of the artwork's own brightest bands.
+ * Section 3d's scrim. Not optional where a layout puts type over artwork.
+ *
+ * The handover measures the artwork's mean luminance in the top 20% and bottom
+ * 25% and raises the offending stop until type clears 4.5:1. That needs a
+ * raster pass, which this pipeline does not have - the artwork is vector all
+ * the way to the file, which is the whole reason the export is a clean SVG. So
+ * the stops are fixed instead, and set for the worst case rather than the
+ * average one: strong through the top quarter, where every layout that uses a
+ * scrim puts its title, description and labels, and easing only below that so
+ * the artwork still reads through the middle of the sheet.
+ *
+ * The first cut used the handover's own numbers (0.82 falling to 0.10 by 34%)
+ * and left the description and mono labels sitting unreadably on the bright
+ * mass of the pattern.
  */
 function buildScrim(sh: Sheet, c: Colorway, id: string): SvgNode[] {
   const stop = (offset: string, opacity: number) =>
@@ -360,7 +383,8 @@ function buildScrim(sh: Sheet, c: Colorway, id: string): SvgNode[] {
   return [
     el('defs', {}, [
       el('linearGradient', { id, x1: '0', y1: '0', x2: '0', y2: '1' }, [
-        stop('0%', 0.82), stop('34%', 0.10), stop('62%', 0.20), stop('100%', 0.90),
+        stop('0%', 0.90), stop('24%', 0.66), stop('46%', 0.12),
+        stop('70%', 0.24), stop('100%', 0.92),
       ]),
     ]),
     el('rect', { x: 0, y: 0, width: sh.w, height: sh.h, fill: `url(#${id})` }),
@@ -391,7 +415,7 @@ function buildDecoration(ctx: Ctx): SvgNode[] {
     const y = content.y + content.h;
     out.push(el('g', { transform: `rotate(-90 ${x} ${y})` }, [
       tx(`${d.formLabel} · SEED ${d.seed}`, x, y, {
-        size: u(sh, 19), fill: fg, mono: true, tracking: 0.14, opacity: LABEL_ALPHA,
+        size: u(sh, 19), fill: fg, mono: true, tracking: 0.14, opacity: ctx.labelAlpha,
       }),
     ]));
   }
@@ -436,7 +460,12 @@ export function renderPoster(o: RenderOptions): RenderResult {
   }
 
   const fg = s.artwork === 'full' ? c.paper : onGround ? c.groundType : c.ink;
-  const ctx: Ctx = { hideText, sh, s, c, d: o.data, measure: o.measure, content, fg, accent: c.accent };
+  const onArtwork = s.artwork === 'full';
+  const ctx: Ctx = {
+    hideText, sh, s, c, d: o.data, measure: o.measure, content, fg, accent: c.accent,
+    bodyAlpha: onArtwork ? BODY_ALPHA_ON_ART : BODY_ALPHA,
+    labelAlpha: onArtwork ? LABEL_ALPHA_ON_ART : LABEL_ALPHA,
+  };
 
   // With the text hidden there is no title to fit, so no layout can fail on
   // one; the composition, its grounds and its rules are all that remain.

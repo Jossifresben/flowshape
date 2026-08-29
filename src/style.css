@@ -182,3 +182,18 @@ input[type='checkbox'] { accent-color: var(--ink); }
   .custom-size input,
   .custom-size select { min-height: 44px; padding: 12px 8px; }
 }
+
+/* --- poster composer --- */
+.view-composer { display: flex; flex-direction: column; gap: 20px; padding: 24px; }
+.cmp-bar { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.cmp-stepper { display: flex; align-items: center; gap: 8px; }
+.cmp-check { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+.cmp-stage { display: flex; justify-content: center; }
+.cmp-stage svg {
+  /* Bounded on both axes so a whole sheet is visible without scrolling,
+     whatever its ratio - a 24x36 is much taller than it is wide. */
+  max-width: min(100%, 620px);
+  max-height: calc(100vh - 130px);
+  width: auto; height: auto;
+  box-shadow: 0 2px 28px rgb(0 0 0 / 0.4);
+}

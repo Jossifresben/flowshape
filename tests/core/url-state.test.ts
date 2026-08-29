@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { encodeState, decodeState, type AppState } from '../../src/core/url-state';
+import { encodeState, decodeState, RESERVED, type AppState } from '../../src/core/url-state';
+import { posterFilename } from '../../src/poster/export';
 
 const state: AppState = {
   patternId: 'phyllotaxis',
@@ -67,5 +68,57 @@ describe('url state', () => {
     const bad = decodeState('#/p/girih?v=1&format=custom&cw=10&ch=10&cu=furlongs');
     expect(bad!.cu).toBeUndefined();
     expect(bad!.params['cw']).toBeUndefined(); // reserved, never a pattern param
+  });
+});
+
+const BASE: AppState = {
+  patternId: 'voxel', seed: 71203, params: { grid: 14 }, color: {}, lang: 'en',
+};
+
+describe('composer state', () => {
+  it('reserves the composer keys so a pattern can never claim them', () => {
+    expect(RESERVED.has('cway')).toBe(true);
+    expect(RESERVED.has('notext')).toBe(true);
+    expect(RESERVED.has('layout')).toBe(true);
+  });
+
+  it('round-trips the composer route with its layout, colorway and text flag', () => {
+    const s: AppState = { ...BASE, view: 'c', layout: '3c.s1.d0.a0', cway: 5, notext: true, format: 'a2' };
+    const back = decodeState(encodeState(s))!;
+    expect(back.view).toBe('c');
+    expect(back.layout).toBe('3c.s1.d0.a0');
+    expect(back.cway).toBe(5);
+    expect(back.notext).toBe(true);
+    expect(back.format).toBe('a2');
+    expect(back.params['grid']).toBe(14);
+  });
+
+  it('keeps the playground and animate routes untouched', () => {
+    expect(encodeState(BASE).startsWith('#/p/')).toBe(true);
+    expect(encodeState({ ...BASE, view: 'c' }).startsWith('#/c/')).toBe(true);
+    expect(decodeState('#/p/voxel?v=1&seed=1')!.view).toBeUndefined();
+  });
+
+  it('omits composer keys from non-composer routes', () => {
+    const url = encodeState({ ...BASE, view: 'p', layout: '3c.s0.d0.a0', cway: 4, notext: true });
+    expect(url).not.toContain('layout=');
+    expect(url).not.toContain('cway=');
+    expect(url).not.toContain('notext=');
+  });
+
+  it('leaves the text flag out of the URL when it is off', () => {
+    expect(encodeState({ ...BASE, view: 'c', notext: false })).not.toContain('notext=');
+  });
+
+  it('ignores a nonsense colorway index rather than throwing', () => {
+    expect(decodeState('#/c/voxel?v=1&seed=1&cway=abc')!.cway).toBeUndefined();
+    expect(decodeState('#/c/voxel?v=1&seed=1&cway=-3')!.cway).toBeUndefined();
+  });
+});
+
+describe('posterFilename', () => {
+  it('follows the handover naming scheme', () => {
+    expect(posterFilename('voxel', 71203, '3a.s0.d0.a0', 'png'))
+      .toBe('flowshape-voxel-71203-3a.s0.d0.a0.png');
   });
 });

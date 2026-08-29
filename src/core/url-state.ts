@@ -26,6 +26,15 @@ export interface AppState {
   cw?: number;
   ch?: number;
   cu?: 'mm' | 'cm' | 'in';
+  /** 'c' = poster composer; undefined/'p' = playground. The animate branch
+   *  adds 'a' to this union and to `decodeState`'s route pattern. */
+  view?: 'p' | 'c';
+  /** Composer only: the browsed layout variant id. */
+  layout?: string;
+  /** Composer only: the stepped colorway index. */
+  cway?: number;
+  /** Composer only: render the sheet without any text. */
+  notext?: boolean;
 }
 
 export { RESERVED } from './reserved';
@@ -46,17 +55,22 @@ export function encodeState(s: AppState): string {
   if (s.cw !== undefined) q.set('cw', String(s.cw));
   if (s.ch !== undefined) q.set('ch', String(s.ch));
   if (s.cu !== undefined) q.set('cu', s.cu);
+  if (s.view === 'c') {
+    if (s.layout !== undefined) q.set('layout', s.layout);
+    if (s.cway !== undefined) q.set('cway', String(s.cway));
+    if (s.notext) q.set('notext', '1');
+  }
   for (const [k, v] of Object.entries(s.params)) {
     if (RESERVED.has(k)) continue;
     q.set(k, String(Math.round(v * 10000) / 10000));
   }
-  return `#/p/${encodeURIComponent(s.patternId)}?${q.toString()}`;
+  return `#/${s.view === 'c' ? 'c' : 'p'}/${encodeURIComponent(s.patternId)}?${q.toString()}`;
 }
 
 export function decodeState(hash: string): AppState | null {
-  const m = /^#\/p\/([^?]+)(?:\?(.*))?$/.exec(hash);
+  const m = /^#\/(p|c)\/([^?]+)(?:\?(.*))?$/.exec(hash);
   if (!m) return null;
-  const q = new URLSearchParams(m[2] ?? '');
+  const q = new URLSearchParams(m[3] ?? '');
   const params: Record<string, number> = {};
   for (const [k, v] of q.entries()) {
     if (RESERVED.has(k)) continue;
@@ -74,7 +88,7 @@ export function decodeState(hash: string): AppState | null {
   const acc = q.get('acc'); if (acc) color.acc = acc;
   let patternId: string;
   try {
-    patternId = decodeURIComponent(m[1]!);
+    patternId = decodeURIComponent(m[2]!);
   } catch {
     return null;
   }
@@ -89,5 +103,18 @@ export function decodeState(hash: string): AppState | null {
   const cwRaw = q.get('cw'); if (cwRaw !== null) { const n = Number(cwRaw); if (Number.isFinite(n)) state.cw = n; }
   const chRaw = q.get('ch'); if (chRaw !== null) { const n = Number(chRaw); if (Number.isFinite(n)) state.ch = n; }
   const cu = q.get('cu'); if (cu === 'mm' || cu === 'cm' || cu === 'in') state.cu = cu;
+  if (m[1] === 'c') {
+    state.view = 'c';
+    const layout = q.get('layout');
+    if (layout) state.layout = layout;
+    const cwayRaw = q.get('cway');
+    if (cwayRaw !== null) {
+      const n = Number(cwayRaw);
+      // A bad index is dropped rather than clamped: the view then falls back
+      // to colorway 0, which carries the user's own hue and accent offset.
+      if (Number.isInteger(n) && n >= 0) state.cway = n;
+    }
+    if (q.get('notext') === '1') state.notext = true;
+  }
   return state;
 }
