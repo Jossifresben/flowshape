@@ -16,7 +16,10 @@ if (!/^\d+\.\d+\.\d+$/.test(version ?? '')) {
   console.error('usage: node scripts/set-version.mjs <major.minor.patch>');
   process.exit(1);
 }
-const today = new Date().toISOString().slice(0, 10);
+// Local date, not `toISOString()`: that returns UTC, so a release cut after
+// 22:00 in Madrid would be stamped with the previous day.
+const now = new Date();
+const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
 /** Replace exactly one occurrence, and fail loudly if the anchor moved.
  *  Tests the pattern rather than comparing before/after: re-running with the
