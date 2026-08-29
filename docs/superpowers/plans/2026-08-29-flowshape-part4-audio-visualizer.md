@@ -13,7 +13,7 @@
 **Spec deviations (deliberate, agreed rationale):**
 - Event kind `regen` from spec §4 is dropped: patterns are pure, so re-running with identical inputs is a no-op. `reseed`/`flip`/`step` remain.
 - `phase` adoption in Phase A is harmonograph, phyllotaxis, helix only (all 2π-periodic, so the 1→0 wrap is seamless). Moiré is deferred: its `offset`/angle drift is not wrap-safe in circles mode.
-- The `mode=animate` URL key is realized as the codebase-idiomatic path prefix `#/a/<pattern>?…` (the router is path-based); `mode` is still reserved so patterns can never claim it.
+- The `mode=animate` URL key is realized as the codebase-idiomatic path prefix `#/a/<pattern>?…` (the router is path-based), so nothing reads `?mode=`; `mode` is deliberately left unreserved because `delaunay`, `fabric`, and `moire` already ship a `mode` param and reserving it would break every shared link that uses it.
 
 ---
 
@@ -34,7 +34,7 @@
 | Create `src/ui/animate.ts` | The stage view: DOM, transport, rAF loop, fps governor, heavy double-buffer |
 | Create `src/ui/fidelity.ts` | DEV-only SVG-vs-canvas side-by-side route |
 | Modify `src/patterns/registry.ts` | `anim` metadata on `PatternDef`, `hidden` on `ParamDef`, `PHASE_PARAM` injection, validation |
-| Modify `src/core/reserved.ts` | Add `mode`, `stage`, `apre`, `aint`, `phase` |
+| Modify `src/core/reserved.ts` | Add `stage`, `apre`, `aint`, `phase` |
 | Modify `src/core/url-state.ts` | `view`/`stage`/`apre`/`aint` on `AppState`, `#/a/` encode/decode |
 | Modify `src/patterns/harmonograph.ts`, `phyllotaxis.ts`, `helix.ts` | consume `phase` (identical output at `phase = 0`) |
 | Modify `src/main.ts` | Route `#/a/` → animate view; DEV route `#/dev/fidelity` |
@@ -701,7 +701,7 @@ function probe(id: string, anim?: { continuous?: string[]; usesPhase?: boolean }
 
 describe('anim registry metadata', () => {
   it('reserves the animate keys', () => {
-    for (const k of ['mode', 'stage', 'apre', 'aint', 'phase']) expect(RESERVED.has(k)).toBe(true);
+    for (const k of ['stage', 'apre', 'aint', 'phase']) expect(RESERVED.has(k)).toBe(true);
   });
   it('injects PHASE_PARAM only for usesPhase patterns, hidden and defaulting to 0', () => {
     const withPhase = probe('t-phase', { usesPhase: true });
@@ -734,7 +734,10 @@ In `src/core/reserved.ts`, extend the set (append inside the existing literal):
 
 ```ts
   'cw', 'ch', 'cu',
-  'mode', 'stage', 'apre', 'aint', 'phase',
+  // 'mode' is deliberately NOT reserved — delaunay, fabric and moire already
+  // ship a 'mode' param, and the animate route is path-based (#/a/<pattern>),
+  // so nothing reads ?mode=.
+  'stage', 'apre', 'aint', 'phase',
 ```
 
 In `src/patterns/registry.ts`:

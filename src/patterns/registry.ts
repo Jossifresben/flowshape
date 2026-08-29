@@ -14,6 +14,8 @@ export interface ParamDef {
   label: string; // i18n key
   /** enum only: option labels (i18n keys); value is the index. */
   options?: string[];
+  /** Not shown in the playground controls (engine-owned params like `phase`). */
+  hidden?: boolean;
 }
 
 export type Params = Record<string, number>;
@@ -27,6 +29,10 @@ export interface PatternDef {
   params: ParamDef[];
   /** Show the seed control; set when generate actually consumes the seed. */
   usesSeed?: boolean;
+  /** Animation metadata (Part 4). `continuous` lists param keys whose visual
+   *  effect varies continuously — safe for per-frame audio modulation.
+   *  `usesPhase` opts into the injected `phase` param for intrinsic motion. */
+  anim?: { continuous?: string[]; usesPhase?: boolean };
   /** Pure and deterministic: same inputs ⇒ identical tree. Colors as role tokens. */
   generate(params: Params, seed: number, size: Size): SvgNode;
 }
@@ -34,6 +40,11 @@ export interface PatternDef {
 /** Injected into every pattern: scales the artwork within the frame. */
 export const SIZE_PARAM: ParamDef = {
   key: 'size', kind: 'float', min: 0.2, max: 1.6, step: 0.01, default: 1, label: 'common.size',
+};
+
+/** Injected for `anim.usesPhase` patterns: engine-owned time axis in [0,1). */
+export const PHASE_PARAM: ParamDef = {
+  key: 'phase', kind: 'float', min: 0, max: 1, step: 0.0001, default: 0, label: 'common.phase', hidden: true,
 };
 
 const registry = new Map<string, PatternDef>();
@@ -44,11 +55,22 @@ export function definePattern(def: PatternDef): PatternDef {
     if (RESERVED.has(p.key)) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
     if (p.key === SIZE_PARAM.key) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
   }
-  // Build a new params array with a fresh copy of SIZE_PARAM: pushing the
-  // shared SIZE_PARAM object itself would let every pattern's `size` entry
-  // alias the same object, so mutating one (e.g. clampParams touching it)
-  // would mutate all of them. Also avoids mutating the caller's array.
-  const withSize: PatternDef = { ...def, params: [...def.params, { ...SIZE_PARAM }] };
+  if (def.anim?.continuous) {
+    for (const key of def.anim.continuous) {
+      const pd = def.params.find((p) => p.key === key) ?? (key === SIZE_PARAM.key ? SIZE_PARAM : undefined);
+      if (!pd || (pd.kind !== 'float' && pd.kind !== 'int')) {
+        throw new Error(`anim.continuous key '${key}' is not a numeric param (pattern ${def.id})`);
+      }
+    }
+  }
+  // Build a new params array with fresh copies of the injected params:
+  // pushing the shared SIZE_PARAM/PHASE_PARAM objects themselves would let
+  // every pattern's entry alias the same object, so mutating one (e.g.
+  // clampParams touching it) would mutate all of them. Also avoids
+  // mutating the caller's array.
+  const extra: ParamDef[] = [{ ...SIZE_PARAM }];
+  if (def.anim?.usesPhase) extra.push({ ...PHASE_PARAM });
+  const withSize: PatternDef = { ...def, params: [...def.params, ...extra] };
   registry.set(withSize.id, withSize);
   return withSize;
 }

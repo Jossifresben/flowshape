@@ -8,4 +8,8 @@ export const RESERVED = new Set([
   'layout', 'format', 'title', 'caption',
   'hue', 'chroma', 'paperL', 'accentShift',
   'cw', 'ch', 'cu',
+  // 'mode' is deliberately NOT reserved — delaunay, fabric and moire already
+  // ship a 'mode' param, and the animate route is path-based (#/a/<pattern>),
+  // so nothing reads ?mode=.
+  'stage', 'apre', 'aint', 'phase',
 ]);

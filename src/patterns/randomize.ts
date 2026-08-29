@@ -12,7 +12,9 @@ const COSMETIC_KEYS = new Set(['strokeWidth', 'opacity', 'size']);
  * a random legal value (uniform over the param's [min, max] on its own
  * step), using `rnd` (in [0, 1)) as the source of randomness. Cosmetic
  * params keep whatever value they hold in `current` (or the pattern's
- * default if `current` doesn't have them).
+ * default if `current` doesn't have them). Hidden, engine-owned params
+ * (e.g. `phase`) are treated the same way — Randomize must not move a
+ * running animation's phase.
  *
  * The result always has an entry for every param in `def.params`, at a
  * value `clampParams` would leave untouched.
@@ -20,7 +22,7 @@ const COSMETIC_KEYS = new Set(['strokeWidth', 'opacity', 'size']);
 export function randomParams(def: PatternDef, rnd: () => number, current: Params = {}): Params {
   const out: Params = {};
   for (const p of def.params) {
-    if (COSMETIC_KEYS.has(p.key)) {
+    if (p.hidden || COSMETIC_KEYS.has(p.key)) {
       out[p.key] = current[p.key] ?? p.default;
       continue;
     }
