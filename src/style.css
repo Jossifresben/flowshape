@@ -207,7 +207,10 @@ a.gal-wordmark { text-decoration: none; }
 }
 .nav-share:not(.flashed) .nav-share-msg { display: none; }
 
-.panel-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+/* Wraps deliberately: the share control grows when it flashes a confirmation,
+   and on the select-text fallback it also reveals the full URL. Without wrap
+   that overflows the panel at phone widths. */
+.panel-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 
 /* --- site footer --- */
 
@@ -355,3 +358,9 @@ a.gal-wordmark { text-decoration: none; }
 .btn.star.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .btn.star:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn.star.failed { border-color: var(--accent); color: var(--accent); }
+
+/* `min-width: 0` on both: a flex item defaults to `min-width: auto` and so
+   refuses to shrink below its content, which is why the ellipsis on the URL
+   never engaged and the row overflowed instead. */
+.panel-nav .nav-share-wrap { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+.panel-nav .nav-share-url { max-width: 100%; min-width: 0; }

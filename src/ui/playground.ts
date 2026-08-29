@@ -296,7 +296,11 @@ export function mountPlayground(root: HTMLElement): () => void {
     const panel = document.createElement('div');
     panel.className = 'panel';
 
-    panel.append(panelNav(lang));
+    // Built before the nav so the star can live beside share rather than in
+    // the action grid, where a fifth item left a hole in a 3-column row and an
+    // icon-only control read as a button missing its label.
+    favourite = favouriteButton(lang, () => location.hash);
+    panel.append(panelNav(lang, favourite.el));
 
     const patternSel = document.createElement('select');
     patternSel.className = 'ctl-select';
@@ -353,8 +357,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       );
     });
 
-    favourite = favouriteButton(lang, () => location.hash);
-    actions.append(rand, explainBtn, animateBtn, posterBtn, favourite.el);
+    actions.append(rand, explainBtn, animateBtn, posterBtn);
     panel.append(actions);
 
     if (def.usesSeed) {

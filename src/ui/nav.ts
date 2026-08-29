@@ -57,7 +57,7 @@ export function buildNav(lang: Lang, active: 'patterns' | 'about' | 'saved'): HT
 
 /** The playground's equivalent: a back link plus the language switch, sized
  *  for the control panel rather than a full-width bar. */
-export function panelNav(lang: Lang): HTMLElement {
+export function panelNav(lang: Lang, favourite?: HTMLElement): HTMLElement {
   const row = document.createElement('div');
   row.className = 'panel-nav';
 
@@ -66,6 +66,9 @@ export function panelNav(lang: Lang): HTMLElement {
   back.href = '#/';
   back.textContent = t('pg.back', lang);
 
-  row.append(back, langSwitch(lang), shareButton(lang));
+  // Star before share, matching the animate stage and the composer: the two
+  // "keep it / pass it on" controls read as a pair wherever they appear.
+  if (favourite) row.append(back, langSwitch(lang), favourite, shareButton(lang));
+  else row.append(back, langSwitch(lang), shareButton(lang));
   return row;
 }
