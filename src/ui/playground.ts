@@ -10,6 +10,7 @@ import { NAMES } from './gallery';
 import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
 import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
 import { openModal } from './modal';
+import { loadSource } from '../content/source';
 
 /** Flip to true once the Math and Code tabs have real content (Part 3 Tasks 9–10). */
 const EXPLAIN_ENABLED = false;
@@ -28,6 +29,84 @@ function placeholderTab(text: string): HTMLElement {
   const p = document.createElement('p');
   p.textContent = text;
   return p;
+}
+
+const REPO_URL = 'https://github.com/Jossifresben/flowshape';
+
+function codeWord(text: string): HTMLElement {
+  const c = document.createElement('code');
+  c.textContent = text;
+  return c;
+}
+
+/** Copies `text` to the clipboard; falls back to selecting `target`'s
+ *  contents (so the user can copy manually) when the clipboard API is
+ *  unavailable or the permission is denied. Returns whether the clipboard
+ *  itself was written to. */
+async function copyOrSelect(text: string, target: HTMLElement): Promise<boolean> {
+  try {
+    if (!navigator.clipboard) throw new Error('clipboard API unavailable');
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(target);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    } catch {
+      // Nothing more we can do — the button label still tells the user what happened.
+    }
+    return false;
+  }
+}
+
+/** Builds the Code tab: the pattern's real, un-rewritten source, a short
+ *  preamble naming the helpers a reader needs, and a Copy button. */
+async function renderCodeTab(id: string): Promise<HTMLElement> {
+  const wrap = document.createElement('div');
+  const source = await loadSource(id);
+  if (source === null) {
+    wrap.append(placeholderTab('Source not found for this pattern.'));
+    return wrap;
+  }
+
+  const preamble = document.createElement('p');
+  preamble.className = 'code-preamble';
+  const repoLink = document.createElement('a');
+  repoLink.href = REPO_URL;
+  repoLink.target = '_blank';
+  repoLink.rel = 'noopener noreferrer';
+  repoLink.textContent = 'the flowshape repo';
+  preamble.append(
+    'This is the actual generator that renders this pattern — uses ',
+    codeWord('el'), '/', codeWord('serialize'), ' from ', codeWord('core/svg'),
+    ' and ', codeWord('mulberry32'), '/', codeWord('deriveSeed'), ' from ', codeWord('core/prng'),
+    '. Full source: ', repoLink, '.',
+  );
+
+  const pre = document.createElement('pre');
+  pre.textContent = source;
+
+  const copyRow = document.createElement('div');
+  copyRow.className = 'ctl-row';
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'btn';
+  copyBtn.textContent = 'Copy';
+  let copyResetTimer = 0;
+  copyBtn.addEventListener('click', async () => {
+    const wroteToClipboard = await copyOrSelect(source, pre);
+    if (copyResetTimer) clearTimeout(copyResetTimer);
+    copyBtn.textContent = wroteToClipboard ? 'Copied' : 'Selected — press ⌘/Ctrl+C';
+    copyResetTimer = window.setTimeout(() => {
+      copyBtn.textContent = 'Copy';
+    }, 2000);
+  });
+  copyRow.append(copyBtn);
+
+  wrap.append(preamble, copyRow, pre);
+  return wrap;
 }
 
 const DEFAULT_STATE: AppState = {
@@ -249,7 +328,7 @@ export function mountPlayground(root: HTMLElement): () => void {
         title: NAMES[state.patternId] ?? state.patternId,
         tabs: [
           { id: 'math', label: 'Math', render: () => placeholderTab('Math explanation coming soon.') },
-          { id: 'code', label: 'Code', render: () => placeholderTab('Source code view coming soon.') },
+          { id: 'code', label: 'Code', render: () => renderCodeTab(state.patternId) },
         ],
       });
     });
