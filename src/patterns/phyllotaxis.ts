@@ -8,7 +8,7 @@ export const phyllotaxis = definePattern({
   family: 'points',
   phase: 1,
   heavy: false,
-  anim: { continuous: ['radialExp', 'dotMin', 'dotGrow'], usesPhase: true },
+  anim: { continuous: ['radialExp', 'dotMin', 'dotGrow', 'size'], usesPhase: true },
   params: [
     { key: 'points', kind: 'int', min: 50, max: 4000, step: 10, default: 1500, label: 'phyllotaxis.points' },
     { key: 'angle', kind: 'float', min: 90, max: 180, step: 0.0001, default: GOLDEN, label: 'phyllotaxis.angle' },

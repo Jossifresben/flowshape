@@ -124,7 +124,7 @@ export const isoweave = definePattern({
   // Strictly periodic by construction: no PRNG is consulted, so the seed
   // control would be a lie. Randomize varies the params instead.
   usesSeed: false,
-  anim: { continuous: ['strokeWidth', 'size'] },
+  anim: { continuous: ['armLength', 'beamWidth', 'strokeWidth', 'size'] },
   params: [
     { key: 'cell', kind: 'int', min: 18, max: 70, step: 1, default: 30, label: 'isoweave.cell' },
     {

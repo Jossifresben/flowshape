@@ -8,7 +8,7 @@ export const truchet = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
-  anim: { continuous: ['strokeWidth', 'size'] },
+  anim: { continuous: ['boldChance', 'accentChance', 'strokeWidth', 'size'] },
   params: [
     { key: 'cell', kind: 'int', min: 20, max: 80, step: 2, default: 30, label: 'truchet.cell' },
     { key: 'variant', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'truchet.variant', options: ['truchet.arcs', 'truchet.diagonals'] },

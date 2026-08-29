@@ -10,7 +10,7 @@ export const harmonograph = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
-  anim: { continuous: ['detune', 'damping', 'strokeWidth', 'opacity'], usesPhase: true },
+  anim: { continuous: ['detune', 'damping', 'duration', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
   params: [
     { key: 'ratio', kind: 'enum', min: 0, max: 3, step: 1, default: 0, label: 'harmonograph.ratio', options: ['harmonograph.r23', 'harmonograph.r34', 'harmonograph.r12', 'harmonograph.r35'] },
     { key: 'detune', kind: 'float', min: 0, max: 0.02, step: 0.0005, default: 0.007, label: 'harmonograph.detune' },

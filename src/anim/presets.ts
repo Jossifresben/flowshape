@@ -45,6 +45,10 @@ export interface EventSpec {
   everyBeats: number;
   /** step: positions the param cycles through across its range. */
   steps?: number;
+  /** step: traverse this sub-range instead of the param's full declared
+   *  range. Both default to the param's own min/max. */
+  from?: number;
+  to?: number;
 }
 
 export interface AnimPreset {
@@ -69,20 +73,30 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
       { feature: 'level', param: 'size', depth: 0.1 },
     ] },
+    // `duration` is how much of the decaying trace is drawn (100..600 samples,
+    // swing 75): the curve visibly winds further into its own centre on the
+    // loud passages instead of only changing weight.
     { id: 'breathe', label: { en: 'Breathe', es: 'Respira' }, routes: [
       { feature: 'level', param: 'size', depth: 0.18 },
       { feature: 'bass', param: 'damping', depth: -0.3 },
       { feature: 'bright', param: 'detune', depth: 0.3 },
+      { feature: 'high', param: 'duration', depth: 0.15 },
     ] },
   ],
   phyllotaxis: [
+    // `dotMin` was depth 0.55 — a 3.2 px swing on a 0.6 px default, so the
+    // florets grew six-fold and merged into a disc at the centre. 0.30 is
+    // 1.76 px, a bloom rather than a blot. `radialExp` is the spiral's own
+    // structural axis (how fast r grows with n) and was reachable only from
+    // `spiral`; it is the strongest smooth axis this pattern has.
     { id: 'bloom', label: { en: 'Bloom', es: 'Florece' }, routes: [
-      { feature: 'bass', param: 'dotMin', depth: 0.55 },
+      { feature: 'bass', param: 'dotMin', depth: 0.3 },
+      { feature: 'mid', param: 'radialExp', depth: 0.15 },
       { feature: 'high', param: 'dotGrow', depth: 0.4 },
       { feature: 'level', param: 'size', depth: 0.1 },
     ] },
     { id: 'spiral', label: { en: 'Spiral', es: 'Espiral' }, routes: [
-      { feature: 'level', param: 'radialExp', depth: 0.2 },
+      { feature: 'level', param: 'radialExp', depth: 0.25 },
       { feature: 'bright', param: 'dotGrow', depth: 0.5 },
       { feature: 'bass', param: 'size', depth: 0.15 },
     ] },
@@ -116,34 +130,70 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     ] },
   ],
   moire: [
+    // A moire figure is an interference pattern: what is on screen is the
+    // beat between the two gratings, and its period goes as
+    // spacing / (angleB - angleA). Both routes therefore work the angles,
+    // which is also the only high-gain axis here that adds and removes no
+    // lines at all — the grating keeps exactly its 475 strokes at every
+    // angle, so there is nothing to flicker at the frame edge. Driving the
+    // spacings instead does flicker: dropping spacingA by 1.6 px adds 54
+    // lines at the edges and 144 of them wink on and off across one swell.
+    //
+    // The gains are steep and deliberately small. The default angles differ
+    // by 6 deg, so `drift`'s 9 deg of travel already takes the fringe period
+    // from about 86 px to 31 px. The old depth of 0.12 swung 21.6 deg, far
+    // past the small-angle regime where a moire exists at all: the two
+    // gratings simply crossed.
     { id: 'drift', label: { en: 'Drift', es: 'Deriva' }, routes: [
-      { feature: 'bass', param: 'angleB', depth: 0.12 },
-      { feature: 'mid', param: 'spacingB', depth: 0.18 },
+      { feature: 'bass', param: 'angleB', depth: 0.05 },
+      { feature: 'mid', param: 'spacingB', depth: 0.02 },
       { feature: 'high', param: 'strokeWidth', depth: 0.25 },
+      { feature: 'level', param: 'size', depth: 0.08 },
     ] },
+    // `offset` only exists in mode 1 (circles); at the default mode it is
+    // read by nothing, so the route this preset used to spend on it moved no
+    // pixel at all. Counter-rotating the two gratings is the honest version
+    // of the same idea: it drives the beat frequency directly, from both
+    // ends, and the fringes sweep across the frame as they tighten.
     { id: 'shimmer', label: { en: 'Shimmer', es: 'Destella' }, routes: [
-      { feature: 'bright', param: 'angleB', depth: 0.25 },
-      { feature: 'bass', param: 'offset', depth: 0.35 },
+      { feature: 'bright', param: 'angleB', depth: 0.07 },
+      { feature: 'bass', param: 'angleA', depth: 0.03 },
+      { feature: 'level', param: 'size', depth: 0.1 },
     ] },
   ],
   maurer: [
+    // maurer has no smooth structural axis at all: `n` and `d` both
+    // reconfigure the rose completely from one integer to the next, so its
+    // structure can only be reached by a beat-locked event, never by a route.
+    // Both events were also visiting degenerate values. Stepping `d` across
+    // its full 1..359 every single beat put d = 1 and d = 359 on the stage
+    // twice a cycle, where the walk collapses to a thin ring (ink 4.8k
+    // against a 47k median), and every rose appeared twice because d and
+    // 360 - d draw the same figure. The sub-range 15..165 in six positions
+    // steps between the multiples of 30, which are exactly where the walk
+    // degenerates, and every landed value renders above the median.
     { id: 'star', label: { en: 'Star', es: 'Estrella' }, routes: [
-      { feature: 'bass', param: 'strokeWidth', depth: 0.5 },
+      { feature: 'bass', param: 'strokeWidth', depth: 0.2 },
       { feature: 'level', param: 'size', depth: 0.12 },
-    ], event: { kind: 'step', param: 'd', everyBeats: 1, steps: 12 } },
+    ], event: { kind: 'step', param: 'd', everyBeats: 2, steps: 6, from: 15, to: 165 } },
     { id: 'web', label: { en: 'Web', es: 'Telaraña' }, routes: [
-      { feature: 'mid', param: 'strokeWidth', depth: 0.35 },
-    ], event: { kind: 'step', param: 'n', everyBeats: 2, steps: 6 } },
+      { feature: 'mid', param: 'strokeWidth', depth: 0.18 },
+      { feature: 'level', param: 'size', depth: 0.1 },
+    ], event: { kind: 'step', param: 'n', everyBeats: 4, steps: 6, from: 3, to: 12 } },
   ],
   chirp: [
+    // `amplitude` at depth 0.65 swung 37.7 px on a 16 px default, so at 46
+    // lines over the frame the waves overlapped into a single band. 0.35 is
+    // 20 px — the sweep still doubles, and the lines stay legible.
     { id: 'wave', label: { en: 'Wave', es: 'Onda' }, routes: [
-      { feature: 'bass', param: 'amplitude', depth: 0.65 },
+      { feature: 'bass', param: 'amplitude', depth: 0.35 },
       { feature: 'mid', param: 'freqEnd', depth: 0.2 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'level', param: 'size', depth: 0.08 },
     ] },
     { id: 'voice', label: { en: 'Voice', es: 'Voz' }, routes: [
-      { feature: 'bright', param: 'freqEnd', depth: 0.45 },
-      { feature: 'level', param: 'amplitude', depth: 0.5 },
+      { feature: 'bright', param: 'freqEnd', depth: 0.3 },
+      { feature: 'level', param: 'amplitude', depth: 0.3 },
       { feature: 'high', param: 'phaseStep', depth: 0.25 },
     ] },
   ],
@@ -152,107 +202,219 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'bass', param: 'petalDepth', depth: 0.45 },
       { feature: 'mid', param: 'innerFraction', depth: 0.3 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'level', param: 'size', depth: 0.08 },
     ] },
+    // petalDepth was depth 0.55, a 49.5 swing on a 0..90 range from a default
+    // of 46 — the top half of the envelope was spent against the clamp.
     { id: 'pulse', label: { en: 'Pulse', es: 'Pulso' }, routes: [
-      { feature: 'level', param: 'petalDepth', depth: 0.55 },
-      { feature: 'bright', param: 'innerFraction', depth: 0.4 },
+      { feature: 'level', param: 'petalDepth', depth: 0.4 },
+      { feature: 'bright', param: 'innerFraction', depth: 0.3 },
+      { feature: 'bass', param: 'size', depth: 0.1 },
     ] },
   ],
   flowfield: [
     { id: 'current', label: { en: 'Current', es: 'Corriente' }, routes: [
       { feature: 'bass', param: 'curl', depth: 0.3 },
       { feature: 'high', param: 'strokeWidth', depth: 0.35 },
+      { feature: 'level', param: 'size', depth: 0.08 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
+    // A reseed replaces every one of ~7700 streamlines at once; at everyBeats
+    // 4 that landed twice a bar. `steps` shortens the integration instead —
+    // the lines retract and re-extend continuously, which is the same
+    // agitation without the cut.
     { id: 'storm', label: { en: 'Storm', es: 'Tormenta' }, routes: [
       { feature: 'level', param: 'curl', depth: 0.45 },
+      { feature: 'bass', param: 'steps', depth: -0.2 },
       { feature: 'flux', param: 'strokeWidth', depth: 0.4 },
-    ], event: { kind: 'reseed', everyBeats: 4 } },
+    ], event: { kind: 'reseed', everyBeats: 8 } },
   ],
   fabric: [
+    // `noiseScale` is the spatial frequency of the warp field — the axis that
+    // decides whether the weave reads as long swells or tight ripples. It was
+    // declared continuous and never routed.
     { id: 'weave', label: { en: 'Weave', es: 'Trama' }, routes: [
       { feature: 'bass', param: 'warpAmount', depth: 0.45 },
+      { feature: 'mid', param: 'noiseScale', depth: 0.12 },
       { feature: 'high', param: 'dotSize', depth: 0.35 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
     { id: 'ripple', label: { en: 'Ripple', es: 'Ondula' }, routes: [
       { feature: 'level', param: 'warpAmount', depth: 0.55 },
+      { feature: 'bass', param: 'noiseScale', depth: 0.15 },
       { feature: 'bright', param: 'dotSize', depth: 0.3 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
   ],
   bands: [
+    // sweepAngle is routed NEGATIVE on purpose. The wedge is drawn as a
+    // single elliptical arc from a0 to a0 + sweep, so at sweep = 360 exactly
+    // the two endpoints coincide and SVG collapses the arc: measured ink
+    // falls from 16.4k to 0.8k, i.e. the figure vanishes. `applyRoutes`
+    // clamps to the param's max, so any positive route on sweepAngle can be
+    // driven onto that value by a loud passage whenever the user's base angle
+    // is high enough. Closing the fan on the beat is both safe and the better
+    // gesture. The old event stepped `startAngle`, which merely snapped the
+    // fan to a new bearing — redundant, because bands already turns
+    // continuously with phase. Stepping `bandCount` re-divides it instead.
     { id: 'fan', label: { en: 'Fan', es: 'Abanico' }, routes: [
-      { feature: 'bass', param: 'sweepAngle', depth: 0.35 },
+      { feature: 'bass', param: 'sweepAngle', depth: -0.2 },
       { feature: 'mid', param: 'growthExponent', depth: 0.25 },
-    ], event: { kind: 'step', param: 'startAngle', everyBeats: 2, steps: 8 } },
+      { feature: 'level', param: 'minThickness', depth: 0.2 },
+    ], event: { kind: 'step', param: 'bandCount', everyBeats: 8, steps: 4, from: 5, to: 12 } },
     { id: 'swing', label: { en: 'Swing', es: 'Vaivén' }, routes: [
-      { feature: 'level', param: 'sweepAngle', depth: 0.45 },
-      { feature: 'bright', param: 'gap', depth: 0.35 },
+      { feature: 'level', param: 'sweepAngle', depth: -0.25 },
+      { feature: 'bright', param: 'maxThickness', depth: 0.2 },
+      { feature: 'bass', param: 'gap', depth: 0.2 },
     ] },
   ],
   coulomb: [
+    // Rebuilt. Both presets used to spend their whole audio budget on
+    // `coreRadius` and `strokeWidth`: sweeping coreRadius across its ENTIRE
+    // 4..40 range changes only 10% of the streamlines and moves 5% of the
+    // ink, so the field looked disconnected from the music no matter how
+    // large the depth. The two params that genuinely reshape the field,
+    // `charges` and `spacing`, cannot be routed: a single unit of either
+    // reshuffles the seeding grid so that EVERY streamline is a different
+    // object (measured churn 1.00 at +1), which per frame is a boil, not a
+    // response. They belong to beat-locked events, where the same jump reads
+    // as a section change.
+    //
+    // What is left has to be earned from the two smooth axes, and both were
+    // measured against a swell rather than guessed. `coreRadius` softens the
+    // near field and sets where a streamline gives up, so it opens real voids
+    // around the charges; it carries most of the new response. `steps` bounds
+    // the integration, so lines retract and re-extend — it was declared
+    // continuous here from the start and never routed — but its truncation
+    // cascades through the shared occupancy grid, and past about a 40-step
+    // swing that cascade turns into a fizz: at depth -0.45, 551 streamlines
+    // flicker on and off more than four times across one swell, against 36
+    // for the shipped preset. Depths were chosen from that surface: `field`
+    // (0.5 / -0.1) gets 1.75x the response of the shipped preset at the same
+    // worst-case flicker, `arc` (0.7 / -0.05) 2.4x for slightly more.
     { id: 'field', label: { en: 'Field', es: 'Campo' }, routes: [
-      { feature: 'bass', param: 'coreRadius', depth: 0.45 },
-      { feature: 'high', param: 'strokeWidth', depth: 0.35 },
-    ], event: { kind: 'reseed', everyBeats: 8 } },
+      { feature: 'level', param: 'coreRadius', depth: 0.5 },
+      { feature: 'bass', param: 'steps', depth: -0.1 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+    ], event: { kind: 'step', param: 'charges', everyBeats: 8, steps: 5, from: 3, to: 7 } },
     { id: 'arc', label: { en: 'Arc', es: 'Arco' }, routes: [
-      { feature: 'level', param: 'coreRadius', depth: 0.55 },
+      { feature: 'bass', param: 'coreRadius', depth: 0.6 },
+      { feature: 'level', param: 'steps', depth: -0.1 },
       { feature: 'flux', param: 'strokeWidth', depth: 0.3 },
-    ], event: { kind: 'reseed', everyBeats: 4 } },
+    ], event: { kind: 'reseed', everyBeats: 8 } },
   ],
   hitomezashi: [
+    // hitomezashi now carries intrinsic motion (see src/patterns/hitomezashi.ts):
+    // the stitch field scrolls diagonally with phase, so neither preset has to
+    // manufacture life out of an event any more.
+    //
+    // Nothing structural here can be routed. `bitChance` looks like the
+    // obvious candidate and is the worst possible one: the bits are drawn
+    // against a fixed PRNG stream, so a swing of a few hundredths crosses a
+    // threshold and flips a column bit — and because the parity fill is a
+    // prefix-xor along each axis, one flipped bit inverts the shading of the
+    // whole field to its right. Measured churn for a 0.01 step: 0.56. `cell`
+    // re-tiles outright (churn 1.00 at +1).
+    //
+    // The events were the "beat is strange": `parity` flipped `fillParity`
+    // EVERY BEAT, and fillParity 0 does not invert the checkerboard, it
+    // deletes the entire accent layer (7219 rects down to none), so the
+    // stage flashed on and off at beat rate. `stitch` redrew every bit every
+    // two beats. Both now land on 8, where they read as section changes
+    // against the continuous scroll.
+    // With no structural param to reach, the two routes it can honestly carry
+    // are pushed to where they read: the thread weight roughly doubles and
+    // the lattice scales by a fifth, which on an edge-to-edge tiling is a
+    // visible zoom (positive only — shrinking would expose paper).
     { id: 'stitch', label: { en: 'Stitch', es: 'Puntada' }, routes: [
-      { feature: 'high', param: 'strokeWidth', depth: 0.4 },
-    ], event: { kind: 'reseed', everyBeats: 2 } },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'level', param: 'size', depth: 0.15 },
+    ], event: { kind: 'reseed', everyBeats: 8 } },
     { id: 'parity', label: { en: 'Parity', es: 'Paridad' }, routes: [
-      { feature: 'bass', param: 'strokeWidth', depth: 0.45 },
-    ], event: { kind: 'flip', param: 'fillParity', everyBeats: 1 } },
+      { feature: 'bass', param: 'strokeWidth', depth: 0.35 },
+      { feature: 'level', param: 'size', depth: 0.18 },
+    ], event: { kind: 'flip', param: 'fillParity', everyBeats: 8 } },
   ],
   truchet: [
+    // A Truchet tiling has no smooth geometric axis — every tile is one of
+    // two discrete orientations — so what audio can honestly reach is which
+    // tiles are emphasised: `boldChance` doubles a tile's weight and
+    // `accentChance` recolours it. Both are continuous in the fraction of the
+    // field they claim, so they thicken and speckle with the music while the
+    // geometry holds still. The reseeds were at 2 and 1 beats, i.e. the whole
+    // 2304-tile field re-rolled on the beat.
     { id: 'tiles', label: { en: 'Tiles', es: 'Teselas' }, routes: [
-      { feature: 'bass', param: 'strokeWidth', depth: 0.4 },
-    ], event: { kind: 'reseed', everyBeats: 2 } },
+      { feature: 'bass', param: 'strokeWidth', depth: 0.25 },
+      { feature: 'mid', param: 'boldChance', depth: 0.35 },
+      { feature: 'high', param: 'accentChance', depth: 0.3 },
+      { feature: 'level', param: 'size', depth: 0.06 },
+    ], event: { kind: 'reseed', everyBeats: 4 } },
     { id: 'maze', label: { en: 'Maze', es: 'Laberinto' }, routes: [
-      { feature: 'level', param: 'strokeWidth', depth: 0.3 },
-    ], event: { kind: 'reseed', everyBeats: 1 } },
+      { feature: 'level', param: 'strokeWidth', depth: 0.2 },
+      { feature: 'bass', param: 'boldChance', depth: 0.5 },
+      { feature: 'flux', param: 'accentChance', depth: 0.4 },
+    ], event: { kind: 'reseed', everyBeats: 4 } },
   ],
   delaunay: [
+    // `points` is the mesh's own density and is smooth here: the
+    // triangulation re-forms locally around each added site rather than
+    // jumping (churn 0.024 for +9 points, 0.18 for +92). vertexSize alone was
+    // just dot-size pulsing on a static mesh.
     { id: 'mesh', label: { en: 'Mesh', es: 'Malla' }, routes: [
+      { feature: 'level', param: 'points', depth: 0.12 },
       { feature: 'bass', param: 'vertexSize', depth: 0.5 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
-    ], event: { kind: 'reseed', everyBeats: 4 } },
+    ], event: { kind: 'reseed', everyBeats: 8 } },
     { id: 'scatter', label: { en: 'Scatter', es: 'Dispersa' }, routes: [
+      { feature: 'bass', param: 'points', depth: 0.15 },
       { feature: 'level', param: 'vertexSize', depth: 0.55 },
       { feature: 'flux', param: 'strokeWidth', depth: 0.3 },
-    ], event: { kind: 'reseed', everyBeats: 2 } },
+    ], event: { kind: 'reseed', everyBeats: 8 } },
   ],
   voronoi: [
+    // `inset` is genuinely structural — every cell shrinks toward its own
+    // site, so the tessellation breathes. `sites` is not routable: adding one
+    // site re-forms all of its neighbours (churn 0.05 per site), so any
+    // useful swing rebuilds a third of the diagram per frame.
     { id: 'cells', label: { en: 'Cells', es: 'Células' }, routes: [
       { feature: 'bass', param: 'inset', depth: -0.25 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
-    ], event: { kind: 'reseed', everyBeats: 4 } },
+    ], event: { kind: 'reseed', everyBeats: 8 } },
     { id: 'breathe', label: { en: 'Breathe', es: 'Respira' }, routes: [
       { feature: 'level', param: 'inset', depth: -0.35 },
+      { feature: 'bright', param: 'strokeWidth', depth: 0.25 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
   ],
   stipple: [
     { id: 'grain', label: { en: 'Grain', es: 'Grano' }, routes: [
       { feature: 'bass', param: 'dotSize', depth: 0.5 },
       { feature: 'mid', param: 'contrast', depth: 0.4 },
-    ], event: { kind: 'reseed', everyBeats: 4 } },
+      { feature: 'high', param: 'noiseScale', depth: 0.12 },
+    ], event: { kind: 'reseed', everyBeats: 8 } },
+    // `maxGap` is the sparse-region spacing, i.e. how open the field gets
+    // where the density function is low; negative, so loud passages close it.
     { id: 'dust', label: { en: 'Dust', es: 'Polvo' }, routes: [
       { feature: 'level', param: 'dotSize', depth: 0.55 },
       { feature: 'bright', param: 'contrast', depth: 0.45 },
+      { feature: 'bass', param: 'maxGap', depth: -0.15 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
   ],
   girih: [
+    // Both presets spent their largest depth on `ribbonWidth`, which the
+    // pattern reads ONLY when `render` is 1 (ribbons). At the default render
+    // it is dead: renders at ribbonWidth 2, 9 and 20 are byte-identical.
+    // `contactAngle` is Hankin's angle and the pattern's whole subject — it
+    // re-derives every strap continuously — so both routes now go there.
     { id: 'lattice', label: { en: 'Lattice', es: 'Celosía' }, routes: [
-      { feature: 'bass', param: 'ribbonWidth', depth: 0.4 },
-      { feature: 'mid', param: 'contactAngle', depth: 0.18 },
+      { feature: 'bass', param: 'contactAngle', depth: 0.25 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'level', param: 'size', depth: 0.08 },
     ] },
+    // `hexSize` re-tiles outright, so it can only be an event. The sub-range
+    // starts at the default so a beat never makes the lattice denser (and
+    // more expensive) than the still render.
     { id: 'knot', label: { en: 'Knot', es: 'Nudo' }, routes: [
       { feature: 'level', param: 'contactAngle', depth: 0.3 },
-      { feature: 'bright', param: 'ribbonWidth', depth: 0.4 },
-    ] },
+      { feature: 'bright', param: 'strokeWidth', depth: 0.35 },
+      { feature: 'bass', param: 'size', depth: 0.08 },
+    ], event: { kind: 'step', param: 'hexSize', everyBeats: 8, steps: 3, from: 30, to: 46 } },
   ],
   apollonian: [
     // `minRadius` is the gasket's detail floor in screen pixels and the one
@@ -269,11 +431,17 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // -0.055 x 29 = 1.60 px (3.0 -> 1.40, ~189 -> ~410 circles) and
     // -0.065 x 29 = 1.89 px (3.0 -> 1.12). Negative, so the texture thickens
     // into the loud passages. Budgeted in tests/anim/route-swing.test.ts.
+    //
+    // The `maxDepth` step had the same fault the continuous route was fixed
+    // for: stepping the full 2..8 put maxDepth 2 on the stage every seventh
+    // window, and at depth 2 the gasket is 16 circles against 209 at the
+    // default. It now steps 5..8, where the population only ever thickens,
+    // on a four-beat cadence.
     { id: 'gasket', label: { en: 'Gasket', es: 'Empaque' }, routes: [
       { feature: 'bass', param: 'minRadius', depth: -0.055 },
       { feature: 'high', param: 'strokeWidth', depth: 0.5 },
       { feature: 'level', param: 'size', depth: 0.08 },
-    ], event: { kind: 'step', param: 'maxDepth', everyBeats: 2, steps: 7 } },
+    ], event: { kind: 'step', param: 'maxDepth', everyBeats: 4, steps: 4, from: 5, to: 8 } },
     // This preset used to *step* minRadius across its full range every beat:
     // six positions from 1 to 30, which is 512 circles down to 22 and back
     // once a beat — the same class of strobe as timestable's multiplier, and
@@ -287,23 +455,34 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     ], event: { kind: 'flip', param: 'fillAlternate', everyBeats: 4 } },
   ],
   voxel: [
+    // `scatter` is the cull probability per cell: it dissolves and re-forms
+    // the solid continuously (churn 0.008 for +0.012, 0.098 across the
+    // range), which is the strongest smooth axis voxel has and was declared
+    // continuous but never routed. A reseed replaces every cube's draw at
+    // once, so `blocks` moves off the two-beat cadence and `shatter` off the
+    // one-beat one.
     { id: 'blocks', label: { en: 'Blocks', es: 'Bloques' }, routes: [
       { feature: 'bass', param: 'gap', depth: 0.4 },
       { feature: 'mid', param: 'depthShading', depth: 0.3 },
-    ], event: { kind: 'reseed', everyBeats: 2 } },
+      { feature: 'level', param: 'scatter', depth: 0.2 },
+    ], event: { kind: 'reseed', everyBeats: 4 } },
     { id: 'shatter', label: { en: 'Shatter', es: 'Estalla' }, routes: [
       { feature: 'level', param: 'gap', depth: 0.55 },
+      { feature: 'bass', param: 'scatter', depth: 0.3 },
       { feature: 'flux', param: 'faceShading', depth: 0.3 },
-    ], event: { kind: 'reseed', everyBeats: 1 } },
+    ], event: { kind: 'reseed', everyBeats: 2 } },
   ],
   tumbling: [
     // usesSeed: true — the flip decision mixes a white-noise draw with a
     // seed-derived fbm field, so `reseed` visibly reshuffles which faces
-    // read as raised vs sunken even at coherence 1. `bass` drives `coherence`
-    // itself (loud passages pull the flips into continent-sized regions;
-    // quiet ones fizz salt-and-pepper). `voidChance` defaults to 0 — a
-    // positive route opens cracks in the tumbling-blocks illusion on the
-    // beat, which is exactly the "Shatter" effect this preset name promises.
+    // read as raised vs sunken even at coherence 1. It is a smaller event
+    // than most reseeds (measured 27% of rhombi change tone, and no rhombus
+    // moves), which is why `shatter` can still sit at two beats. `bass`
+    // drives `coherence` itself (loud passages pull the flips into
+    // continent-sized regions; quiet ones fizz salt-and-pepper).
+    // `voidChance` defaults to 0 — a positive route opens cracks in the
+    // tumbling-blocks illusion on the beat, which is exactly the "Shatter"
+    // effect this preset name promises.
     { id: 'tumble', label: { en: 'Tumble', es: 'Voltea' }, routes: [
       { feature: 'bass', param: 'coherence', depth: 0.3 },
       { feature: 'high', param: 'flipChance', depth: 0.25 },
@@ -312,55 +491,77 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     { id: 'shatter', label: { en: 'Shatter', es: 'Estalla' }, routes: [
       { feature: 'bass', param: 'voidChance', depth: 0.4 },
       { feature: 'flux', param: 'faceShading', depth: 0.3 },
-    ], event: { kind: 'reseed', everyBeats: 1 } },
+    ], event: { kind: 'reseed', everyBeats: 2 } },
   ],
   nested: [
     // usesSeed: false — the rhombille nest is strictly periodic, so the only
     // legal event is a discrete step/flip on a structural param.
-    // `depth` (the nesting count) steps on the beat for a shaft that visibly
-    // deepens; `twist` is a bool that alternates each ring's tone direction,
-    // so flipping it is the cube-pops-in/pops-out reversal itself.
+    // `depth` (the nesting count) steps for a shaft that visibly deepens,
+    // from 2 rather than 1 so a window never reduces the nest to a single
+    // ring; `twist` is a bool that alternates each ring's tone direction, so
+    // flipping it is the cube-pops-in/pops-out reversal itself — a tone
+    // change only, which is why it can stay near beat rate.
+    // `stepRatio` is the ring-to-ring inset, the one continuous shape axis
+    // here; it was declared continuous and left unrouted, so both presets
+    // were modulating tone and weight alone.
     { id: 'pulse', label: { en: 'Pulse', es: 'Pulso' }, routes: [
       { feature: 'bass', param: 'faceShading', depth: 0.35 },
+      { feature: 'mid', param: 'stepRatio', depth: 0.18 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
       { feature: 'level', param: 'size', depth: 0.08 },
-    ], event: { kind: 'step', param: 'depth', everyBeats: 2, steps: 5 } },
+    ], event: { kind: 'step', param: 'depth', everyBeats: 2, steps: 4, from: 2, to: 5 } },
     { id: 'twist', label: { en: 'Twist', es: 'Retuerce' }, routes: [
       { feature: 'level', param: 'faceShading', depth: 0.4 },
+      { feature: 'bass', param: 'stepRatio', depth: 0.2 },
       { feature: 'bright', param: 'strokeWidth', depth: 0.25 },
-    ], event: { kind: 'flip', param: 'twist', everyBeats: 1 } },
+    ], event: { kind: 'flip', param: 'twist', everyBeats: 2 } },
   ],
   interlace: [
     // usesSeed: false — the Celtic weave is a pure function of its params.
     // `junctions` is the bool that turns the tri-radiate crossings on/off, so
-    // flipping it on the beat makes the weave visibly knot and release.
-    // `cell` (the only int param) steps for a coarser re-tiling pulse.
+    // flipping it on the beat makes the weave visibly knot and release; it
+    // moves little ink, so two beats is right for it. `ribbonWidth` and
+    // `ringScale` are the strap thickness and the ring radius — the two
+    // continuous shape axes, neither of which was routed or even declared.
+    // The `cell` step traversed the whole 16..70: at 16 the weave is nearly
+    // twice the element count of the still render, at 70 it is four tiles
+    // across. It now steps 30..54.
     { id: 'weave', label: { en: 'Weave', es: 'Trama' }, routes: [
-      { feature: 'bass', param: 'strokeWidth', depth: 0.35 },
+      { feature: 'bass', param: 'strokeWidth', depth: 0.25 },
+      { feature: 'mid', param: 'ribbonWidth', depth: 0.25 },
       { feature: 'level', param: 'size', depth: 0.08 },
     ], event: { kind: 'flip', param: 'junctions', everyBeats: 2 } },
     { id: 'lattice', label: { en: 'Lattice', es: 'Celosía' }, routes: [
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'bass', param: 'ringScale', depth: 0.2 },
       { feature: 'level', param: 'size', depth: 0.08 },
-    ], event: { kind: 'step', param: 'cell', everyBeats: 4, steps: 5 } },
+    ], event: { kind: 'step', param: 'cell', everyBeats: 4, steps: 4, from: 30, to: 54 } },
   ],
   isoweave: [
     // usesSeed: false — strictly periodic. `stagger` is the structural int
     // that switches the interlock from flat (1-2) to a genuine over/under
     // weave (3-4), so stepping it on the beat is the pattern's own subject.
     // `unit` (enum: tripod/elbow/chevron) steps for a motif change instead.
+    // `armLength` is the one continuous axis: it lengthens every arm of the
+    // motif, so the weave opens and closes rather than only changing weight.
     { id: 'weave', label: { en: 'Weave', es: 'Trama' }, routes: [
       { feature: 'bass', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'mid', param: 'armLength', depth: 0.2 },
       { feature: 'level', param: 'size', depth: 0.08 },
     ], event: { kind: 'step', param: 'stagger', everyBeats: 2, steps: 4 } },
     { id: 'shift', label: { en: 'Shift', es: 'Cambia' }, routes: [
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'bass', param: 'armLength', depth: 0.25 },
       { feature: 'level', param: 'size', depth: 0.08 },
     ], event: { kind: 'step', param: 'unit', everyBeats: 4, steps: 3 } },
   ],
   diffgrowth: [
-    { id: 'coral', label: { en: 'Coral', es: 'Coral' }, routes: [], event: { kind: 'reseed', everyBeats: 2 } },
-    { id: 'grow', label: { en: 'Grow', es: 'Crece' }, routes: [], event: { kind: 'reseed', everyBeats: 4 } },
+    // heavy: the whole simulation reruns per frame, so it carries no routes
+    // and the event is its only channel. Rebuilding a 500-iteration growth
+    // every two beats is both a total redraw and the most expensive thing on
+    // the stage; 4 and 8 give it time to be looked at.
+    { id: 'coral', label: { en: 'Coral', es: 'Coral' }, routes: [], event: { kind: 'reseed', everyBeats: 4 } },
+    { id: 'grow', label: { en: 'Grow', es: 'Crece' }, routes: [], event: { kind: 'reseed', everyBeats: 8 } },
   ],
 };
 

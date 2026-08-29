@@ -67,7 +67,15 @@ export function frameParams(inp: FrameInput): { params: Params; seed: number } {
       const pd = def.params.find((p) => p.key === ev.param);
       if (pd) {
         const steps = Math.max(2, ev.steps ?? 8);
-        overrides[ev.param!] = pd.min + ((pd.max - pd.min) * (k % steps)) / (steps - 1);
+        // A step traverses `from`..`to` when given, the param's full declared
+        // range otherwise. The sub-range exists because a param's extremes are
+        // often where the figure degenerates — apollonian at maxDepth 2 is 16
+        // circles against 209 at 6, maurer at d = 1 collapses the rose to a
+        // thin ring — and a step that visits them empties the stage once per
+        // cycle. See the per-preset notes in presets.ts.
+        const lo = ev.from ?? pd.min;
+        const hi = ev.to ?? pd.max;
+        overrides[ev.param!] = lo + ((hi - lo) * (k % steps)) / (steps - 1);
       }
     }
   }

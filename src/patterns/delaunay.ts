@@ -9,7 +9,7 @@ export const delaunayMesh = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
-  anim: { continuous: ['vertexSize', 'strokeWidth', 'size'] },
+  anim: { continuous: ['points', 'vertexSize', 'strokeWidth', 'size'] },
   params: [
     { key: 'points', kind: 'int', min: 40, max: 500, step: 5, default: 220, label: 'delaunay.points' },
     { key: 'mode', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'delaunay.mode', options: ['delaunay.edges', 'delaunay.mosaic'] },

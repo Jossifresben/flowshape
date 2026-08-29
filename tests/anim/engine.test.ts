@@ -46,13 +46,33 @@ describe('frameParams', () => {
     expect(at(8)).not.toBe(at(7));
     expect(at(15)).toBe(at(8));
   });
-  it('step events cycle a param through its range', () => {
+  it('step events cycle a param through their range and wrap', () => {
+    // Driven off the preset's own spec rather than hard-coded numbers, so a
+    // recalibration of the cadence doesn't silently stop testing the wrap.
     const mdef = getPattern('maurer')!;
-    const mpreset = PRESETS_BY_PATTERN['maurer']![0]!; // step d, 12 steps, every beat
+    const mpreset = PRESETS_BY_PATTERN['maurer']![0]!;
+    const ev = mpreset.event!;
+    const steps = ev.steps!;
     const at = (beat: number) =>
       frameParams({ def: mdef, baseParams: defaultParams(mdef), baseSeed: 1, preset: mpreset, intensity: 1, features: ZERO_FRAME, phase: 0, beatIndex: beat }).params['d'];
-    expect(at(0)).not.toBe(at(1));
-    expect(at(0)).toBe(at(12)); // wraps after `steps` events
+    expect(at(0)).toBe(at(ev.everyBeats - 1));          // holds inside a window
+    expect(at(0)).not.toBe(at(ev.everyBeats));          // moves across windows
+    expect(at(0)).toBe(at(ev.everyBeats * steps));      // wraps after `steps`
+  });
+  it('a step with from/to stays inside that sub-range, not the param range', () => {
+    const mdef = getPattern('maurer')!;
+    const mpreset = PRESETS_BY_PATTERN['maurer']![0]!;
+    const ev = mpreset.event!;
+    expect(ev.from).toBeDefined();
+    const seen: number[] = [];
+    for (let k = 0; k < ev.steps!; k++) {
+      seen.push(frameParams({ def: mdef, baseParams: defaultParams(mdef), baseSeed: 1, preset: mpreset, intensity: 1, features: ZERO_FRAME, phase: 0, beatIndex: k * ev.everyBeats }).params['d']!);
+    }
+    expect(Math.min(...seen)).toBe(ev.from);
+    expect(Math.max(...seen)).toBe(ev.to);
+    const pd = mdef.params.find((p) => p.key === 'd')!;
+    expect(Math.min(...seen)).toBeGreaterThan(pd.min);  // the degenerate end is never visited
+    expect(Math.max(...seen)).toBeLessThan(pd.max);
   });
   it('injects phase for usesPhase patterns and omits it otherwise', () => {
     const h = getPattern('harmonograph')!;
