@@ -13,3 +13,4 @@ import './diffgrowth';
 import './coulomb';
 import './bands';
 import './moire';
+import './fabric';

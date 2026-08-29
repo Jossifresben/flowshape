@@ -18,6 +18,7 @@ export const NAMES: Record<string, string> = {
   coulomb: 'Coulomb Field',
   bands: 'Concentric Bands',
   moire: 'Moiré Weave',
+  fabric: 'Warped Fabric',
 };
 
 /** Human label for each pattern family. */
