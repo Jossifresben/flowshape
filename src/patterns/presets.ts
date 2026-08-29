@@ -66,4 +66,18 @@ export const PRESETS: Record<string, Preset> = {
       size: 1,
     },
   },
+  voxel: {
+    seed: 95500,
+    params: {
+      shape: 1,
+      dimension: 12,
+      gap: 0.08,
+      shellOnly: 1,
+      scatter: 0.59,
+      faceShading: 0.78,
+      depthShading: 0.55,
+      strokeWidth: 0.5,
+      size: 1.11,
+    },
+  },
 };
