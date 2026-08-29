@@ -11,5 +11,14 @@ export const RESERVED = new Set([
   // 'mode' is deliberately NOT reserved — delaunay, fabric and moire already
   // ship a 'mode' param, and the animate route is path-based (#/a/<pattern>),
   // so nothing reads ?mode=.
-  'stage', 'apre', 'aint', 'phase',
+  // 'phase' is also deliberately NOT reserved, for a different reason:
+  // RESERVED means "an app-shell URL key a pattern may never claim as a
+  // param." `size` and `phase` are the opposite kind of thing — universal
+  // params the shell injects into every opted-in pattern, so their keys
+  // legitimately live in the param namespace and appear in the URL as
+  // params. Membership in RESERVED and injection as a param are mutually
+  // exclusive by construction; that's why `size` was never in RESERVED
+  // either. The collision guard for `phase` lives next to SIZE_PARAM's, in
+  // definePattern's validation loop (src/patterns/registry.ts).
+  'stage', 'apre', 'aint',
 ]);

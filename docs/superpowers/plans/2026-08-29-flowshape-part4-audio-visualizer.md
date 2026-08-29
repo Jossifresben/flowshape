@@ -34,7 +34,7 @@
 | Create `src/ui/animate.ts` | The stage view: DOM, transport, rAF loop, fps governor, heavy double-buffer |
 | Create `src/ui/fidelity.ts` | DEV-only SVG-vs-canvas side-by-side route |
 | Modify `src/patterns/registry.ts` | `anim` metadata on `PatternDef`, `hidden` on `ParamDef`, `PHASE_PARAM` injection, validation |
-| Modify `src/core/reserved.ts` | Add `stage`, `apre`, `aint`, `phase` |
+| Modify `src/core/reserved.ts` | Add `stage`, `apre`, `aint` (not `phase` — an injected param, guarded in `definePattern` instead, same as `size`) |
 | Modify `src/core/url-state.ts` | `view`/`stage`/`apre`/`aint` on `AppState`, `#/a/` encode/decode |
 | Modify `src/patterns/harmonograph.ts`, `phyllotaxis.ts`, `helix.ts` | consume `phase` (identical output at `phase = 0`) |
 | Modify `src/main.ts` | Route `#/a/` → animate view; DEV route `#/dev/fidelity` |
@@ -701,7 +701,7 @@ function probe(id: string, anim?: { continuous?: string[]; usesPhase?: boolean }
 
 describe('anim registry metadata', () => {
   it('reserves the animate keys', () => {
-    for (const k of ['stage', 'apre', 'aint', 'phase']) expect(RESERVED.has(k)).toBe(true);
+    for (const k of ['stage', 'apre', 'aint']) expect(RESERVED.has(k)).toBe(true);
   });
   it('injects PHASE_PARAM only for usesPhase patterns, hidden and defaulting to 0', () => {
     const withPhase = probe('t-phase', { usesPhase: true });
@@ -737,7 +737,15 @@ In `src/core/reserved.ts`, extend the set (append inside the existing literal):
   // 'mode' is deliberately NOT reserved — delaunay, fabric and moire already
   // ship a 'mode' param, and the animate route is path-based (#/a/<pattern>),
   // so nothing reads ?mode=.
-  'stage', 'apre', 'aint', 'phase',
+  // 'phase' is also deliberately NOT reserved, for a different reason: RESERVED
+  // means "an app-shell URL key a pattern may never claim as a param." `size`
+  // and `phase` are the opposite kind of thing — universal params the shell
+  // injects into every opted-in pattern, so their keys legitimately live in
+  // the param namespace and appear in the URL as params. Membership in
+  // RESERVED and injection as a param are mutually exclusive by construction;
+  // that's why `size` was never in RESERVED either. The collision guard for
+  // `phase` lives next to SIZE_PARAM's, in definePattern's validation loop.
+  'stage', 'apre', 'aint',
 ```
 
 In `src/patterns/registry.ts`:
@@ -767,7 +775,13 @@ export const PHASE_PARAM: ParamDef = {
 };
 ```
 
-In `definePattern`, after the existing reserved-key loop, add validation and injection (replace the `withSize` construction):
+In `definePattern`'s existing reserved-key loop, extend the `SIZE_PARAM.key` collision check to also cover `PHASE_PARAM.key` — a pattern must not be able to declare its own conflicting `phase` param, exactly as it already can't declare its own `size`:
+
+```ts
+    if (p.key === SIZE_PARAM.key || p.key === PHASE_PARAM.key) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
+```
+
+Then, after that loop, add validation and injection (replace the `withSize` construction):
 
 ```ts
   if (def.anim?.continuous) {

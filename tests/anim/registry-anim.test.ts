@@ -15,7 +15,7 @@ function probe(id: string, anim?: { continuous?: string[]; usesPhase?: boolean }
 
 describe('anim registry metadata', () => {
   it('reserves the animate keys', () => {
-    for (const k of ['stage', 'apre', 'aint', 'phase']) expect(RESERVED.has(k)).toBe(true);
+    for (const k of ['stage', 'apre', 'aint']) expect(RESERVED.has(k)).toBe(true);
   });
   it('injects PHASE_PARAM only for usesPhase patterns, hidden and defaulting to 0', () => {
     const withPhase = probe('t-phase', { usesPhase: true });

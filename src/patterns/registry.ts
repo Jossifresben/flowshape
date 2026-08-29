@@ -53,7 +53,13 @@ export function definePattern(def: PatternDef): PatternDef {
   if (registry.has(def.id)) throw new Error(`duplicate pattern id: ${def.id}`);
   for (const p of def.params) {
     if (RESERVED.has(p.key)) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
-    if (p.key === SIZE_PARAM.key) throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
+    // SIZE_PARAM/PHASE_PARAM are injected params, not RESERVED app-shell URL
+    // keys — the two concepts are mutually exclusive by construction (see
+    // src/core/reserved.ts). A pattern still can't declare its own
+    // conflicting entry, so that's guarded here instead.
+    if (p.key === SIZE_PARAM.key || p.key === PHASE_PARAM.key) {
+      throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
+    }
   }
   if (def.anim?.continuous) {
     for (const key of def.anim.continuous) {
