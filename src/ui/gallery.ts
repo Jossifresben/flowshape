@@ -19,6 +19,7 @@ export const NAMES: Record<string, string> = {
   bands: 'Concentric Bands',
   moire: 'Moiré Weave',
   fabric: 'Warped Fabric',
+  roselattice: 'Rose Lattice',
 };
 
 /** Human label for each pattern family. */

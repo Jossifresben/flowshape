@@ -14,3 +14,4 @@ import './coulomb';
 import './bands';
 import './moire';
 import './fabric';
+import './roselattice';
