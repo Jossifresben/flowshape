@@ -35,7 +35,9 @@ export function checkboxRow(
   value: number,
   onChange: (v: number) => void,
 ): HTMLElement {
-  const row = document.createElement('div');
+  // <label>, not <div> — the whole row becomes one tap target: clicking
+  // anywhere inside it toggles the descendant checkbox natively.
+  const row = document.createElement('label');
   row.className = 'ctl-row ctl-inline';
   const label = document.createElement('span');
   label.className = 'ctl-label';
@@ -45,6 +47,23 @@ export function checkboxRow(
   input.checked = value === 1;
   input.addEventListener('change', () => onChange(input.checked ? 1 : 0));
   row.append(label, input);
+  return row;
+}
+
+export function chipRow(
+  items: { id: string; label: string }[],
+  current: string,
+  onPick: (id: string) => void,
+): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'chip-row';
+  for (const it of items) {
+    const b = document.createElement('button');
+    b.className = 'chip' + (it.id === current ? ' selected' : '');
+    b.textContent = it.label;
+    b.addEventListener('click', () => onPick(it.id));
+    row.append(b);
+  }
   return row;
 }
 

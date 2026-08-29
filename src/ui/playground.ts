@@ -5,8 +5,14 @@ import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palettes';
 import { rememberState, forgetState } from '../core/persist';
 import { PRESETS } from '../patterns/presets';
-import { sliderRow, checkboxRow, selectRow } from './controls';
+import { sliderRow, checkboxRow, selectRow, chipRow } from './controls';
 import { NAMES } from './gallery';
+import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
+import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
+import { openModal } from './modal';
+
+/** Flip to true once the Math and Code tabs have real content (Part 3 Tasks 9–10). */
+const EXPLAIN_ENABLED = false;
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their `label` has no '.' so `sliderRow`'s i18n-key splitting is a no-op
@@ -17,6 +23,12 @@ const COLOR_PARAM_DEFS: Record<keyof typeof COLOR_DEFAULTS, ParamDef> = {
   paperL: { key: 'paperL', kind: 'float', min: 0.04, max: 0.96, step: 0.01, default: COLOR_DEFAULTS.paperL, label: 'PAPER' },
   accentShift: { key: 'accentShift', kind: 'float', min: 0, max: 180, step: 1, default: COLOR_DEFAULTS.accentShift, label: 'ACCENT SHIFT' },
 };
+
+function placeholderTab(text: string): HTMLElement {
+  const p = document.createElement('p');
+  p.textContent = text;
+  return p;
+}
 
 const DEFAULT_STATE: AppState = {
   patternId: 'phyllotaxis',
@@ -40,8 +52,13 @@ export function mountPlayground(root: HTMLElement): () => void {
   // heavy patterns, the worker) from scratch.
   let lastNode: SvgNode | null = null;
   let lastKey = '';
+  // Set by render() whenever the export buttons are built while no node is
+  // cached yet (a heavy pattern's first, still in-flight worker request).
+  // Called once that node lands so the buttons re-enable without needing a
+  // full panel rebuild.
+  let onExportReady: (() => void) | null = null;
   function nodeKey(): string {
-    return JSON.stringify([state.patternId, state.params, state.seed]);
+    return JSON.stringify([state.patternId, state.params, state.seed, renderSize(state)]);
   }
 
   /** Writes the current state to the URL bar (without a history entry) and
@@ -96,8 +113,10 @@ export function mountPlayground(root: HTMLElement): () => void {
       lastNode = e.data.node;
       lastKey = myKey;
       onNode(e.data.node);
+      onExportReady?.();
+      onExportReady = null;
     };
-    worker!.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: { w: 600, h: 840 } });
+    worker!.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: renderSize(state) });
   }
 
   function computeInWorker(onNode: (node: SvgNode) => void): void {
@@ -134,7 +153,7 @@ export function mountPlayground(root: HTMLElement): () => void {
         stage.innerHTML = serialize(node, resolvePalette(state.color));
       });
     } else {
-      const node = generateSafe(def, state.params, state.seed, { w: 600, h: 840 });
+      const node = generateSafe(def, state.params, state.seed, renderSize(state));
       lastNode = node;
       lastKey = key;
       stage.innerHTML = serialize(node, pal);
@@ -220,6 +239,27 @@ export function mountPlayground(root: HTMLElement): () => void {
     seedRow.append(rand);
     panel.append(seedRow);
 
+    const explainRow = document.createElement('div');
+    explainRow.className = 'ctl-row';
+    const explainBtn = document.createElement('button');
+    explainBtn.className = 'btn';
+    explainBtn.textContent = 'Explain the math';
+    explainBtn.addEventListener('click', () => {
+      openModal({
+        title: NAMES[state.patternId] ?? state.patternId,
+        tabs: [
+          { id: 'math', label: 'Math', render: () => placeholderTab('Math explanation coming soon.') },
+          { id: 'code', label: 'Code', render: () => placeholderTab('Source code view coming soon.') },
+        ],
+      });
+    });
+    explainRow.append(explainBtn);
+    // The modal shell is built but its two tabs are still placeholders: the
+    // explanations (Part 3 Task 9) and the source view (Task 10) do not exist yet.
+    // Shipping a button that opens "coming soon" is worse than shipping no button,
+    // so it stays hidden until there is something behind it.
+    if (EXPLAIN_ENABLED) panel.append(explainRow);
+
     const orderedParams = [...def.params].sort((a, b) =>
       (a.key === 'size' ? -1 : 0) - (b.key === 'size' ? -1 : 0),
     );
@@ -233,6 +273,54 @@ export function mountPlayground(root: HTMLElement): () => void {
         panel.append(sliderRow(pd, v, (nv) => setParam(pd.key, nv)));
       }
     }
+    const formatHeading = document.createElement('div');
+    formatHeading.className = 'ctl-section-heading';
+    formatHeading.textContent = 'FORMAT';
+    panel.append(formatHeading);
+
+    const currentFormat = state.format ?? DEFAULT_FORMAT;
+    for (const group of ['iso', 'us', 'other'] as const) {
+      const items = FORMATS.filter((f) => f.group === group).map((f) => ({ id: f.id, label: f.label }));
+      panel.append(chipRow(items, currentFormat, (id) => setState({ format: id })));
+    }
+    panel.append(
+      chipRow([{ id: 'custom', label: 'Custom…' }], currentFormat, () => setState({ format: 'custom' })),
+    );
+
+    if (state.format === 'custom') {
+      const customRow = document.createElement('div');
+      customRow.className = 'custom-size';
+      const wInput = document.createElement('input');
+      wInput.type = 'number';
+      wInput.min = '1';
+      wInput.value = String(state.cw ?? 30);
+      wInput.addEventListener('change', () => setState({ cw: Number(wInput.value) }));
+      const xSpan = document.createElement('span');
+      xSpan.textContent = '×';
+      const hInput = document.createElement('input');
+      hInput.type = 'number';
+      hInput.min = '1';
+      hInput.value = String(state.ch ?? 40);
+      hInput.addEventListener('change', () => setState({ ch: Number(hInput.value) }));
+      const unitSel = document.createElement('select');
+      for (const u of ['mm', 'cm', 'in'] as Unit[]) {
+        const o = document.createElement('option');
+        o.value = u;
+        o.textContent = u;
+        if ((state.cu ?? 'mm') === u) o.selected = true;
+        unitSel.append(o);
+      }
+      unitSel.addEventListener('change', () => setState({ cu: unitSel.value as Unit }));
+      customRow.append(wInput, xSpan, hInput, unitSel);
+      panel.append(customRow);
+    }
+
+    const phys = physicalSize(state);
+    const physLabel = document.createElement('div');
+    physLabel.className = 'ctl-value';
+    physLabel.textContent = `${phys.wmm} × ${phys.hmm} mm`;
+    panel.append(physLabel);
+
     const colorHeading = document.createElement('div');
     colorHeading.className = 'ctl-section-heading';
     colorHeading.textContent = 'COLOUR';
@@ -261,6 +349,81 @@ export function mountPlayground(root: HTMLElement): () => void {
       resetRow.append(resetBtn);
       panel.append(resetRow);
     }
+
+    const exportHeading = document.createElement('div');
+    exportHeading.className = 'ctl-section-heading';
+    exportHeading.textContent = 'EXPORT';
+    panel.append(exportHeading);
+
+    const exportRow = document.createElement('div');
+    exportRow.className = 'ctl-row';
+
+    const svgBtn = document.createElement('button');
+    svgBtn.className = 'btn';
+    svgBtn.textContent = 'Export SVG';
+
+    const dpiSel = document.createElement('select');
+    dpiSel.className = 'ctl-select';
+    for (const dpi of [150, 300]) {
+      const px = pixelDimensions(phys, dpi);
+      const o = document.createElement('option');
+      o.value = String(dpi);
+      o.textContent = `${dpi} dpi · ${px.w} × ${px.h}`;
+      if (dpi === 300) o.selected = true;
+      dpiSel.append(o);
+    }
+
+    const pngBtn = document.createElement('button');
+    pngBtn.className = 'btn';
+    pngBtn.textContent = 'Export PNG';
+
+    const exportError = document.createElement('div');
+    exportError.className = 'ctl-value export-error';
+    exportError.textContent = '';
+
+    if (!lastNode) {
+      svgBtn.disabled = true;
+      pngBtn.disabled = true;
+      onExportReady = () => {
+        svgBtn.disabled = false;
+        pngBtn.disabled = false;
+      };
+    } else {
+      onExportReady = null;
+    }
+
+    svgBtn.addEventListener('click', () => {
+      if (!lastNode) return;
+      const pal = resolvePalette(state.color);
+      const svg = toSvgString(lastNode, pal, phys);
+      const name = exportFilename(state.patternId, state.seed, state.format ?? DEFAULT_FORMAT, 'svg');
+      downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), name);
+    });
+
+    pngBtn.addEventListener('click', async () => {
+      if (!lastNode) return;
+      const originalText = pngBtn.textContent;
+      pngBtn.disabled = true;
+      pngBtn.textContent = 'Rendering…';
+      exportError.textContent = '';
+      try {
+        const pal = resolvePalette(state.color);
+        const svg = toSvgString(lastNode, pal, phys);
+        const dpi = Number(dpiSel.value);
+        const px = pixelDimensions(phys, dpi);
+        const blob = await toPngBlob(svg, px);
+        const name = exportFilename(state.patternId, state.seed, state.format ?? DEFAULT_FORMAT, 'png');
+        downloadBlob(blob, name);
+      } catch (err) {
+        exportError.textContent = err instanceof Error ? err.message : String(err);
+      } finally {
+        pngBtn.disabled = false;
+        pngBtn.textContent = originalText;
+      }
+    });
+
+    exportRow.append(svgBtn, dpiSel, pngBtn);
+    panel.append(exportRow, exportError);
 
     root.append(stage, panel);
   }

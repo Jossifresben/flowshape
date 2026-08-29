@@ -55,4 +55,17 @@ describe('url state', () => {
     expect(s!.params).not.toHaveProperty('theme');
     expect(s!.params).toEqual({});
   });
+
+  it('round-trips a custom format', () => {
+    const s: AppState = { ...state, format: 'custom', cw: 30, ch: 40, cu: 'cm' };
+    expect(decodeState(encodeState(s))).toEqual(s);
+  });
+
+  it('omits the default format and rejects a bad unit', () => {
+    const hash = encodeState({ ...state, format: 'a3' });
+    expect(hash).not.toContain('format=');
+    const bad = decodeState('#/p/girih?v=1&format=custom&cw=10&ch=10&cu=furlongs');
+    expect(bad!.cu).toBeUndefined();
+    expect(bad!.params['cw']).toBeUndefined(); // reserved, never a pattern param
+  });
 });

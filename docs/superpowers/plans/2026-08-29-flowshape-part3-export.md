@@ -110,7 +110,8 @@ describe('formats', () => {
       const wantRatio = f.hmm / f.wmm;
       expect(s.h / s.w).toBeCloseTo(wantRatio, 2);
     }
-    expect(renderSize({ format: 'a3' })).toEqual({ w: 600, h: 849 });
+    // derived from the stored mm values, not the ideal √2 ratio — ISO sizes are themselves whole-mm roundings
+    expect(renderSize({ format: 'a3' })).toEqual({ w: 600, h: 848 });
     expect(renderSize({ format: 'square' })).toEqual({ w: 600, h: 600 });
   });
 
@@ -126,6 +127,8 @@ describe('formats', () => {
   });
 });
 ```
+
+Note: `renderSize` derives from the whole-mm values stored in `FORMATS`, not from the ideal √2 ratio — ISO paper sizes are themselves a rounding of √2 to whole millimetres, and the render size should agree with what gets printed, not with the irrational ideal. A3's short-edge-fixed height is therefore `Math.round(600 * 420 / 297) = 848`, not 849. Task 1's measurement script above uses `SIZE = { w: 600, h: 849 }` — that 849 was the same slip (computed from √2 rather than the stored mm values); it's harmless there since the script is temporary and deleted after Task 1, but don't propagate it here.
 
 - [ ] **Step 2: Run it, confirm it fails** — `npx vitest run tests/poster/formats.test.ts` → module not found.
 
