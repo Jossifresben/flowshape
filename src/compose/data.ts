@@ -1,4 +1,4 @@
-import type { PatternDef } from '../patterns/registry';
+import { SIZE_PARAM, type PatternDef } from '../patterns/registry';
 import type { AppState } from '../core/url-state';
 import { NAMES } from '../ui/gallery';
 import { BLURBS } from '../content/blurbs';
@@ -30,8 +30,10 @@ export interface PosterData {
 const MAX_PARAMS = 4;
 
 export function posterData(def: PatternDef, state: AppState): PosterData {
-  // `size` and `phase` are shell-injected, not the pattern's own maths.
-  const visible = def.params.filter((p) => !p.hidden && p.key !== 'size');
+  // `size` is shell-injected, not the pattern's own maths. Filtered against the
+  // exported constant rather than the literal so this stays correct if the key
+  // moves; when the animate branch lands, PHASE_PARAM joins the exclusion.
+  const visible = def.params.filter((p) => p.key !== SIZE_PARAM.key);
   const room = def.usesSeed ? MAX_PARAMS - 1 : MAX_PARAMS;
   const params: PosterParam[] = visible.slice(0, room).map((p) => ({
     // Same key-to-label rule the controls use (src/ui/controls.ts).
