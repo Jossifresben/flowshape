@@ -3,8 +3,73 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>flowshape.art — mathematical patterns into print-ready posters</title>
+    <meta
+      name="description"
+      content="Play with 25 mathematical pattern generators, tune every parameter, and export a print-ready SVG or PNG poster. Every pattern shows its formula and its code, in English and Spanish. Free, open source, runs entirely in your browser."
+    />
+    <link rel="canonical" href="https://flowshape.art/" />
+    <meta name="theme-color" content="#17171a" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="author" content="Jossi Fresco Benaim" />
+
+    <!-- Favicons. favicon.ico at the site root is picked up without a tag. -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Open Graph. Routing is hash-based, so a crawler only ever sees this
+         one document: the English card is the default and the Spanish one is
+         offered as the alternate locale's image. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="flowshape.art" />
+    <meta property="og:url" content="https://flowshape.art/" />
+    <meta property="og:title" content="flowshape.art — shape mathematics into art" />
+    <meta
+      property="og:description"
+      content="25 mathematical pattern generators. Tune every parameter, read the formula behind it, export a print-ready poster. Free and open source."
+    />
+    <meta property="og:image" content="https://flowshape.art/og-en.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="flowshape.art — shape mathematics into art" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:image" content="https://flowshape.art/og-es.png" />
+    <meta property="og:image:alt" content="flowshape.art — convierte las matemáticas en arte" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="flowshape.art — shape mathematics into art" />
+    <meta
+      name="twitter:description"
+      content="25 mathematical pattern generators. Tune every parameter, read the formula behind it, export a print-ready poster. Free and open source."
+    />
+    <meta name="twitter:image" content="https://flowshape.art/og-en.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "flowshape",
+        "url": "https://flowshape.art/",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "Any browser",
+        "inLanguage": ["en", "es"],
+        "isAccessibleForFree": true,
+        "license": "https://opensource.org/licenses/MIT",
+        "description": "Play with 25 mathematical pattern generators, tune every parameter, and export a print-ready SVG or PNG poster.",
+        "author": {
+          "@type": "Person",
+          "name": "Jossi Fresco Benaim",
+          "url": "https://jossifresco.com",
+          "identifier": "https://orcid.org/0009-0000-2026-0836"
+        },
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <title>flowshape.art</title>
   </head>
   <body>
     <div id="app"></div>

@@ -6,22 +6,23 @@ import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palet
 import { rememberState, forgetState } from '../core/persist';
 import { PRESETS } from '../patterns/presets';
 import { sliderRow, checkboxRow, selectRow, chipRow } from './controls';
-import { NAMES } from './gallery';
 import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
 import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
 import { openModal } from './modal';
 import { loadSource } from '../content/source';
 import { loadExplain } from '../content/explain';
 import { renderMarkdown, renderCitation } from './markdown';
+import { t, patternName, type Lang } from '../i18n';
+import { panelNav } from './nav';
+import { buildFooter, REPO_URL } from './footer';
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
- *  Their `label` has no '.' so `sliderRow`'s i18n-key splitting is a no-op
- *  and the text renders as-is. */
+ *  Their labels are real i18n keys, like every other control's. */
 const COLOR_PARAM_DEFS: Record<keyof typeof COLOR_DEFAULTS, ParamDef> = {
-  hue: { key: 'hue', kind: 'float', min: 0, max: 360, step: 1, default: COLOR_DEFAULTS.hue, label: 'HUE' },
-  chroma: { key: 'chroma', kind: 'float', min: 0, max: 0.16, step: 0.005, default: COLOR_DEFAULTS.chroma, label: 'CHROMA' },
-  paperL: { key: 'paperL', kind: 'float', min: 0.04, max: 0.96, step: 0.01, default: COLOR_DEFAULTS.paperL, label: 'PAPER' },
-  accentShift: { key: 'accentShift', kind: 'float', min: 0, max: 180, step: 1, default: COLOR_DEFAULTS.accentShift, label: 'ACCENT SHIFT' },
+  hue: { key: 'hue', kind: 'float', min: 0, max: 360, step: 1, default: COLOR_DEFAULTS.hue, label: 'color.hue' },
+  chroma: { key: 'chroma', kind: 'float', min: 0, max: 0.16, step: 0.005, default: COLOR_DEFAULTS.chroma, label: 'color.chroma' },
+  paperL: { key: 'paperL', kind: 'float', min: 0.04, max: 0.96, step: 0.01, default: COLOR_DEFAULTS.paperL, label: 'color.paperL' },
+  accentShift: { key: 'accentShift', kind: 'float', min: 0, max: 180, step: 1, default: COLOR_DEFAULTS.accentShift, label: 'color.accentShift' },
 };
 
 function placeholderTab(text: string): HTMLElement {
@@ -29,8 +30,6 @@ function placeholderTab(text: string): HTMLElement {
   p.textContent = text;
   return p;
 }
-
-const REPO_URL = 'https://github.com/Jossifresben/flowshape';
 
 function codeWord(text: string): HTMLElement {
   const c = document.createElement('code');
@@ -63,11 +62,11 @@ async function copyOrSelect(text: string, target: HTMLElement): Promise<boolean>
 
 /** Builds the Code tab: the pattern's real, un-rewritten source, a short
  *  preamble naming the helpers a reader needs, and a Copy button. */
-async function renderCodeTab(id: string): Promise<HTMLElement> {
+async function renderCodeTab(id: string, lang: Lang): Promise<HTMLElement> {
   const wrap = document.createElement('div');
   const source = await loadSource(id);
   if (source === null) {
-    wrap.append(placeholderTab('Source not found for this pattern.'));
+    wrap.append(placeholderTab(t('code.missing', lang)));
     return wrap;
   }
 
@@ -77,12 +76,13 @@ async function renderCodeTab(id: string): Promise<HTMLElement> {
   repoLink.href = REPO_URL;
   repoLink.target = '_blank';
   repoLink.rel = 'noopener noreferrer';
-  repoLink.textContent = 'the flowshape repo';
+  repoLink.textContent = t('code.repo', lang);
   preamble.append(
-    'This is the actual generator that renders this pattern — uses ',
-    codeWord('el'), '/', codeWord('serialize'), ' from ', codeWord('core/svg'),
-    ' and ', codeWord('mulberry32'), '/', codeWord('deriveSeed'), ' from ', codeWord('core/prng'),
-    '. Full source: ', repoLink, '.',
+    t('code.preambleA', lang),
+    codeWord('el'), '/', codeWord('serialize'), t('code.preambleB', lang), codeWord('core/svg'),
+    t('code.preambleC', lang),
+    codeWord('mulberry32'), '/', codeWord('deriveSeed'), t('code.preambleB', lang), codeWord('core/prng'),
+    t('code.preambleD', lang), repoLink, '.',
   );
 
   const pre = document.createElement('pre');
@@ -92,14 +92,14 @@ async function renderCodeTab(id: string): Promise<HTMLElement> {
   copyRow.className = 'ctl-row';
   const copyBtn = document.createElement('button');
   copyBtn.className = 'btn';
-  copyBtn.textContent = 'Copy';
+  copyBtn.textContent = t('code.copy', lang);
   let copyResetTimer = 0;
   copyBtn.addEventListener('click', async () => {
     const wroteToClipboard = await copyOrSelect(source, pre);
     if (copyResetTimer) clearTimeout(copyResetTimer);
-    copyBtn.textContent = wroteToClipboard ? 'Copied' : 'Selected — press ⌘/Ctrl+C';
+    copyBtn.textContent = t(wroteToClipboard ? 'code.copied' : 'code.selected', lang);
     copyResetTimer = window.setTimeout(() => {
-      copyBtn.textContent = 'Copy';
+      copyBtn.textContent = t('code.copy', lang);
     }, 2000);
   });
   copyRow.append(copyBtn);
@@ -110,15 +110,12 @@ async function renderCodeTab(id: string): Promise<HTMLElement> {
 
 /** Builds the Math tab: the pattern's explanation content (formula, plain-
  *  language meaning, per-parameter notes) rendered from markdown, plus its
- *  citation as a link.
- *  TODO: hardcoded to 'en' — the Spanish files (`*.es.md`) already exist for
- *  every pattern, but the playground UI itself has no language toggle yet.
- *  Wire this to the user's chosen language once that control exists. */
-async function renderMathTab(id: string): Promise<HTMLElement> {
+ *  citation as a link, in the reader's language. */
+async function renderMathTab(id: string, lang: Lang): Promise<HTMLElement> {
   const wrap = document.createElement('div');
-  const doc = await loadExplain(id, 'en');
+  const doc = await loadExplain(id, lang);
   if (doc === null) {
-    wrap.append(placeholderTab('No explanation found for this pattern.'));
+    wrap.append(placeholderTab(t('math.missing', lang)));
     return wrap;
   }
   wrap.innerHTML = renderMarkdown(doc.body) + renderCitation(doc.source, doc.url);
@@ -202,7 +199,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       target.classList.remove('computing');
       if (!e.data.node) {
         target.innerHTML = '';
-        target.textContent = 'Could not render this pattern.';
+        target.textContent = t('pg.renderFailed', state.lang);
         return;
       }
       lastNode = e.data.node;
@@ -221,7 +218,7 @@ export function mountPlayground(root: HTMLElement): () => void {
         workerBusy = false;
         stage.classList.remove('computing');
         stage.innerHTML = '';
-        stage.textContent = 'Could not render this pattern.';
+        stage.textContent = t('pg.renderFailed', state.lang);
         dispatchPending();
       };
     }
@@ -277,9 +274,11 @@ export function mountPlayground(root: HTMLElement): () => void {
   }
 
   function render(): void {
+    const lang = state.lang;
+    document.documentElement.lang = lang;
     const def = getPattern(state.patternId);
     if (!def) {
-      root.textContent = 'Unknown pattern';
+      root.textContent = t('pg.unknownPattern', lang);
       return;
     }
     const params = clampParams(def, { ...defaultParams(def), ...state.params });
@@ -293,18 +292,14 @@ export function mountPlayground(root: HTMLElement): () => void {
     const panel = document.createElement('div');
     panel.className = 'panel';
 
-    const backLink = document.createElement('a');
-    backLink.className = 'gal-back-link';
-    backLink.href = '#/';
-    backLink.textContent = '← All patterns';
-    panel.append(backLink);
+    panel.append(panelNav(lang));
 
     const patternSel = document.createElement('select');
     patternSel.className = 'ctl-select';
     for (const def2 of listPatterns().filter((x) => x.phase === 1).sort((a, b) => a.id.localeCompare(b.id))) {
       const o = document.createElement('option');
       o.value = def2.id;
-      o.textContent = NAMES[def2.id] ?? def2.id;
+      o.textContent = patternName(def2.id, lang);
       if (def2.id === state.patternId) o.selected = true;
       patternSel.append(o);
     }
@@ -318,12 +313,12 @@ export function mountPlayground(root: HTMLElement): () => void {
     if (def.usesSeed) {
       const seedVal = document.createElement('span');
       seedVal.className = 'ctl-value';
-      seedVal.textContent = `SEED ${state.seed}`;
+      seedVal.textContent = `${t('pg.seed', lang)} ${state.seed}`;
       seedRow.append(seedVal);
     }
     const rand = document.createElement('button');
     rand.className = 'btn';
-    rand.textContent = 'Randomize';
+    rand.textContent = t('pg.randomize', lang);
     rand.addEventListener('click', () => {
       if (def.usesSeed) {
         setState({ seed: 1 + Math.floor(Math.random() * 99999) });
@@ -338,13 +333,13 @@ export function mountPlayground(root: HTMLElement): () => void {
     explainRow.className = 'ctl-row';
     const explainBtn = document.createElement('button');
     explainBtn.className = 'btn';
-    explainBtn.textContent = 'Explain the math';
+    explainBtn.textContent = t('pg.explain', lang);
     explainBtn.addEventListener('click', () => {
       openModal({
-        title: NAMES[state.patternId] ?? state.patternId,
+        title: patternName(state.patternId, lang),
         tabs: [
-          { id: 'math', label: 'Math', render: () => renderMathTab(state.patternId) },
-          { id: 'code', label: 'Code', render: () => renderCodeTab(state.patternId) },
+          { id: 'math', label: t('modal.math', lang), render: () => renderMathTab(state.patternId, lang) },
+          { id: 'code', label: t('modal.code', lang), render: () => renderCodeTab(state.patternId, lang) },
         ],
       });
     });
@@ -357,16 +352,16 @@ export function mountPlayground(root: HTMLElement): () => void {
     for (const pd of orderedParams) {
       const v = params[pd.key]!;
       if (pd.kind === 'bool') {
-        panel.append(checkboxRow(pd, v, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
+        panel.append(checkboxRow(pd, v, lang, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
       } else if (pd.kind === 'enum') {
-        panel.append(selectRow(pd, v, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
+        panel.append(selectRow(pd, v, lang, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
       } else {
-        panel.append(sliderRow(pd, v, (nv) => setParam(pd.key, nv)));
+        panel.append(sliderRow(pd, v, lang, (nv) => setParam(pd.key, nv)));
       }
     }
     const formatHeading = document.createElement('div');
     formatHeading.className = 'ctl-section-heading';
-    formatHeading.textContent = 'FORMAT';
+    formatHeading.textContent = t('pg.format', lang);
     panel.append(formatHeading);
 
     const currentFormat = state.format ?? DEFAULT_FORMAT;
@@ -375,7 +370,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       panel.append(chipRow(items, currentFormat, (id) => setState({ format: id })));
     }
     panel.append(
-      chipRow([{ id: 'custom', label: 'Custom…' }], currentFormat, () => setState({ format: 'custom' })),
+      chipRow([{ id: 'custom', label: t('pg.custom', lang) }], currentFormat, () => setState({ format: 'custom' })),
     );
 
     if (state.format === 'custom') {
@@ -414,13 +409,13 @@ export function mountPlayground(root: HTMLElement): () => void {
 
     const colorHeading = document.createElement('div');
     colorHeading.className = 'ctl-section-heading';
-    colorHeading.textContent = 'COLOUR';
+    colorHeading.textContent = t('pg.colour', lang);
     panel.append(colorHeading);
 
     for (const key of ['hue', 'chroma', 'paperL', 'accentShift'] as const) {
       const def2 = COLOR_PARAM_DEFS[key];
       const v = state.color[key] ?? COLOR_DEFAULTS[key];
-      panel.append(sliderRow(def2, v, (nv) => setColor(key, nv)));
+      panel.append(sliderRow(def2, v, lang, (nv) => setColor(key, nv)));
     }
 
     // Once a pattern's state has been remembered (any change), the gallery
@@ -432,7 +427,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       resetRow.className = 'ctl-row';
       const resetBtn = document.createElement('button');
       resetBtn.className = 'btn';
-      resetBtn.textContent = 'Reset to sample';
+      resetBtn.textContent = t('pg.reset', lang);
       resetBtn.addEventListener('click', () => {
         forgetState(state.patternId);
         setState({ seed: preset.seed ?? 1, params: preset.params ?? {}, color: preset.color ?? {} });
@@ -443,7 +438,7 @@ export function mountPlayground(root: HTMLElement): () => void {
 
     const exportHeading = document.createElement('div');
     exportHeading.className = 'ctl-section-heading';
-    exportHeading.textContent = 'EXPORT';
+    exportHeading.textContent = t('pg.export', lang);
     panel.append(exportHeading);
 
     const exportRow = document.createElement('div');
@@ -451,7 +446,7 @@ export function mountPlayground(root: HTMLElement): () => void {
 
     const svgBtn = document.createElement('button');
     svgBtn.className = 'btn';
-    svgBtn.textContent = 'Export SVG';
+    svgBtn.textContent = t('pg.exportSvg', lang);
 
     const dpiSel = document.createElement('select');
     dpiSel.className = 'ctl-select';
@@ -466,7 +461,7 @@ export function mountPlayground(root: HTMLElement): () => void {
 
     const pngBtn = document.createElement('button');
     pngBtn.className = 'btn';
-    pngBtn.textContent = 'Export PNG';
+    pngBtn.textContent = t('pg.exportPng', lang);
 
     const exportError = document.createElement('div');
     exportError.className = 'ctl-value export-error';
@@ -495,7 +490,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       if (!lastNode) return;
       const originalText = pngBtn.textContent;
       pngBtn.disabled = true;
-      pngBtn.textContent = 'Rendering…';
+      pngBtn.textContent = t('pg.rendering', lang);
       exportError.textContent = '';
       try {
         const pal = resolvePalette(state.color);
@@ -514,7 +509,7 @@ export function mountPlayground(root: HTMLElement): () => void {
     });
 
     exportRow.append(svgBtn, dpiSel, pngBtn);
-    panel.append(exportRow, exportError);
+    panel.append(exportRow, exportError, buildFooter(lang, { compact: true }));
 
     root.append(stage, panel);
   }

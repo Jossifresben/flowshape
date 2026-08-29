@@ -2,7 +2,9 @@ import './style.css';
 import './patterns/index';
 import { mountPlayground } from './ui/playground';
 import { mountGallery } from './ui/gallery';
+import { mountAbout } from './ui/about';
 import { decodeState } from './core/url-state';
+import { LANG_EVENT } from './i18n';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -12,20 +14,31 @@ const app = document.querySelector<HTMLDivElement>('#app')!;
 // listener and re-render playground with default state on every navigation).
 let cleanup: (() => void) | null = null;
 
+function setView(name: 'gallery' | 'playground' | 'about'): void {
+  app.classList.remove('view-gallery', 'view-playground', 'view-about');
+  app.classList.add(`view-${name}`);
+}
+
 function route(): void {
   cleanup?.();
   cleanup = null;
+  if (location.hash.startsWith('#/about')) {
+    setView('about');
+    mountAbout(app);
+    return;
+  }
   const state = decodeState(location.hash);
   if (state) {
-    app.classList.remove('view-gallery');
-    app.classList.add('view-playground');
+    setView('playground');
     cleanup = mountPlayground(app);
   } else {
-    app.classList.remove('view-playground');
-    app.classList.add('view-gallery');
+    setView('gallery');
     mountGallery(app);
   }
 }
 
 window.addEventListener('hashchange', route);
+// Switching language rewrites the URL with replaceState (no hashchange), so
+// the language event is what re-renders the current view.
+window.addEventListener(LANG_EVENT, route);
 route();

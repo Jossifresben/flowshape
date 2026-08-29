@@ -99,6 +99,22 @@ carrying real `mm` dimensions — so it opens at the right physical size in a
 design tool — and rasterises the same string through an offscreen canvas for
 PNG at a chosen DPI.
 
+## Language
+
+`src/i18n/` holds the whole EN/ES string layer: chrome strings, pattern display
+names, family labels, and parameter and enum-option labels. Parameter labels
+resolve `<patternId>.<paramKey>` first and fall back to a shared
+`common.<paramKey>`, so `strokeWidth` is translated once rather than 25 times.
+`tests/ui/i18n.test.ts` asserts that every registered parameter and option
+resolves through a real table entry, so a new pattern cannot ship with an
+untranslated control.
+
+The active language is an explicit `lang` in the URL (a shared link carries its
+own language), then the reader's stored choice, then the browser's. Switching
+rewrites the URL with `replaceState` and dispatches a language event; the router
+listens and re-mounts the current view. The i18n module deliberately does not
+import `url-state` — the gallery and about page have no poster state at all.
+
 ## Content
 
 Each pattern has `src/content/explain/<id>.<en|es>.md`: YAML front matter with

@@ -1,0 +1,155 @@
+import { listPatterns } from '../patterns/registry';
+import { currentLang, type Lang, type Pair } from '../i18n';
+import { buildNav } from './nav';
+import { buildFooter, AUTHOR_NAME, AUTHOR_URL, ORCID_URL, REPO_URL } from './footer';
+
+type Block =
+  | { kind: 'h2'; text: Pair }
+  | { kind: 'p'; text: Pair }
+  | { kind: 'ul'; items: Pair[] };
+
+/** `{n}` and `{f}` are filled with the live pattern and family counts, so the
+ *  page can never claim a number the registry disagrees with. */
+const BLOCKS: Block[] = [
+  {
+    kind: 'p',
+    text: [
+      'flowshape turns mathematics into posters. Pick one of {n} pattern generators across {f} families, tune every parameter until it looks right, choose a paper size, and export an SVG or PNG you can finish in any design tool.',
+      'flowshape convierte las matemáticas en pósters. Elige uno de sus {n} generadores de patrones, repartidos en {f} familias, ajusta cada parámetro hasta que te guste, escoge un tamaño de papel y exporta un SVG o un PNG que podrás rematar en cualquier herramienta de diseño.',
+    ],
+  },
+  {
+    kind: 'p',
+    text: [
+      'It is free and open source. There are no accounts, no tracking and no server: everything is computed in your browser.',
+      'Es libre y de código abierto. No hay cuentas, ni rastreo, ni servidor: todo se calcula en tu navegador.',
+    ],
+  },
+  { kind: 'h2', text: ['The link is the artwork', 'El enlace es la obra'] },
+  {
+    kind: 'p',
+    text: [
+      'The pattern, every parameter, the seed, the colour and the format are all encoded in the address bar. Copy the link and whoever opens it sees exactly what you saw — identical, down to the last coordinate. There is nothing to save and nothing to sign in to.',
+      'El patrón, cada parámetro, la semilla, el color y el formato van codificados en la barra de direcciones. Copia el enlace y quien lo abra verá exactamente lo que tú viste, idéntico hasta la última coordenada. No hay nada que guardar ni sesión que iniciar.',
+    ],
+  },
+  { kind: 'h2', text: ['The maths is not hidden', 'Las matemáticas no se esconden'] },
+  {
+    kind: 'p',
+    text: [
+      'Every pattern carries the equation that draws it, a plain-language reading of that equation, a note on what each parameter really does, and the primary source it comes from — in English and Spanish. Next to it sits the generator’s own code, exactly as it runs. Nothing is a rewritten teaching version.',
+      'Cada patrón lleva consigo la ecuación que lo dibuja, una lectura en lenguaje llano de esa ecuación, una nota sobre lo que hace realmente cada parámetro y la fuente original de la que procede, en inglés y en español. Al lado está el propio código del generador, tal cual se ejecuta. Nada es una versión didáctica reescrita.',
+    ],
+  },
+  { kind: 'h2', text: ['The rules it keeps', 'Las reglas que respeta'] },
+  {
+    kind: 'ul',
+    items: [
+      [
+        'Deterministic. The same link always produces the same image, because every random number comes from a seeded generator.',
+        'Determinista. El mismo enlace produce siempre la misma imagen, porque todo número aleatorio sale de un generador con semilla.',
+      ],
+      [
+        'Vector only. Pure SVG, no gradients, no filters, no blur. The quality has to come from the line, not from effects.',
+        'Solo vectores. SVG puro, sin degradados, sin filtros, sin desenfoques. La calidad tiene que venir del trazo, no de los efectos.',
+      ],
+      [
+        'Monochrome by default. Colour is opt-in and always flat.',
+        'Monocromo por defecto. El color es opcional y siempre plano.',
+      ],
+      [
+        'Bilingual throughout, English and Spanish, with nothing available in one language and missing in the other.',
+        'Bilingüe de principio a fin, en inglés y español, sin nada que exista en un idioma y falte en el otro.',
+      ],
+    ],
+  },
+  { kind: 'h2', text: ['Inspiration', 'Inspiración'] },
+  {
+    kind: 'p',
+    text: [
+      'flowshape was inspired by bookofshapes.com, which set the standard of craft this project aims at: hairline strokes, strict monochrome discipline, and compositions that commit rather than hedge. flowshape is an independent implementation — it shares no code with that site, and its pattern set, its parameter interface and its bilingual explanations are its own.',
+      'flowshape se inspiró en bookofshapes.com, que fijó el estándar de oficio al que este proyecto aspira: trazos de grosor capilar, disciplina monocroma estricta y composiciones que se comprometen en lugar de quedarse a medias. flowshape es una implementación independiente: no comparte código con ese sitio, y su conjunto de patrones, su interfaz de parámetros y sus explicaciones bilingües son propios.',
+    ],
+  },
+];
+
+const CREDIT_HEADING: Pair = ['Who made this', 'Quién lo hizo'];
+const CREDIT_TEXT: Pair = [
+  'flowshape is built and maintained by {author}, in Madrid.',
+  'flowshape está desarrollado y mantenido por {author}, en Madrid.',
+];
+const LICENCE_HEADING: Pair = ['Licence and source', 'Licencia y código'];
+const LICENCE_TEXT: Pair = [
+  'Released under the MIT licence. The full source lives on GitHub — issues and pull requests are welcome. Posters you generate are yours; the licence covers the software, not your output.',
+  'Publicado bajo licencia MIT. El código completo está en GitHub y las incidencias y propuestas son bienvenidas. Los pósters que generes son tuyos: la licencia cubre el software, no tu obra.',
+];
+
+const at = (p: Pair, lang: Lang): string => (lang === 'es' ? p[1] : p[0]);
+
+function extLink(href: string, text: string): HTMLAnchorElement {
+  const a = document.createElement('a');
+  a.href = href;
+  a.textContent = text;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  return a;
+}
+
+export function mountAbout(root: HTMLElement): void {
+  const lang = currentLang();
+  const patterns = listPatterns();
+  const families = new Set(patterns.map((p) => p.family)).size;
+  const fill = (s: string): string =>
+    s.replace('{n}', String(patterns.length)).replace('{f}', String(families));
+
+  root.innerHTML = '';
+  document.documentElement.lang = lang;
+
+  const article = document.createElement('article');
+  article.className = 'about';
+
+  const h1 = document.createElement('h1');
+  h1.className = 'about-title';
+  h1.textContent = lang === 'es' ? 'Acerca de flowshape' : 'About flowshape';
+  article.append(h1);
+
+  for (const block of BLOCKS) {
+    if (block.kind === 'h2') {
+      const h = document.createElement('h2');
+      h.textContent = at(block.text, lang);
+      article.append(h);
+    } else if (block.kind === 'p') {
+      const p = document.createElement('p');
+      p.textContent = fill(at(block.text, lang));
+      article.append(p);
+    } else {
+      const ul = document.createElement('ul');
+      for (const item of block.items) {
+        const li = document.createElement('li');
+        li.textContent = fill(at(item, lang));
+        ul.append(li);
+      }
+      article.append(ul);
+    }
+  }
+
+  const creditHeading = document.createElement('h2');
+  creditHeading.textContent = at(CREDIT_HEADING, lang);
+  const credit = document.createElement('p');
+  const [creditBefore, creditAfter] = at(CREDIT_TEXT, lang).split('{author}');
+  credit.append(creditBefore!, extLink(AUTHOR_URL, AUTHOR_NAME), creditAfter ?? '');
+  const orcid = document.createElement('p');
+  orcid.className = 'about-orcid';
+  orcid.append('ORCID ', extLink(ORCID_URL, '0009-0000-2026-0836'));
+  article.append(creditHeading, credit, orcid);
+
+  const licenceHeading = document.createElement('h2');
+  licenceHeading.textContent = at(LICENCE_HEADING, lang);
+  const licence = document.createElement('p');
+  licence.textContent = at(LICENCE_TEXT, lang);
+  const repo = document.createElement('p');
+  repo.append(extLink(REPO_URL, 'github.com/Jossifresben/flowshape'));
+  article.append(licenceHeading, licence, repo);
+
+  root.append(buildNav(lang, 'about'), article, buildFooter(lang));
+}

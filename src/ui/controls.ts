@@ -1,8 +1,10 @@
 import type { ParamDef } from '../patterns/registry';
+import { paramLabel, type Lang } from '../i18n';
 
 export function sliderRow(
   def: ParamDef,
   value: number,
+  lang: Lang,
   onChange: (v: number) => void,
 ): HTMLElement {
   const row = document.createElement('div');
@@ -11,7 +13,7 @@ export function sliderRow(
   head.className = 'ctl-head';
   const label = document.createElement('span');
   label.className = 'ctl-label';
-  label.textContent = def.label.split('.').pop()!.toUpperCase();
+  label.textContent = paramLabel(def.label, lang);
   const val = document.createElement('span');
   val.className = 'ctl-value';
   val.textContent = String(value);
@@ -33,6 +35,7 @@ export function sliderRow(
 export function checkboxRow(
   def: ParamDef,
   value: number,
+  lang: Lang,
   onChange: (v: number) => void,
 ): HTMLElement {
   // <label>, not <div> — the whole row becomes one tap target: clicking
@@ -41,7 +44,7 @@ export function checkboxRow(
   row.className = 'ctl-row ctl-inline';
   const label = document.createElement('span');
   label.className = 'ctl-label';
-  label.textContent = def.label.split('.').pop()!.toUpperCase();
+  label.textContent = paramLabel(def.label, lang);
   const input = document.createElement('input');
   input.type = 'checkbox';
   input.checked = value === 1;
@@ -70,19 +73,20 @@ export function chipRow(
 export function selectRow(
   def: ParamDef,
   value: number,
+  lang: Lang,
   onChange: (v: number) => void,
 ): HTMLElement {
   const row = document.createElement('div');
   row.className = 'ctl-row';
   const label = document.createElement('span');
   label.className = 'ctl-label';
-  label.textContent = def.label.split('.').pop()!.toUpperCase();
+  label.textContent = paramLabel(def.label, lang);
   const select = document.createElement('select');
   select.className = 'ctl-select';
   (def.options ?? []).forEach((opt, i) => {
     const o = document.createElement('option');
     o.value = String(i);
-    o.textContent = opt.split('.').pop()!;
+    o.textContent = paramLabel(opt, lang);
     if (i === value) o.selected = true;
     select.append(o);
   });

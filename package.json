@@ -28,6 +28,7 @@
     "prebuild": "npm run thumbs",
     "build": "tsc --noEmit && vite build",
     "thumbs": "vite-node scripts/build-thumbs.ts",
+    "og": "vite-node scripts/build-og.ts && node scripts/shoot-og.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

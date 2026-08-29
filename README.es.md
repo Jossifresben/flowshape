@@ -139,7 +139,8 @@ src/
   core/       prng · url-state · constructor SVG · ruido · geometría · oklch · persist
   patterns/   registro + un módulo por patrón (25) + presets, randomize
   poster/     formatos · paletas · exportación (SVG / PNG)
-  ui/         galería · playground · controles · modal · markdown
+  ui/         galería · playground · acerca de · nav · pie · controles · modal
+  i18n/       tablas EN/ES: textos de la interfaz, nombres de patrones, etiquetas
   content/    explain/<patrón>.<en|es>.md — fórmula, explicación, cita
   audio/      dsp · features · onsets (capa de análisis del escenario animado)
   workers/    generación fuera del hilo principal para patrones pesados

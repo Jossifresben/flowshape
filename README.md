@@ -139,7 +139,8 @@ src/
   core/       prng · url-state · svg builder · noise · geometry · oklch · persist
   patterns/   registry + one module per pattern (25) + presets, randomize
   poster/     formats · palettes · export (SVG / PNG)
-  ui/         gallery · playground · controls · modal · markdown
+  ui/         gallery · playground · about · nav · footer · controls · modal
+  i18n/       EN/ES tables: chrome strings, pattern names, parameter labels
   content/    explain/<pattern>.<en|es>.md — formula, explanation, citation
   audio/      dsp · features · onsets (analysis layer for the animated stage)
   workers/    off-thread generation for heavy patterns

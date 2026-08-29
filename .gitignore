@@ -6,3 +6,6 @@ dist/
 
 # Working design specs and implementation plans — kept local, not published.
 docs/superpowers/
+
+# Intermediate Open Graph pages; the PNGs in public/ are what ship.
+scripts/.og/
