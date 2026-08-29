@@ -115,6 +115,25 @@ with Vite. Thumbnails are committed so `npm run dev` works without a prior
 build. Output is a static folder; there is nothing to configure and nothing to
 deploy but files.
 
+## The animated stage (in development)
+
+Part 4 adds an audio-reactive mode: the same generators, driven per frame by
+features extracted from a file or the microphone, drawn to canvas2d by an
+adapter over the same `SvgNode` tree, with movie capture on top. The analysis
+layer (`src/audio/`) is built and tested; the stage itself is not on `main`.
+
+It reuses everything above rather than forking it — `ParamDef` already declares
+every knob and its legal range, so the mapping layer needs no per-pattern code,
+and `generate` already accepts an arbitrary `{w, h}`, so a pattern composes into
+a 16:9 stage exactly as it composes into A3.
+
+One rule is relaxed there and only there: **colour and gradients are permitted
+on the animated stage**, resolved through the same OKLCH role tokens so the
+contrast guarantee carries over. The poster path is unchanged — flat colours,
+no gradients, monochrome by default.
+
+Full design: [audio-visualizer.md](audio-visualizer.md).
+
 ## Deliberate non-goals
 
 - **No in-house poster editor.** Element-level editing is delegated to Figma,

@@ -5,7 +5,8 @@
 | [architecture.md](architecture.md) | How the pieces fit, the pattern contract, colour roles, export, build, non-goals |
 | [patterns.md](patterns.md) | The 25-pattern catalogue with parameters and sources, and how to add one |
 | [url-state.md](url-state.md) | The URL schema and the compatibility rules that keep old links working |
-| [research/](research/) | Verified mathematical catalogues the patterns were selected from, plus the bookofshapes.com craft analysis that set the quality bar |
+| [audio-visualizer.md](audio-visualizer.md) | The animated audio-reactive stage: analysis, mapping, renderer, export (in development) |
+| [research/](research/) | Verified mathematical catalogues the patterns were selected from |
 | [superpowers/specs/](superpowers/specs/) | Approved design specifications, part by part |
 | [superpowers/plans/](superpowers/plans/) | The task-by-task implementation plans built from those specs |
 
