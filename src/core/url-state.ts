@@ -13,7 +13,7 @@ export interface ColorState {
 /** Defaults for the four OKLCH colour controls. `ColorState` lives here, so
  *  this is the single canonical copy; `src/poster/palettes.ts` re-exports
  *  it as `COLOR_DEFAULTS` for colour resolution. */
-export const COLOR_DEFAULTS = { hue: 250, chroma: 0, paperL: 0.09, accentShift: 0 } as const;
+export const COLOR_DEFAULTS = { hue: 250, chroma: 0, paperL: 0.09, accentShift: 150 } as const;
 
 export interface AppState {
   patternId: string;

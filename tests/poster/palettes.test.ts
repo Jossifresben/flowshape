@@ -12,6 +12,21 @@ function srgbLuminance(hex: string): number {
   return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
 }
 
+function srgbDistance(a: string, b: string): number {
+  const [ar, ag, ab] = hexToRgb(a);
+  const [br, bg, bb] = hexToRgb(b);
+  return Math.sqrt((ar - br) ** 2 + (ag - bg) ** 2 + (ab - bb) ** 2);
+}
+
+/** Mirrors the inkL formula in resolvePalette — needed here only to decide
+ *  which sampled points fall in the "model has headroom" band below. */
+function inkLOf(paperL: number): number {
+  return Math.min(
+    0.97,
+    Math.max(0.05, paperL <= 0.5 ? 0.91 + paperL * 0.09 : 0.02 + (paperL - 0.5) * 0.35),
+  );
+}
+
 describe('resolvePalette', () => {
   it('defaults produce a near-black paper and a light, high-contrast ink', () => {
     const p = resolvePalette({});
@@ -72,5 +87,66 @@ describe('resolvePalette', () => {
         }
       }
     }
+  });
+
+  // Accent distinctness is asserted in two tiers, and it's worth saying why:
+  //
+  // Two sRGB colours pinned near the same extreme (true black or true
+  // white) cannot be far apart in Euclidean RGB distance no matter how
+  // their OKLCH hue differs — that's an 8-bit gamut limit, not a defect.
+  // Worked example at inkL≈0.057 (paperL just past 0.5, chroma maxed):
+  // hue 0/60/150 resolve to #020001 / #010000 / #000100 — genuinely
+  // different hues, distinct by construction, but only 1-2 sRGB levels
+  // apart. No accent model can clear a distance of 28 there.
+  //
+  // So: a distance >= 6 floor holds *everywhere* — this is the "accent
+  // never silently equals ink" guarantee, the actual bug the review found.
+  // The strong distance >= 28 guarantee is asserted only where the model
+  // has lightness headroom to work with (0.12 <= inkL <= 0.90); outside
+  // that band it's the documented limit above, not a regression. The
+  // paper/accent luminance-gap (legibility) guarantee has no such carve-out
+  // — it holds unconditionally, at every sampled point including the
+  // headroom band's edges and accentShift = 0.
+  describe('accent distinctness', () => {
+    const INK_HEADROOM_MIN = 0.12;
+    const INK_HEADROOM_MAX = 0.9;
+
+    it('accent never collapses into ink (distance >= 6 everywhere) and stays legible on paper (luminance gap >= 0.28 everywhere)', () => {
+      for (let i = 4; i <= 96; i += 2) {
+        const paperL = i / 100;
+        for (const chroma of [0, 0.08, 0.16]) {
+          for (const hue of [0, 90, 180, 250, 270, 300]) {
+            for (const accentShift of [0, 60, 150]) {
+              const p = resolvePalette({ paperL, chroma, hue, accentShift });
+              const dist = srgbDistance(p.ink, p.accent);
+              const lumGap = Math.abs(srgbLuminance(p.paper) - srgbLuminance(p.accent));
+              expect(dist).toBeGreaterThanOrEqual(6);
+              expect(lumGap).toBeGreaterThanOrEqual(0.28);
+            }
+          }
+        }
+      }
+    });
+
+    it('accent is strongly distinct from ink (distance >= 28) wherever the model has lightness headroom (0.12 <= inkL <= 0.90)', () => {
+      let checked = 0;
+      for (let i = 4; i <= 96; i += 2) {
+        const paperL = i / 100;
+        if (inkLOf(paperL) < INK_HEADROOM_MIN || inkLOf(paperL) > INK_HEADROOM_MAX) continue;
+        for (const chroma of [0, 0.08, 0.16]) {
+          for (const hue of [0, 90, 180, 250, 270, 300]) {
+            for (const accentShift of [0, 60, 150]) {
+              checked++;
+              const p = resolvePalette({ paperL, chroma, hue, accentShift });
+              const dist = srgbDistance(p.ink, p.accent);
+              expect(dist).toBeGreaterThanOrEqual(28);
+            }
+          }
+        }
+      }
+      // Sanity check that the headroom band actually sampled something —
+      // an empty band would make this test vacuously true.
+      expect(checked).toBeGreaterThan(0);
+    });
   });
 });

@@ -11,7 +11,7 @@ import { NAMES } from './gallery';
  *  and the text renders as-is. */
 const COLOR_PARAM_DEFS: Record<keyof typeof COLOR_DEFAULTS, ParamDef> = {
   hue: { key: 'hue', kind: 'float', min: 0, max: 360, step: 1, default: COLOR_DEFAULTS.hue, label: 'HUE' },
-  chroma: { key: 'chroma', kind: 'float', min: 0, max: 0.22, step: 0.005, default: COLOR_DEFAULTS.chroma, label: 'CHROMA' },
+  chroma: { key: 'chroma', kind: 'float', min: 0, max: 0.16, step: 0.005, default: COLOR_DEFAULTS.chroma, label: 'CHROMA' },
   paperL: { key: 'paperL', kind: 'float', min: 0.04, max: 0.96, step: 0.01, default: COLOR_DEFAULTS.paperL, label: 'PAPER' },
   accentShift: { key: 'accentShift', kind: 'float', min: 0, max: 180, step: 1, default: COLOR_DEFAULTS.accentShift, label: 'ACCENT SHIFT' },
 };
