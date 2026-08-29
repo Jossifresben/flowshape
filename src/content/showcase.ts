@@ -54,7 +54,17 @@ export const SHOWCASE: ShowcaseEntry[] = [
 /** Curated posters. Same idea as SHOWCASE but `#/c/` hashes, rendered through
  *  the composer so a card shows layout, colourway and type block rather than
  *  bare artwork. */
-export const SHOWCASE_POSTERS: ShowcaseEntry[] = [];
+export const SHOWCASE_POSTERS: ShowcaseEntry[] = [
+  { hash: '#/c/maurer?v=1&seed=1&hue=0&accentShift=130&layout=3a.s0.d1.a0&cway=11&n=10&d=73&strokeWidth=0.5&envelope=1&size=1.12&phase=0' },
+  { hash: '#/c/coulomb?v=1&seed=42034&hue=0&paperL=0.08&accentShift=130&layout=3a.s0.d0.a0&cway=8&charges=4&spacing=10&steps=300&coreRadius=12&strokeWidth=1.1&emphasisEvery=0&size=1&phase=0' },
+  { hash: '#/c/delaunay?v=1&seed=40186&hue=278&chroma=0.075&paperL=0.08&accentShift=130&layout=3a.s0.d0.a0&cway=0&points=220&mode=1&strokeWidth=0.9&vertexSize=3.4&accentEvery=36&size=1' },
+  { hash: '#/c/fabric?v=1&seed=61555&hue=0&paperL=0.08&accentShift=130&layout=3a.s0.d0.a0&cway=0&gridSize=52&warpAmount=58&noiseScale=3.2&mode=0&dotSize=1.7&strokeWidth=0.4&size=1&phase=0' },
+  { hash: '#/c/flowfield?v=1&seed=41399&hue=97&chroma=0.115&paperL=0.08&accentShift=130&layout=3a.s0.d0.a1&cway=0&freq=0.011&curl=2.15&spacing=9&steps=300&strokeWidth=0.85&emphasisEvery=26&size=1&phase=0' },
+  { hash: '#/c/harmonograph?v=1&seed=38978&hue=0&paperL=0.08&accentShift=130&layout=3d.s0.d0.a0&cway=8&ratio=0&detune=0.017&damping=0.001&duration=570&strokeWidth=0.3&opacity=0.52&size=1.1&phase=0' },
+  { hash: '#/c/truchet?v=1&seed=36131&hue=15&paperL=0.08&accentShift=130&layout=3c.s0.d0.a1&cway=0&cell=30&variant=0&render=0&strokeWidth=1&boldChance=0.14&accentChance=0.04&size=1' },
+  { hash: '#/c/tumbling?v=1&seed=54166&hue=15&paperL=0.08&accentShift=130&layout=3d.s0.d0.a0&cway=7&cell=24&flipChance=0.54&coherence=0.45&voidChance=0&render=0&hatchDensity=11&faceShading=0.71&strokeWidth=0.95&size=1&phase=0' },
+  { hash: '#/c/voxel?v=1&seed=68182&hue=266&chroma=0.115&paperL=0.08&accentShift=130&layout=3d.s0.d0.a0&cway=9&shape=1&dimension=14&gap=0.09&shellOnly=1&scatter=0.53&faceShading=0.75&depthShading=0.55&strokeWidth=0.75&size=1.17&phase=0' },
+];
 
 /**
  * Curated videos: recordings from the animate stage, served as static files
