@@ -14,8 +14,8 @@ export const UI: Record<string, Pair> = {
   'gal.headlineA': ['Shape mathematics', 'Convierte las matemáticas'],
   'gal.headlineB': ['into art.', 'en arte.'],
   'gal.subtitle': [
-    'Play with a pattern, tune every parameter, then export a poster. Open source and free.',
-    'Juega con un patrón, ajusta cada parámetro y exporta un póster. Libre y gratuito.',
+    'Play with a pattern, tune every parameter, then take it out as a poster — or set it moving to music. Open source and free.',
+    'Juega con un patrón, ajusta cada parámetro y llévatelo como póster, o ponlo a moverse con la música. Libre y gratuito.',
   ],
   'gal.patterns': ['PATTERNS', 'PATRONES'],
   'gal.families': ['FAMILIES', 'FAMILIAS'],

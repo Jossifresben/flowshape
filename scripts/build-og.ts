@@ -28,12 +28,12 @@ const ART_PARAMS = { points: 2200, accentEvery: 89, dotMin: 0.5, dotGrow: 0.0026
 const COPY = {
   en: {
     headline: 'Shape mathematics<br>into art.',
-    sub: '25 pattern generators · tune every parameter · export a print-ready poster',
+    sub: '25 pattern generators · tune every parameter · print it, or set it moving to music',
     tag: 'FREE · OPEN SOURCE · NO ACCOUNT',
   },
   es: {
     headline: 'Convierte las matemáticas<br>en arte.',
-    sub: '25 generadores de patrones · ajusta cada parámetro · exporta un póster listo para imprimir',
+    sub: '25 generadores de patrones · ajusta cada parámetro · imprímelo o ponlo en movimiento',
     tag: 'LIBRE · CÓDIGO ABIERTO · SIN CUENTA',
   },
 } as const;

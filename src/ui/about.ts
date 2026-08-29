@@ -14,8 +14,15 @@ const BLOCKS: Block[] = [
   {
     kind: 'p',
     text: [
-      'flowshape turns mathematics into posters. Pick one of {n} pattern generators across {f} families, tune every parameter until it looks right, choose a paper size, and export an SVG or PNG you can finish in any design tool.',
-      'flowshape convierte las matemáticas en pósters. Elige uno de sus {n} generadores de patrones, repartidos en {f} familias, ajusta cada parámetro hasta que te guste, escoge un tamaño de papel y exporta un SVG o un PNG que podrás rematar en cualquier herramienta de diseño.',
+      'flowshape turns mathematics into art. Pick one of {n} pattern generators across {f} families — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — and move every parameter it has until the shape is yours.',
+      'flowshape convierte las matemáticas en arte. Elige uno de sus {n} generadores de patrones, repartidos en {f} familias —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— y mueve cada parámetro que tenga hasta que la forma sea tuya.',
+    ],
+  },
+  {
+    kind: 'p',
+    text: [
+      'Then take it somewhere. Export a print-ready SVG or PNG at any paper size and finish it in Figma, Illustrator, Inkscape or Canva — flowshape deliberately does not try to be a design editor. Or give the same pattern a piece of music and let it move.',
+      'Después llévatelo a alguna parte. Exporta un SVG o un PNG listo para imprimir en cualquier tamaño de papel y remátalo en Figma, Illustrator, Inkscape o Canva: flowshape, deliberadamente, no pretende ser un editor de diseño. O dale una pieza de música al mismo patrón y déjalo moverse.',
     ],
   },
   {
@@ -39,6 +46,21 @@ const BLOCKS: Block[] = [
     text: [
       'Every pattern carries the equation that draws it, a plain-language reading of that equation, a note on what each parameter really does, and the primary source it comes from — in English and Spanish. Next to it sits the generator’s own code, exactly as it runs. Nothing is a rewritten teaching version.',
       'Cada patrón lleva consigo la ecuación que lo dibuja, una lectura en lenguaje llano de esa ecuación, una nota sobre lo que hace realmente cada parámetro y la fuente original de la que procede, en inglés y en español. Al lado está el propio código del generador, tal cual se ejecuta. Nada es una versión didáctica reescrita.',
+    ],
+  },
+  { kind: 'h2', text: ['Patterns that move', 'Patrones que se mueven'] },
+  {
+    kind: 'p',
+    text: [
+      'Give a pattern an audio file or your microphone and it becomes a live visual. The weight of the bass, the brightness of the timbre and the attack of each onset drive its parameters, and a pattern with nothing continuous to move instead rebuilds itself on the beat. It plays on a 16:9, 9:16 or 1:1 stage you can record.',
+      'Dale a un patrón un archivo de audio o tu micrófono y se convierte en un visual en vivo. El peso de los graves, el brillo del timbre y el ataque de cada golpe gobiernan sus parámetros, y un patrón que no tenga nada continuo que mover se reconstruye a sí mismo al ritmo. Se reproduce en un escenario 16:9, 9:16 o 1:1 que puedes grabar.',
+    ],
+  },
+  {
+    kind: 'p',
+    text: [
+      'The audio never leaves your browser — there is nowhere to send it. This part is still in development.',
+      'El audio nunca sale de tu navegador: no hay adónde enviarlo. Esta parte todavía está en desarrollo.',
     ],
   },
   { kind: 'h2', text: ['The rules it keeps', 'Las reglas que respeta'] },
