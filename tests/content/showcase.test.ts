@@ -87,9 +87,22 @@ describe('curated posters', () => {
 describe('curated videos', () => {
   // Also may legitimately be empty, same reasoning as posters above.
 
-  it('has a src and poster rooted under /showcase/', () => {
+  // A video may be hosted remotely — the files are ~180 MB at full resolution
+  // and live in Cloudflare R2 rather than in this repository. Poster frames
+  // stay local: they are small and needed on first paint.
+  const isRemote = (src: string): boolean => src.startsWith('https://');
+
+  it('has a src that is either local under /showcase/ or an https URL', () => {
     for (const entry of SHOWCASE_VIDEOS) {
-      expect(entry.src.startsWith('/showcase/'), `src not under /showcase/: ${entry.src}`).toBe(true);
+      expect(
+        isRemote(entry.src) || entry.src.startsWith('/showcase/'),
+        `src is neither https nor under /showcase/: ${entry.src}`,
+      ).toBe(true);
+    }
+  });
+
+  it('has a poster served locally', () => {
+    for (const entry of SHOWCASE_VIDEOS) {
       expect(entry.poster.startsWith('/showcase/'), `poster not under /showcase/: ${entry.poster}`).toBe(true);
     }
   });
@@ -111,9 +124,13 @@ describe('curated videos', () => {
     }
   });
 
-  it('has files that exist on disk', () => {
+  it('has local files that exist on disk', () => {
     for (const entry of SHOWCASE_VIDEOS) {
-      expect(existsUnderPublic(entry.src), `missing public${entry.src}`).toBe(true);
+      // A remote src cannot be checked here without a network call, which a
+      // unit test must not make. Its availability is a deploy-time concern.
+      if (!isRemote(entry.src)) {
+        expect(existsUnderPublic(entry.src), `missing public${entry.src}`).toBe(true);
+      }
       expect(existsUnderPublic(entry.poster), `missing public${entry.poster}`).toBe(true);
     }
   });

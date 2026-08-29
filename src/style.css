@@ -118,6 +118,10 @@ input[type='checkbox'] { accent-color: var(--ink); }
   border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
 }
 .gal-chip.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+/* The gallery's tab chips are anchors, not buttons — selecting a tab has to
+   change `location.hash` so the tab is shareable and the back button works —
+   so they need the link underline taken off to match the family chips. */
+a.gal-chip { text-decoration: none; }
 
 .gal-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px;
