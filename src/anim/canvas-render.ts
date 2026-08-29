@@ -14,7 +14,8 @@ export interface Ctx2D {
   moveTo(x: number, y: number): void;
   lineTo(x: number, y: number): void;
   closePath(): void;
-  fill(path?: Path2D, rule?: CanvasFillRule): void;
+  fill(rule?: CanvasFillRule): void;
+  fill(path: Path2D, rule?: CanvasFillRule): void;
   stroke(path?: Path2D): void;
   fillStyle: string | CanvasGradient | CanvasPattern;
   strokeStyle: string | CanvasGradient | CanvasPattern;
@@ -73,9 +74,20 @@ function paint(ctx: Ctx2D, path: Path2D | null, st: Style, fillRule?: string, st
   if (!strokeOnly && st.fill !== 'none') {
     ctx.fillStyle = st.fill;
     ctx.globalAlpha = st.alpha * st.fillAlpha;
-    const rule = fillRule === 'evenodd' ? 'evenodd' : undefined;
-    if (path) ctx.fill(path, rule);
-    else ctx.fill(undefined, rule);
+    // Passing an explicit `undefined` as the *first* argument does not fall
+    // back to a no-path call in real browsers — overload resolution keys off
+    // arguments.length, so `fill(undefined, rule)` is matched against the
+    // (path, fillRule) overload and throws "parameter 1 is not of type
+    // Path2D". Every render hits this (the paper rect drawn first has no
+    // Path2D), so the two shapes must be genuinely different call arities.
+    const rule: CanvasFillRule | undefined = fillRule === 'evenodd' ? 'evenodd' : undefined;
+    if (path) {
+      if (rule) ctx.fill(path, rule); else ctx.fill(path);
+    } else if (rule) {
+      ctx.fill(rule);
+    } else {
+      ctx.fill();
+    }
   }
   if (st.stroke !== 'none') {
     ctx.strokeStyle = st.stroke;
