@@ -35,7 +35,17 @@ export const voxel = definePattern({
   family: 'isometric',
   phase: 1,
   heavy: true,
-  usesSeed: true,
+  // A voxel form is a deterministic solid, not a stochastic one: its only
+  // seed-driven behaviour is the scatter cull and a depth tie-break jitter
+  // that is provably invisible (see step 6 below), so at the default
+  // scatter=0 every seed rendered byte-for-byte the same picture and
+  // Randomize appeared to do nothing. Randomize instead cycles the pattern's
+  // own parameters (shape, dimension, gap, scatter, shading) — far more
+  // interesting for a form-based pattern, and it actually makes the
+  // scatter/jitter draws below matter when scatter lands above 0. The PRNG
+  // is now seeded from a fixed constant rather than the app-level seed (see
+  // `generate`), so this pattern is fully determined by its params alone.
+  usesSeed: false,
   params: [
     { key: 'shape', kind: 'enum', min: 0, max: 2, step: 1, default: 1, label: 'voxel.shape', options: ['voxel.sphere', 'voxel.cube', 'voxel.torus'] },
     { key: 'dimension', kind: 'int', min: 4, max: 18, step: 1, default: 12, label: 'voxel.dimension' },
@@ -46,8 +56,13 @@ export const voxel = definePattern({
     { key: 'depthShading', kind: 'float', min: 0, max: 0.9, step: 0.01, default: 0.55, label: 'voxel.depthShading' },
     { key: 'strokeWidth', kind: 'float', min: 0, max: 1.2, step: 0.05, default: 0.5, label: 'voxel.strokeWidth' },
   ],
-  generate(p, seed, size) {
-    const rnd = mulberry32(deriveSeed(seed, 'voxel'));
+  generate(p, _seed, size) {
+    // Fixed internal seed: with usesSeed: false the app never varies `seed`
+    // for this pattern, but generate() must be invariant to it regardless
+    // (see the harness's "seed-invariant when !usesSeed" test) — so the
+    // scatter cull / depth tie-break PRNG below is seeded from a constant,
+    // not from the argument.
+    const rnd = mulberry32(deriveSeed(1, 'voxel'));
     const shape = p['shape']!;
     const dimension = p['dimension']!;
     const gap = p['gap']!;
