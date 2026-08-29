@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   colorwaysFor, artworkPalette, resolvePresentation,
-  COLORWAY_COUNT, GROUND_L, TINT_LUM_MIN,
+  COLORWAY_COUNT, GROUND_L, MARK_L, TINT_LUM_MIN,
 } from '../../src/compose/colorways';
 import { contrastRatio, relativeLuminance } from '../../src/core/contrast';
 import { COLOR_DEFAULTS } from '../../src/core/url-state';
@@ -15,10 +15,25 @@ describe('colorways', () => {
     ways.forEach((c, i) => expect(c.index).toBe(i));
   });
 
-  it('keeps the user own accent as colorway 0', () => {
+  it('keeps the user own hue and accent offset as colorway 0', () => {
     const ways = colorwaysFor(BASE);
     const solo = colorwaysFor({ ...BASE }, 1);
     expect(ways[0]!.accent).toBe(solo[0]!.accent);
+    expect(ways[0]!.ground).toBe(solo[0]!.ground);
+  });
+
+  it('gives the mark accent enough lightness to read as colour, not as ink', () => {
+    for (const c of colorwaysFor(BASE)) {
+      // The resolvePalette accent measures ~0.025 here, which is ink by another
+      // name; an accent-coloured title has to be distinguishable from it.
+      expect(relativeLuminance(c.accent)).toBeGreaterThan(0.08);
+      expect(contrastRatio(c.accent, c.paper)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('keeps an accent on a monochrome sheet without inventing saturation', () => {
+    const mono = colorwaysFor({ ...BASE, chroma: 0 });
+    for (const c of mono) expect(contrastRatio(c.accent, c.paper)).toBeGreaterThanOrEqual(4.5);
   });
 
   it('gives every colorway a print-like sheet regardless of the artwork ground', () => {
@@ -46,6 +61,7 @@ describe('colorways', () => {
 
   it('samples the ground bright enough that some hues clear the tint guard', () => {
     expect(GROUND_L).toBe(0.78);
+    expect(MARK_L).toBe(0.50);
     const passing = colorwaysFor({ ...BASE, chroma: 0.16 }).filter((c) => c.groundLum >= TINT_LUM_MIN);
     expect(passing.length).toBeGreaterThan(0);
     expect(passing.length).toBeLessThan(COLORWAY_COUNT);

@@ -17,6 +17,17 @@ export interface RenderOptions {
   /** Generated at `artworkSize(sheet, skeleton)`, with role tokens intact. */
   artwork: SvgNode;
   measure: Measure;
+  /** Drop every text element and let the artwork absorb the type region.
+   *
+   *  Keeping the split would leave a large empty band where the type was —
+   *  3c would be 56% blank paper — which is not something anyone would print.
+   *  What survives is what still means something without type: the colorway,
+   *  the presentation treatment, and the crop marks. Accent *marks* are
+   *  caption devices and go with the captions; an accent *ground* stays,
+   *  because a plate is a framed composition in its own right.
+   *
+   *  A layout that cannot fit its title is valid here, because there is none. */
+  hideText?: boolean;
   onWarn?: (message: string) => void;
 }
 
@@ -59,12 +70,25 @@ function plateRect(sh: Sheet, s: Skeleton, art: Rect): Rect {
  * short edge 600, matching the convention `poster/formats.ts` already sets so
  * stroke weights read the same everywhere.
  */
-export function artworkSize(sh: Sheet, s: Skeleton): Size {
+export function artworkSize(sh: Sheet, s: Skeleton, hideText = false): Size {
   const { art } = regions(sh, s);
-  const region = s.artwork === 'plate' ? plateRect(sh, s, art) : art;
+  const region = artworkBed(sh, s, art, hideText);
   return region.w <= region.h
     ? { w: 600, h: Math.round((600 * region.h) / region.w) }
     : { w: Math.round((600 * region.w) / region.h), h: 600 };
+}
+
+/** The rectangle the artwork is placed into. With the text hidden, a bleed or
+ *  column region takes the whole sheet rather than leaving the type region
+ *  empty; a plate keeps its inset, since the plate *is* the composition. */
+function artworkBed(sh: Sheet, s: Skeleton, art: Rect, hideText: boolean): Rect {
+  if (s.artwork === 'plate') {
+    // With no caption below it, the plate centres on the sheet rather than
+    // staying pinned to the top of a split that no longer holds anything.
+    return plateRect(sh, s, hideText ? { x: 0, y: 0, w: sh.w, h: sh.h } : art);
+  }
+  if (hideText && s.artwork !== 'full') return { x: 0, y: 0, w: sh.w, h: sh.h };
+  return art;
 }
 
 let clipSeq = 0;
@@ -181,6 +205,7 @@ function monoLine(text: string, x: number, y: number, sh: Sheet, fill: string, a
 }
 
 interface Ctx {
+  hideText: boolean;
   sh: Sheet;
   s: Skeleton;
   c: Colorway;
@@ -200,11 +225,18 @@ function buildTitle(ctx: Ctx): { nodes: SvgNode[]; bottom: number } | null {
   // The accent `title` mode is the only place the title takes the accent colour.
   const titleFill = s.accent === 'title' ? ctx.accent : ctx.fg;
 
-  const fit = fitTitle(d.name, titleW, maxLines, u(sh, s.titleSize), u(sh, TITLE_FLOOR), measure);
+  // A banded title is set uppercase (handover 4b). Cased before measuring, or
+  // the fit would be computed against a narrower string than the one drawn.
+  const name = s.title === 'banded' ? d.name.toUpperCase() : d.name;
+  const fit = fitTitle(name, titleW, maxLines, u(sh, s.titleSize), u(sh, TITLE_FLOOR), measure);
   if (!fit) return null;
 
+  // The `code` mark owns the top-right corner of the content box, so the title
+  // block - and in a split layout the right-aligned description with it - has
+  // to start below the mark rather than underneath it.
+  const codeInset = s.accent === 'code' ? u(sh, 76) : 0;
   // A banded title sits at the foot of its band, clearing the boundary.
-  const top = s.title === 'banded' ? content.y + content.h - fit.size * 1.2 : content.y;
+  const top = s.title === 'banded' ? content.y + content.h - fit.size * 1.2 : content.y + codeInset;
   const head = titleLines(fit, content.x, top, titleFill);
   const nodes = [...head.nodes];
   let bottom = head.bottom;
@@ -214,7 +246,7 @@ function buildTitle(ctx: Ctx): { nodes: SvgNode[]; bottom: number } | null {
   if (showDesc && d.description) {
     const size = u(sh, 25);
     const para = split
-      ? paragraph(d.description, content.x + content.w, content.y, descW, size, ctx.fg, measure, 'end')
+      ? paragraph(d.description, content.x + content.w, content.y + codeInset, descW, size, ctx.fg, measure, 'end')
       : paragraph(d.description, content.x, bottom + u(sh, 44), descW, size, ctx.fg, measure);
     nodes.push(...para.nodes);
     bottom = Math.max(bottom, para.bottom);
@@ -267,7 +299,9 @@ function buildData(ctx: Ctx, top: number): SvgNode[] {
   return [
     el('rect', { x: content.x, y, width: content.w, height: boxH, fill: 'none', stroke: fg, 'stroke-width': w }),
     el('line', { x1: divider, y1: y, x2: divider, y2: y + boxH, stroke: fg, 'stroke-width': w }),
-    tx(d.formLabel, content.x + u(sh, 24), y + boxH * 0.62, {
+    // An identifier, not a second copy of the title: the handover's box held a
+    // series code, and the seed is the honest equivalent.
+    tx(String(d.seed), content.x + u(sh, 24), y + boxH * 0.62, {
       size: Math.min(u(sh, 120), boxH * 0.6), fill: fg, weight: 700, tracking: -0.045,
     }),
     monoLine(`FORM: ${d.formLabel}`, divider + u(sh, 24), y + boxH * 0.42, sh, fg),
@@ -286,6 +320,10 @@ function buildData(ctx: Ctx, top: number): SvgNode[] {
  */
 function buildAccent(ctx: Ctx, titleBottom: number): SvgNode[] {
   const { sh, s, d, content, accent } = ctx;
+  // Every accent mark is a caption device — a rule underlines a caption as much
+  // as a numeral labels one — so they all go when the captions do. The accent
+  // *ground* is not a mark and is painted in renderPoster regardless.
+  if (ctx.hideText) return [];
   switch (s.accent) {
     case 'none':
     // `title` colours the title itself, in buildTitle. `ground` is a field,
@@ -348,7 +386,7 @@ function buildDecoration(ctx: Ctx): SvgNode[] {
       ]));
     }
   }
-  if (s.decoration.verticalCaption) {
+  if (s.decoration.verticalCaption && !ctx.hideText) {
     const x = content.x - u(sh, 22);
     const y = content.y + content.h;
     out.push(el('g', { transform: `rotate(-90 ${x} ${y})` }, [
@@ -374,13 +412,14 @@ export function renderPoster(o: RenderOptions): RenderResult {
     el('rect', { x: 0, y: 0, width: sh.w, height: sh.h, fill: c.paper }),
   ];
 
-  const bed = s.artwork === 'plate' ? plateRect(sh, s, art) : art;
+  const hideText = o.hideText === true;
+  const bed = artworkBed(sh, s, art, hideText);
   const pal = artworkPalette(c, present);
   // The bed under the artwork: `paper` in the artwork's own palette, which for
   // 'as-generated' is the dark ground and for 'tinted' is the accent field.
   children.push(el('rect', { x: bed.x, y: bed.y, width: bed.w, height: bed.h, fill: pal.paper }));
   const pos = artworkPosition(s);
-  children.push(placeArtwork(bed, resolveRoles(artwork, pal), artworkSize(sh, s), s, pos.x, pos.y));
+  children.push(placeArtwork(bed, resolveRoles(artwork, pal), artworkSize(sh, s, hideText), s, pos.x, pos.y));
 
   if (s.scrim) children.push(...buildScrim(sh, c, `scrim${++clipSeq}`));
 
@@ -392,17 +431,19 @@ export function renderPoster(o: RenderOptions): RenderResult {
   const groundIsSheet = s.accent === 'ground' && s.artwork === 'plate';
   if (groundIsSheet) {
     children[0] = el('rect', { x: 0, y: 0, width: sh.w, height: sh.h, fill: c.ground });
-  } else if (onGround) {
+  } else if (onGround && !hideText) {
     children.push(el('rect', { x: type.x, y: type.y, width: type.w, height: type.h, fill: c.ground }));
   }
 
   const fg = s.artwork === 'full' ? c.paper : onGround ? c.groundType : c.ink;
-  const ctx: Ctx = { sh, s, c, d: o.data, measure: o.measure, content, fg, accent: c.accent };
+  const ctx: Ctx = { hideText, sh, s, c, d: o.data, measure: o.measure, content, fg, accent: c.accent };
 
-  const title = buildTitle(ctx);
+  // With the text hidden there is no title to fit, so no layout can fail on
+  // one; the composition, its grounds and its rules are all that remain.
+  const title = hideText ? { nodes: [], bottom: content.y } : buildTitle(ctx);
   if (!title) return { ok: false, error: s.oneLineTitle ? 'title-needs-one-line' : 'title-too-long' };
   children.push(
-    ...buildData(ctx, title.bottom),
+    ...(hideText ? [] : buildData(ctx, title.bottom)),
     ...title.nodes,
     ...buildAccent(ctx, title.bottom),
     ...buildDecoration(ctx),

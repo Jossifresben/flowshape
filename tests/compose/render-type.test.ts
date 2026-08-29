@@ -31,9 +31,21 @@ describe('title block', () => {
   it('sets the title, tight and bold, in every layout that shows one', () => {
     for (const s of SKELETONS) {
       const out = dump(s.id);
-      expect(out, s.id).toContain('Voxel');
+      expect(out.toLowerCase(), s.id).toContain('voxel');
       expect(out, s.id).toContain('font-weight="700"');
       expect(out, s.id).toContain('letter-spacing="-0.045em"');
+    }
+  });
+
+  it('sets a banded title uppercase, and leaves every other layout cased', () => {
+    for (const s of SKELETONS) {
+      const out = dump(s.id);
+      if (s.title === 'banded') {
+        expect(out, s.id).toContain('VOXEL FORM');
+        expect(out, s.id).not.toContain('>Voxel<');
+      } else {
+        expect(out, s.id).not.toContain('VOXEL FORM');
+      }
     }
   });
 
@@ -77,6 +89,24 @@ describe('data block', () => {
   it('renders the form and mode pair where the layout declares it', () => {
     expect(dump('4d')).toContain('FORM: VOXEL');
     expect(dump('4d')).toContain('MODE: ISOMETRIC');
+  });
+
+  it('keeps the code mark clear of a right-aligned description', () => {
+    // 3c anchors both to the top of the content box; they must not collide.
+    const out = dump('3c');
+    const ys = [...out.matchAll(/<text x="([\d.]+)" y="([\d.]+)"[^>]*>([^<]*)</g)]
+      .map((m) => ({ x: Number(m[1]), y: Number(m[2]), t: m[3] ?? '' }));
+    const code = ys.find((n) => n.t === 'VOXEL')!;
+    const desc = ys.filter((n) => n.t.includes('cubic') || n.t.includes('lattice'));
+    expect(code).toBeDefined();
+    expect(desc.length).toBeGreaterThan(0);
+    for (const d of desc) expect(d.y, `description at ${d.y} vs code at ${code.y}`).toBeGreaterThan(code.y);
+  });
+
+  it('puts an identifier in the ruled box, not a second copy of the title', () => {
+    const out = dump('4b');
+    expect(out).toContain('71203');
+    expect(out).toContain('VOXEL FORM');
   });
 
   it('paints an accent field only where a layout asks for one', () => {
