@@ -34,14 +34,27 @@ export const voxel = definePattern({
   id: 'voxel',
   family: 'isometric',
   phase: 1,
-  heavy: true,
+  heavy: false,
+  // A voxel form's seed drives the scatter cull (and a depth tie-break
+  // jitter that is provably invisible — see step 6 below): with scatter
+  // above 0, different seeds cull different cells and the silhouette
+  // genuinely changes shape. scatter's default (0.35, see the param below)
+  // keeps that cull live out of the box, so Randomize visibly reshapes the
+  // form and a seed carried in a shared URL (e.g. a curated preset) means
+  // what it says.
   usesSeed: true,
   params: [
     { key: 'shape', kind: 'enum', min: 0, max: 2, step: 1, default: 1, label: 'voxel.shape', options: ['voxel.sphere', 'voxel.cube', 'voxel.torus'] },
     { key: 'dimension', kind: 'int', min: 4, max: 18, step: 1, default: 12, label: 'voxel.dimension' },
     { key: 'gap', kind: 'float', min: 0, max: 0.4, step: 0.01, default: 0.08, label: 'voxel.gap' },
     { key: 'shellOnly', kind: 'bool', min: 0, max: 1, step: 1, default: 1, label: 'voxel.shellOnly' },
-    { key: 'scatter', kind: 'float', min: 0, max: 0.6, step: 0.01, default: 0, label: 'voxel.scatter' },
+    // Non-zero by default so the seed-driven scatter cull is live at
+    // defaults (see `usesSeed` above): at scatter=0 the seed only reaches
+    // the visually-inert tie-break jitter (step 6) and Randomize does
+    // nothing. 0.35 removes roughly a third of shell cells — enough to
+    // visibly vary the silhouette between seeds without eroding the form
+    // past recognition.
+    { key: 'scatter', kind: 'float', min: 0, max: 0.6, step: 0.01, default: 0.35, label: 'voxel.scatter' },
     { key: 'faceShading', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.75, label: 'voxel.faceShading' },
     { key: 'depthShading', kind: 'float', min: 0, max: 0.9, step: 0.01, default: 0.55, label: 'voxel.depthShading' },
     { key: 'strokeWidth', kind: 'float', min: 0, max: 1.2, step: 0.05, default: 0.5, label: 'voxel.strokeWidth' },
