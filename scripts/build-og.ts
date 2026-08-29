@@ -4,7 +4,7 @@
  * Writes `scripts/.og/og-<lang>.html` — a 1200x630 page whose artwork is
  * produced by the project's own generators, at a fixed seed, so the social
  * card is made of the same maths the site is. `npm run og` then rasterises
- * each page with headless Chrome into `public/og-<lang>.png`.
+ * each page with headless Chrome into `public/og-<lang>-<version>.png`.
  *
  * Chrome is not a build dependency: the PNGs are committed, and this script
  * only runs when the card design or the wording changes.

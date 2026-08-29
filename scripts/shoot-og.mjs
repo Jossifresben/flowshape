@@ -1,6 +1,12 @@
 /**
  * Rasterises the Open Graph cards written by `build-og.ts` into
- * `public/og-<lang>.png`, using whatever Chrome is on this machine.
+ * `public/og-<lang>-<CARD_VERSION>.png`, using whatever Chrome is on this
+ * machine.
+ *
+ * The filename carries a version because social platforms cache OG images by
+ * URL and will keep serving a stale card indefinitely. Bump CARD_VERSION
+ * whenever the card changes and update the <meta> tags in index.html to match;
+ * a new URL is picked up immediately, with no per-platform cache flush.
  *
  * Kept out of `npm run build` on purpose: the PNGs are committed, so a normal
  * build (and CI) never needs a browser. Override the binary with CHROME=…
@@ -19,6 +25,9 @@ const CANDIDATES = [
   '/usr/bin/chromium',
 ].filter(Boolean);
 
+/** Bump on every card change, and update index.html's og:image tags to match. */
+const CARD_VERSION = 'v2';
+
 const chrome = CANDIDATES.find((c) => existsSync(c));
 if (!chrome) {
   console.error('No Chrome found. Set CHROME=/path/to/chrome and re-run.');
@@ -27,7 +36,7 @@ if (!chrome) {
 
 for (const lang of ['en', 'es']) {
   const html = path.join(root, 'scripts', '.og', `og-${lang}.html`);
-  const out = path.join(root, 'public', `og-${lang}.png`);
+  const out = path.join(root, 'public', `og-${lang}-${CARD_VERSION}.png`);
   execFileSync(chrome, [
     '--headless', '--disable-gpu', '--hide-scrollbars',
     '--force-device-scale-factor=1', '--window-size=1200,630',
