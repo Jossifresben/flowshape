@@ -30,6 +30,17 @@ export function mountPlayground(root: HTMLElement): () => void {
   let stage!: HTMLDivElement;
   let generation = 0;
 
+  // Cache of the last generated (pre-colour) node tree, keyed on everything
+  // that affects *geometry* (pattern, params, seed) but deliberately NOT
+  // colour: colour is applied at serialize time, so a colour-only change can
+  // re-serialize the cached tree instead of re-running generation (and, for
+  // heavy patterns, the worker) from scratch.
+  let lastNode: SvgNode | null = null;
+  let lastKey = '';
+  function nodeKey(): string {
+    return JSON.stringify([state.patternId, state.params, state.seed]);
+  }
+
   function setState(next: Partial<AppState>): void {
     generation++;
     state = { ...state, ...next };
@@ -49,6 +60,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       };
     }
     const myGeneration = generation;
+    const myKey = nodeKey();
     const target = stage;
     const id = ++workerReq;
     worker.onmessage = (e: MessageEvent<{ id: number; node: SvgNode | null; error?: string }>) => {
@@ -59,6 +71,8 @@ export function mountPlayground(root: HTMLElement): () => void {
         target.textContent = 'Could not render this pattern.';
         return;
       }
+      lastNode = e.data.node;
+      lastKey = myKey;
       onNode(e.data.node);
     };
     worker.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: { w: 600, h: 840 } });
@@ -66,13 +80,24 @@ export function mountPlayground(root: HTMLElement): () => void {
 
   function fillStage(def: PatternDef): void {
     const pal = resolvePalette(state.color);
+    const key = nodeKey();
+    if (lastNode && key === lastKey) {
+      // Geometry is unchanged (only colour differs) — skip generation
+      // entirely (worker included) and just re-serialize the cached tree.
+      stage.classList.remove('computing');
+      stage.innerHTML = serialize(lastNode, pal);
+      return;
+    }
     if (def.heavy) {
       stage.classList.add('computing');
       computeInWorker((node) => {
         stage.innerHTML = serialize(node, resolvePalette(state.color));
       });
     } else {
-      stage.innerHTML = serialize(generateSafe(def, state.params, state.seed, { w: 600, h: 840 }), pal);
+      const node = generateSafe(def, state.params, state.seed, { w: 600, h: 840 });
+      lastNode = node;
+      lastKey = key;
+      stage.innerHTML = serialize(node, pal);
     }
   }
 
@@ -85,6 +110,13 @@ export function mountPlayground(root: HTMLElement): () => void {
   function setParam(key: string, v: number): void {
     generation++;
     state = { ...state, params: { ...state.params, [key]: v } };
+    history.replaceState(null, '', encodeState(state));
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => { rafId = 0; renderStage(); });
+  }
+  function setColor(key: keyof ColorState, v: number): void {
+    generation++;
+    state = { ...state, color: { ...state.color, [key]: v } };
     history.replaceState(null, '', encodeState(state));
     if (rafId) cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(() => { rafId = 0; renderStage(); });
@@ -166,9 +198,6 @@ export function mountPlayground(root: HTMLElement): () => void {
     colorHeading.textContent = 'COLOUR';
     panel.append(colorHeading);
 
-    function setColor(key: keyof ColorState, v: number): void {
-      setState({ color: { ...state.color, [key]: v } });
-    }
     for (const key of ['hue', 'chroma', 'paperL', 'accentShift'] as const) {
       const def2 = COLOR_PARAM_DEFS[key];
       const v = state.color[key] ?? COLOR_DEFAULTS[key];
