@@ -35,7 +35,9 @@ export function checkboxRow(
   value: number,
   onChange: (v: number) => void,
 ): HTMLElement {
-  const row = document.createElement('div');
+  // <label>, not <div> — the whole row becomes one tap target: clicking
+  // anywhere inside it toggles the descendant checkbox natively.
+  const row = document.createElement('label');
   row.className = 'ctl-row ctl-inline';
   const label = document.createElement('span');
   label.className = 'ctl-label';
