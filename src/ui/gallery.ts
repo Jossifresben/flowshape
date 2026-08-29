@@ -1,5 +1,7 @@
 import { listPatterns, type Family } from '../patterns/registry';
 import { encodeState } from '../core/url-state';
+import { PRESETS } from '../patterns/presets';
+import { recallState } from '../core/persist';
 
 /** Display name for each pattern id. Falls back to the id when absent. */
 export const NAMES: Record<string, string> = {
@@ -39,14 +41,25 @@ export const FAMILY_LABELS: Record<Family, string> = {
 /** Canonical family display order for the filter chips. */
 const FAMILY_ORDER: Family[] = ['points', 'curves', 'fields', 'tilings', 'isometric', 'growth'];
 
-function patternHref(id: string): string {
+/** The curated gallery-sample state for a pattern (its `PRESETS` entry, or
+ *  bare defaults when the pattern has none). */
+function presetHash(id: string): string {
+  const preset = PRESETS[id];
   return encodeState({
     patternId: id,
-    seed: 1,
-    params: {},
-    color: {},
+    seed: preset?.seed ?? 1,
+    params: preset?.params ?? {},
+    color: preset?.color ?? {},
     lang: 'en',
   });
+}
+
+/** A card's link target: the visitor's own last-touched state for this
+ *  pattern if they have one, otherwise the curated preset. An explicit URL
+ *  (e.g. a shared link) is never consulted here — this only decides what a
+ *  gallery card points to. */
+function cardHref(id: string): string {
+  return recallState(id) ?? presetHash(id);
 }
 
 export function mountGallery(root: HTMLElement): void {
@@ -121,7 +134,7 @@ export function mountGallery(root: HTMLElement): void {
     for (const def of visible) {
       const card = document.createElement('a');
       card.className = 'gal-card';
-      card.href = patternHref(def.id);
+      card.href = cardHref(def.id);
 
       const thumbBox = document.createElement('div');
       thumbBox.className = 'gal-thumb';

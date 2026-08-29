@@ -3,6 +3,8 @@ import { randomParams } from '../patterns/randomize';
 import { serialize, type SvgNode } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palettes';
+import { rememberState, forgetState } from '../core/persist';
+import { PRESETS } from '../patterns/presets';
 import { sliderRow, checkboxRow, selectRow } from './controls';
 import { NAMES } from './gallery';
 
@@ -42,11 +44,19 @@ export function mountPlayground(root: HTMLElement): () => void {
     return JSON.stringify([state.patternId, state.params, state.seed]);
   }
 
+  /** Writes the current state to the URL bar (without a history entry) and
+   *  remembers it as this pattern's last-touched state for the gallery. */
+  function syncUrl(): void {
+    const hash = encodeState(state);
+    history.replaceState(null, '', hash);
+    rememberState(state.patternId, hash);
+  }
+
   function setState(next: Partial<AppState>): void {
     generation++;
     state = { ...state, ...next };
     render();
-    history.replaceState(null, '', encodeState(state));
+    syncUrl();
   }
 
   let worker: Worker | null = null;
@@ -140,14 +150,14 @@ export function mountPlayground(root: HTMLElement): () => void {
   function setParam(key: string, v: number): void {
     generation++;
     state = { ...state, params: { ...state.params, [key]: v } };
-    history.replaceState(null, '', encodeState(state));
+    syncUrl();
     if (rafId) cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(() => { rafId = 0; renderStage(); });
   }
   function setColor(key: keyof ColorState, v: number): void {
     generation++;
     state = { ...state, color: { ...state.color, [key]: v } };
-    history.replaceState(null, '', encodeState(state));
+    syncUrl();
     if (rafId) cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(() => { rafId = 0; renderStage(); });
   }
@@ -234,6 +244,24 @@ export function mountPlayground(root: HTMLElement): () => void {
       panel.append(sliderRow(def2, v, (nv) => setColor(key, nv)));
     }
 
+    // Once a pattern's state has been remembered (any change), the gallery
+    // card for it points at that remembered state instead of the curated
+    // preset — so give a way back for patterns that have one.
+    const preset = PRESETS[state.patternId];
+    if (preset) {
+      const resetRow = document.createElement('div');
+      resetRow.className = 'ctl-row';
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'btn';
+      resetBtn.textContent = 'Reset to sample';
+      resetBtn.addEventListener('click', () => {
+        forgetState(state.patternId);
+        setState({ seed: preset.seed ?? 1, params: preset.params ?? {}, color: preset.color ?? {} });
+      });
+      resetRow.append(resetBtn);
+      panel.append(resetRow);
+    }
+
     root.append(stage, panel);
   }
 
@@ -241,11 +269,11 @@ export function mountPlayground(root: HTMLElement): () => void {
     generation++;
     state = decodeState(location.hash) ?? DEFAULT_STATE;
     render();
-    history.replaceState(null, '', encodeState(state));
+    syncUrl();
   }
   window.addEventListener('hashchange', onHashChange);
   render();
-  history.replaceState(null, '', encodeState(state));
+  syncUrl();
 
   return () => {
     window.removeEventListener('hashchange', onHashChange);
