@@ -412,12 +412,16 @@ describe('saved — export and import', () => {
     try { delete (globalThis as { localStorage?: unknown }).localStorage; } catch { /* non-configurable */ }
     if (original) Object.defineProperty(globalThis, 'localStorage', original);
   });
-  beforeEach(() => { install(makeStubStorage()); });
+
+  let store: Storage;
+  beforeEach(() => { store = makeStubStorage(); install(store); });
 
   it('round-trips through export and import', () => {
     toggle(HASH_P, 'one');
     toggle(HASH_A, 'two');
-    const text = exportJSON();
+    const exported = exportJSON();
+    expect(exported.ok).toBe(true);
+    const text = exported.ok ? exported.value : '';
     reset();
     expect(list()).toEqual([]);
     expect(importJSON(text)).toEqual({ ok: true, value: { added: 2, skipped: 0 } });
@@ -426,9 +430,21 @@ describe('saved — export and import', () => {
 
   it('exports a readable, versioned document', () => {
     toggle(HASH_P, 'one');
-    const parsed = JSON.parse(exportJSON()) as { sv: number; items: unknown[] };
+    const exported = exportJSON();
+    expect(exported.ok).toBe(true);
+    const parsed = JSON.parse(exported.ok ? exported.value : '') as { sv: number; items: unknown[] };
     expect(parsed.sv).toBe(1);
     expect(parsed.items).toHaveLength(1);
+  });
+
+  it('refuses to export a corrupt store', () => {
+    store.setItem(SAVED_KEY, '{not json');
+    expect(exportJSON()).toEqual({ ok: false, reason: 'corrupt' });
+  });
+
+  it('refuses to export a store written by a newer version of the site', () => {
+    store.setItem(SAVED_KEY, JSON.stringify({ sv: 99, items: [] }));
+    expect(exportJSON()).toEqual({ ok: false, reason: 'future' });
   });
 
   it('merges rather than replaces, and skips duplicates by hash', () => {
@@ -453,7 +469,14 @@ describe('saved — export and import', () => {
     expect(importJSON('{not json')).toEqual({ ok: false, reason: 'invalid' });
     expect(importJSON('[]')).toEqual({ ok: false, reason: 'invalid' });
     expect(importJSON(JSON.stringify({ items: [] }))).toEqual({ ok: false, reason: 'invalid' });
-    expect(importJSON(JSON.stringify({ sv: 99, items: [] }))).toEqual({ ok: false, reason: 'invalid' });
+    // An unknown lower sv is genuinely invalid...
+    expect(importJSON(JSON.stringify({ sv: 0, items: [] }))).toEqual({ ok: false, reason: 'invalid' });
+  });
+
+  it('distinguishes a file from a newer build as future, not invalid', () => {
+    // ...while a higher sv is a valid file this build just can't read yet —
+    // telling the visitor to reload beats telling them the file is broken.
+    expect(importJSON(JSON.stringify({ sv: 99, items: [] }))).toEqual({ ok: false, reason: 'future' });
   });
 
   it('drops malformed records inside an otherwise valid file', () => {

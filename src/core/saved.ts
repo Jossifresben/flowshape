@@ -274,9 +274,16 @@ export function reset(): Result<void> {
 
 /** The whole collection as a portable document. `localStorage` is not a
  *  backup, and without accounts this is the only way to move favourites
- *  between browsers or devices. */
-export function exportJSON(): string {
-  return JSON.stringify({ sv: SV, items: list() }, null, 2);
+ *  between browsers or devices.
+ *
+ *  It refuses when the store cannot be read. Handing back an empty but
+ *  well-formed file would be worse than an error: the visitor would trust it
+ *  as a backup and then be free to reset, which is offered on exactly the
+ *  'corrupt' state this guards. */
+export function exportJSON(): Result<string> {
+  const state = readState();
+  if (state !== 'ok') return { ok: false, reason: state };
+  return { ok: true, value: JSON.stringify({ sv: SV, items: list() }, null, 2) };
 }
 
 /** Merges a document in. Never deletes, and never overwrites a record that is
@@ -292,12 +299,21 @@ export function importJSON(text: string): Result<{ added: number; skipped: numbe
     return { ok: false, reason: 'invalid' };
   }
   const o = parsed as Record<string, unknown>;
-  if (o['sv'] !== SV || !Array.isArray(o['items'])) return { ok: false, reason: 'invalid' };
+  if (!Array.isArray(o['items'])) return { ok: false, reason: 'invalid' };
+  // A file from a newer build is valid, just not readable here. Saying
+  // "invalid" would send the visitor hunting for a problem with the file
+  // instead of reloading the page.
+  if (typeof o['sv'] === 'number' && o['sv'] > SV) return { ok: false, reason: 'future' };
+  if (o['sv'] !== SV) return { ok: false, reason: 'invalid' };
 
   const incoming = o['items'] as unknown[];
   let added = 0;
   let skipped = 0;
   const r = mutate((items) => {
+    // Reset per invocation: `mutate` calls this once today, but a future
+    // compare-and-swap retry would otherwise double every count silently.
+    added = 0;
+    skipped = 0;
     const merged = [...items];
     const seen = new Set(items.map((i) => i.hash));
     for (const candidate of incoming) {
