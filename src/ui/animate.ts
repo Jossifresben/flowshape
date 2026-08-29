@@ -22,22 +22,27 @@ const STAGES: Record<'169' | '916' | '11', { cw: number; ch: number }> = {
   '11': { cw: 1080, ch: 1080 },
 };
 
+/** Hermes's own RHY-2B, first 60 s. Shipped so the stage is never mute. */
+const DEMO_TRACK = '/samples/rhy-2b.mp3';
+
 const STR = {
   en: {
     back: '← POSTER', play: 'PLAY', pause: 'PAUSE', record: 'REC', stop: 'STOP',
-    fullscreen: 'FULLSCREEN', mic: 'MIC', dropHint: 'DROP AUDIO / CLICK TO CHOOSE',
+    fullscreen: 'FULLSCREEN', mic: 'MIC', demo: 'DEMO', dropHint: 'DROP AUDIO / CLICK TO CHOOSE',
     privacy: 'Audio is processed in your browser and never uploaded.',
     intensity: 'INTENSITY', preset: 'PRESET', aspect: 'ASPECT',
     decodeError: 'Could not decode this audio file.',
+    demoError: 'Could not load the demo track.',
     micError: 'Microphone unavailable or permission denied.',
     recError: 'Recording is not supported in this browser.',
   },
   es: {
     back: '← PÓSTER', play: 'REPRODUCIR', pause: 'PAUSA', record: 'REC', stop: 'PARAR',
-    fullscreen: 'PANTALLA COMPLETA', mic: 'MIC', dropHint: 'ARRASTRA AUDIO / CLIC PARA ELEGIR',
+    fullscreen: 'PANTALLA COMPLETA', mic: 'MIC', demo: 'DEMO', dropHint: 'ARRASTRA AUDIO / CLIC PARA ELEGIR',
     privacy: 'El audio se procesa en tu navegador y nunca se sube.',
     intensity: 'INTENSIDAD', preset: 'PRESET', aspect: 'ASPECTO',
     decodeError: 'No se pudo decodificar este archivo de audio.',
+    demoError: 'No se pudo cargar la pista de demostración.',
     micError: 'Micrófono no disponible o permiso denegado.',
     recError: 'Este navegador no permite grabar.',
   },
@@ -157,6 +162,17 @@ export function mountAnimate(root: HTMLElement): () => void {
     if (f) void loadFile(f);
   });
 
+  // A shared animate link opens silent — the viewer has no audio to hand. The
+  // demo track makes the stage immediately experienceable in one click.
+  const demoBtn = button(t.demo, async () => {
+    try {
+      const res = await fetch(DEMO_TRACK);
+      if (!res.ok) throw new Error(String(res.status));
+      const blob = await res.blob();
+      await loadFile(new File([blob], 'rhy-2b.mp3', { type: blob.type || 'audio/mpeg' }));
+    } catch { status.textContent = t.demoError; }
+  });
+
   const micBtn = button(t.mic, async () => {
     try {
       swapRig(await micRig());
@@ -207,7 +223,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   privacy.textContent = t.privacy;
 
   panel.append(back, title, aspectLabel, aspectChips, presetLabel, presetChips, intensityRow,
-    drop, fileInput, micBtn, playBtn, scrub, recBtn, fsBtn, status, privacy);
+    drop, fileInput, demoBtn, micBtn, playBtn, scrub, recBtn, fsBtn, status, privacy);
   wrap.append(stageEl, panel);
   root.append(wrap);
 
