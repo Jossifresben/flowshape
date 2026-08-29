@@ -8,7 +8,7 @@ import { fileRig, micRig, type AudioRig } from '../audio/sources';
 import { BeatClock, phaseAt, frameParams } from '../anim/engine';
 import { drawTree } from '../anim/canvas-render';
 import { presetsFor, type AnimPreset } from '../anim/presets';
-import { pickMimeType, StageRecorder, downloadBlob } from '../anim/recorder';
+import { pickMimeType, probeMimeTypes, StageRecorder, downloadBlob } from '../anim/recorder';
 import { AnimWorkerClient } from '../anim/worker-client';
 import { chipRow } from './controls';
 import { NAMES } from './gallery';
@@ -35,6 +35,9 @@ const STR = {
     demoError: 'Could not load the demo track.',
     micError: 'Microphone unavailable or permission denied.',
     recError: 'Recording is not supported in this browser.',
+    recNoAudio: 'Load audio first.',
+    recNoMime: 'No compatible recording format found in this browser.',
+    colour: 'COLOUR',
   },
   es: {
     back: '← PÓSTER', play: 'REPRODUCIR', pause: 'PAUSA', record: 'REC', stop: 'PARAR',
@@ -45,6 +48,9 @@ const STR = {
     demoError: 'No se pudo cargar la pista de demostración.',
     micError: 'Micrófono no disponible o permiso denegado.',
     recError: 'Este navegador no permite grabar.',
+    recNoAudio: 'Carga audio primero.',
+    recNoMime: 'No se encontró un formato de grabación compatible en este navegador.',
+    colour: 'COLOR',
   },
 } as const;
 
@@ -78,6 +84,7 @@ export function mountAnimate(root: HTMLElement): () => void {
 
   // --- recording ---
   let recorder: StageRecorder | null = null;
+  let recordingMime: { mime: string; ext: string } | null = null;
 
   // --- DOM ---
   root.innerHTML = '';
@@ -203,17 +210,34 @@ export function mountAnimate(root: HTMLElement): () => void {
       recorder = null;
       recBtn.classList.remove('recording');
       recBtn.textContent = t.record;
-      const mime = pickMimeType((m) => MediaRecorder.isTypeSupported(m))!;
+      const mime = recordingMime!;
+      recordingMime = null;
       downloadBlob(blob, `flowshape-${def.id}.${mime.ext}`);
       return;
     }
-    if (!rig || typeof MediaRecorder === 'undefined') { status.textContent = t.recError; return; }
+    // Three distinct failure causes, three distinct messages — conflating
+    // them (as "browser doesn't support recording") told a user who simply
+    // hadn't loaded audio yet that their browser was broken.
+    if (!rig) { status.textContent = t.recNoAudio; return; }
+    if (typeof MediaRecorder === 'undefined') { status.textContent = t.recError; return; }
     const mime = pickMimeType((m) => MediaRecorder.isTypeSupported(m));
-    if (!mime) { status.textContent = t.recError; return; }
+    if (!mime) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          '[flowshape] no MediaRecorder mime type accepted in this engine:',
+          probeMimeTypes((m) => MediaRecorder.isTypeSupported(m)),
+        );
+      }
+      status.textContent = t.recNoMime;
+      return;
+    }
+    recordingMime = mime;
     recorder = new StageRecorder(canvas, rig.recordingStream(), mime.mime);
     recorder.start();
     recBtn.classList.add('recording');
     recBtn.textContent = t.stop;
+    // Unobtrusive: the recorded container is never a mystery after the fact.
+    status.textContent = `${t.record} · ${mime.ext.toUpperCase()}`;
   });
 
   const fsBtn = button(t.fullscreen, () => void stageEl.requestFullscreen?.());
