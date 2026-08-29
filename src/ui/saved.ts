@@ -1,4 +1,4 @@
-import { list, readState, reset } from '../core/saved';
+import { list, readState, reset, rename, remove, importJSON, SV } from '../core/saved';
 import { currentLang, t, type Lang } from '../i18n';
 import { buildNav } from './nav';
 import { buildFooter } from './footer';
@@ -8,6 +8,7 @@ import { serialize, type SvgNode } from '../core/svg';
 import { resolvePalette } from '../poster/palettes';
 import { renderSize } from '../poster/formats';
 import { AnimWorkerClient } from '../anim/worker-client';
+import { showToast } from './toast';
 // `kind` is derived from the hash, never stored — a stored copy could contradict it.
 import { kindOf, type SavedItem, type Kind } from '../core/saved';
 
@@ -126,7 +127,7 @@ export function mountSaved(root: HTMLElement): () => void {
     grid.innerHTML = '';
     renderNotice();
     if (items.length === 0) { renderEmpty(); return; }
-    for (const item of items) grid.append(buildCard(item, lang, observer));
+    for (const item of items) grid.append(buildCard(item, lang, observer, render));
   }
 
   render();
@@ -194,7 +195,7 @@ function onVisible(entries: IntersectionObserverEntry[], obs: IntersectionObserv
   }
 }
 
-function buildCard(item: SavedItem, lang: Lang, observer: IntersectionObserver): HTMLElement {
+function buildCard(item: SavedItem, lang: Lang, observer: IntersectionObserver, refresh: () => void): HTMLElement {
   const card = document.createElement('div');
   card.className = 'gal-card saved-card';
 
@@ -210,14 +211,79 @@ function buildCard(item: SavedItem, lang: Lang, observer: IntersectionObserver):
   observer.observe(box);
 
   const meta = document.createElement('div');
-  meta.className = 'gal-meta';
+  meta.className = 'gal-meta saved-meta';
+
   const name = document.createElement('span');
   name.className = 'gal-name saved-name';
   name.textContent = item.title;
+  name.tabIndex = 0;
+  name.setAttribute('role', 'button');
+  name.title = t('saved.rename', lang);
+
+  function beginRename(): void {
+    const input = document.createElement('input');
+    input.className = 'saved-rename';
+    input.value = item.title;
+    // Defence in depth: the store rejects an over-long title outright, so
+    // stopping it here means the visitor never types into a dead end.
+    input.maxLength = 200;
+    input.setAttribute('aria-label', t('saved.rename', lang));
+    let settled = false;
+    const commit = (keep: boolean): void => {
+      if (settled) return;
+      settled = true;
+      // A blank name reverts rather than storing an empty title; the store
+      // rejects it too, so this is belt and braces.
+      if (keep && input.value.trim() && input.value.trim() !== item.title) {
+        rename(item.hash, input.value);
+        refresh();
+        return;
+      }
+      input.replaceWith(name);
+    };
+    input.addEventListener('blur', () => commit(true));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(true); }
+      if (e.key === 'Escape') { e.preventDefault(); commit(false); }
+    });
+    name.replaceWith(input);
+    input.focus();
+    input.select();
+  }
+
+  name.addEventListener('click', beginRename);
+  name.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); beginRename(); }
+  });
+
   const kind = document.createElement('span');
   kind.className = 'gal-family';
   kind.textContent = t(KIND_KEY[kindOf(item.hash)!], lang);
-  meta.append(name, kind);
+
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'saved-del';
+  del.textContent = '×';
+  del.title = t('saved.delete', lang);
+  del.setAttribute('aria-label', `${t('saved.delete', lang)}: ${item.title}`);
+  del.addEventListener('click', () => {
+    const snapshot = { ...item };
+    if (!remove(item.hash).ok) return;
+    refresh();
+    showToast(t('saved.deleted', lang), {
+      label: t('saved.undo', lang),
+      run: () => {
+        // Undo through importJSON, NOT toggle: `toggle` stamps a fresh
+        // `savedAt`, so an undeleted favourite would jump to the top of a
+        // newest-first list instead of returning to where it was. Import
+        // preserves the record verbatim and skips it if it somehow came back.
+        importJSON(JSON.stringify({ sv: SV, items: [snapshot] }));
+        refresh();
+      },
+    });
+  });
+
+  meta.append(name, kind, del);
 
   link.append(box);
   card.append(link, meta);

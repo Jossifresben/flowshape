@@ -154,7 +154,29 @@ input[type='checkbox'] { accent-color: var(--ink); }
   aspect-ratio: 3 / 4; color: var(--gray); font-family: var(--font-mono); font-size: 10px;
 }
 .saved-thumb.computing { opacity: 0.55; transition: opacity 0.15s; }
-.saved-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.saved-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: text; }
+
+.saved-meta { gap: 8px; }
+.saved-rename {
+  flex: 1; min-width: 0; font: inherit; font-size: 13px; font-weight: 700;
+  background: transparent; color: var(--ink); border: 1px solid var(--ink); padding: 1px 4px;
+}
+.saved-del {
+  background: transparent; border: none; color: var(--gray);
+  cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px;
+}
+.saved-del:hover { color: var(--accent); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 16px; z-index: 50;
+  background: var(--ink); color: var(--paper);
+  font-family: var(--font-mono); font-size: 11px; padding: 10px 16px;
+}
+.toast-action {
+  background: transparent; border: none; color: inherit; cursor: pointer;
+  font: inherit; text-decoration: underline; padding: 0;
+}
 
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
