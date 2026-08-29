@@ -34,7 +34,7 @@ export const voxel = definePattern({
   id: 'voxel',
   family: 'isometric',
   phase: 1,
-  heavy: true,
+  heavy: false,
   // A voxel form's seed drives the scatter cull (and a depth tie-break
   // jitter that is provably invisible — see step 6 below): with scatter
   // above 0, different seeds cull different cells and the silhouette
