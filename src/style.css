@@ -160,11 +160,33 @@ input[type='checkbox'] { accent-color: var(--ink); }
 }
 .show-thumb.computing { opacity: 0.55; transition: opacity 0.15s; }
 
-/* A video card's box holds a real <video> instead of live SVG. Metadata is
- * unknown until playback is requested (preload="none"), so height:auto alone
- * would collapse to 0 before then — the 16:9 default matches the animate
- * stage's own default aspect, the common case for a recording. */
-.show-thumb video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+/* A video card is a `.gal-card-video` button wrapping the same `.gal-thumb`
+ * box the other tabs use — the poster `<img>` inside it is sized by the
+ * generic `.gal-thumb img` rule above, so only the play affordance and the
+ * button reset are specific to this card. The video itself only ever exists
+ * inside the modal, never in the grid. */
+.gal-card-video {
+  border: none; background: none; padding: 0; margin: 0; font: inherit;
+  color: inherit; text-align: left; cursor: pointer; width: 100%; display: block;
+}
+.gal-card-video .gal-thumb { position: relative; }
+.gal-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.gal-play::after {
+  content: '\25B6'; display: flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; border-radius: 50%; background: rgba(0, 0, 0, 0.6);
+  color: var(--paper); font-size: 15px; padding-left: 3px; /* optical centering for the glyph */
+}
+.gal-card-video:hover .gal-play::after { background: var(--accent); }
+
+/* The modal's video tab: the video itself plus, where the entry links back
+ * to the live stage, the "open the live stage" link underneath it. */
+.modal-video-wrap { display: flex; flex-direction: column; gap: 12px; }
+.modal-video { display: block; width: 100%; max-height: 72vh; background: #000; }
+.modal-video-link {
+  align-self: flex-start; font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.06em; color: var(--accent); text-decoration: none;
+}
+.modal-video-link:hover { text-decoration: underline; }
 
 /* --- saved page --- */
 

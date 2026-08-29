@@ -186,4 +186,6 @@ export const UI: Record<string, Pair> = {
   'show.tabDesigns': ['Designs', 'Diseños'],
   'show.tabPosters': ['Posters', 'Pósters'],
   'show.tabVideos': ['Videos', 'Vídeos'],
+  'show.play': ['Play', 'Reproducir'],
+  'show.openStage': ['Open the live stage', 'Abrir el escenario en vivo'],
 };

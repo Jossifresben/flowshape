@@ -4,6 +4,7 @@ import { currentLang, patternName, t, type Lang } from '../i18n';
 import { buildNav } from './nav';
 import { buildFooter } from './footer';
 import { renderThumb, onVisible, stopThumbWorker } from './thumb';
+import { openModal } from './modal';
 
 /**
  * `#/gallery` — the curated showcase: hand-picked designs from
@@ -98,47 +99,91 @@ function videoCardName(entry: ShowcaseVideo, lang: Lang): string | null {
   return state ? patternName(state.patternId, lang) : null;
 }
 
-/** Plays a video card while it is in view and pauses it on the way out.
- *  Forked from `thumb.ts`'s `onVisible` rather than reusing it: that
- *  callback unobserves after the first render because a design/poster's
- *  artwork is generated once and never changes, but a video must keep being
- *  watched for the whole time its card exists so it can pause again on
- *  exit — parameterising the shared callback for one caller's opposite
- *  lifecycle would be a worse trade than a second, five-line function. */
-function onVideoVisible(entries: IntersectionObserverEntry[]): void {
-  for (const entry of entries) {
-    const v = entry.target as HTMLVideoElement;
-    if (entry.isIntersecting) {
-      // Rejects when autoplay is refused (data-saver, a backgrounded tab).
-      // The poster frame is the fallback for that case, not an error.
-      v.play().catch(() => {});
-    } else {
-      v.pause();
+/** Builds the video element and — where `entry.hash` names one — the link
+ *  through to the live stage, and opens both inside a single-tab modal.
+ *  Kept as one function rather than split across `render`/`onClose`
+ *  callbacks: the video element is created once, up front, so both the tab's
+ *  `render` (which needs it to append) and `onClose` (which needs it to
+ *  pause) close over the same reference instead of re-querying the DOM. */
+function openVideoModal(entry: ShowcaseVideo, lang: Lang): void {
+  let video: HTMLVideoElement | undefined;
+
+  function render(): HTMLElement {
+    const v = document.createElement('video');
+    v.src = entry.src;
+    v.poster = entry.poster;
+    v.controls = true;   // native controls carry fullscreen, which is the requirement
+    v.autoplay = true;   // user-initiated by the click that opened this modal
+    v.playsInline = true;
+    v.preload = 'auto';
+    v.className = 'modal-video';
+    // Rejects with AbortError/NotAllowedError in some contexts (data-saver
+    // mode, an unusual autoplay policy) even though this is a user gesture.
+    // The native controls are the fallback for that case, not an error.
+    v.play().catch(() => {});
+    video = v;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-video-wrap';
+    wrap.append(v);
+
+    if (entry.hash) {
+      const link = document.createElement('a');
+      link.className = 'modal-video-link';
+      link.href = entry.hash;
+      link.textContent = t('show.openStage', lang);
+      // Leaving for the live stage must not strand this modal — and its
+      // playing audio — stacked on top of the page it navigates to. Reusing
+      // the Escape handling `modal.ts` already wires up avoids a second,
+      // parallel close path.
+      link.addEventListener('click', () => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      });
+      wrap.append(link);
     }
+    return wrap;
   }
+
+  const title = videoCardName(entry, lang) ?? t('show.tabVideos', lang);
+  openModal({
+    title,
+    tabs: [{ id: 'video', label: title, render }],
+    // DOM removal alone is not reliably synchronous for stopping a playing,
+    // audible <video> across every browser — pause explicitly so sound never
+    // survives the modal closing.
+    onClose: () => video?.pause(),
+  });
 }
 
-function buildVideoCard(entry: ShowcaseVideo, lang: Lang, observer: IntersectionObserver): HTMLElement {
-  const card = document.createElement(entry.hash ? 'a' : 'div');
-  card.className = 'gal-card';
-  if (entry.hash) (card as HTMLAnchorElement).href = entry.hash;
+/** A video card: a still poster plus a play affordance. No `<video>` in the
+ *  grid at all — the point of this design is that the grid never fetches a
+ *  single byte of video until someone asks for it. Clicking (or activating
+ *  by keyboard) opens the full recording, with sound, in a modal. */
+function buildVideoCard(entry: ShowcaseVideo, lang: Lang): HTMLElement {
+  const name = videoCardName(entry, lang);
+
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'gal-card gal-card-video';
+  card.setAttribute('aria-label', name ? `${t('show.play', lang)} ${name}` : t('show.play', lang));
+  card.addEventListener('click', () => openVideoModal(entry, lang));
 
   const box = document.createElement('div');
   box.className = 'gal-thumb show-thumb';
 
-  const v = document.createElement('video');
-  v.src = entry.src;
-  v.poster = entry.poster;
-  v.muted = true;        // browsers refuse unmuted autoplay, and a page of
-  v.loop = true;          // competing soundtracks is hostile regardless
-  v.playsInline = true;
-  v.preload = 'none';    // a grid of videos must not download megabytes on load
-  box.append(v);
-  observer.observe(v);
+  const img = document.createElement('img');
+  img.src = entry.poster;
+  img.alt = '';
+  img.loading = 'lazy';
+  box.append(img);
+
+  const play = document.createElement('span');
+  play.className = 'gal-play';
+  play.setAttribute('aria-hidden', 'true');
+  box.append(play);
 
   card.append(box);
 
-  const name = videoCardName(entry, lang);
   if (name) {
     const label = document.createElement('span');
     label.className = 'gal-name';
@@ -208,7 +253,6 @@ export function mountShowcase(root: HTMLElement): () => void {
   grid.className = 'gal-grid';
 
   const observer = new IntersectionObserver(onVisible, { rootMargin: '200px' });
-  let videoObserver: IntersectionObserver | null = null;
 
   function empty(): void {
     const p = document.createElement('p');
@@ -221,9 +265,8 @@ export function mountShowcase(root: HTMLElement): () => void {
     if (SHOWCASE_POSTERS.length === 0) empty();
     else for (const entry of SHOWCASE_POSTERS) grid.append(buildCard(entry, lang, observer));
   } else if (tab === 'videos') {
-    videoObserver = new IntersectionObserver(onVideoVisible, { rootMargin: '200px' });
     if (SHOWCASE_VIDEOS.length === 0) empty();
-    else for (const entry of SHOWCASE_VIDEOS) grid.append(buildVideoCard(entry, lang, videoObserver));
+    else for (const entry of SHOWCASE_VIDEOS) grid.append(buildVideoCard(entry, lang));
   } else if (ORDER.length === 0) {
     empty();
   } else {
@@ -240,7 +283,6 @@ export function mountShowcase(root: HTMLElement): () => void {
 
   return () => {
     observer.disconnect();
-    videoObserver?.disconnect();
     stopThumbWorker();
   };
 }
