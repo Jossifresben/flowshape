@@ -47,7 +47,7 @@ the animated stage.
 |---|---|---|---|---|
 | [**Flow Field**](#flow-field) | `flowfield` | `freq` · `curl` · `spacing` · `steps` · `strokeWidth` · `emphasisEvery` | ✓ | — |
 | [**Coulomb Field**](#coulomb-field) | `coulomb` | `charges` · `spacing` · `steps` · `coreRadius` · `strokeWidth` · `emphasisEvery` | ✓ | — |
-| [**Moiré Weave**](#moir-weave) | `moire` | `mode` · `spacingA` · `spacingB` · `angleA` · `angleB` · `offset` · `strokeWidth` | — | — |
+| [**Moiré Weave**](#moiré-weave) | `moire` | `mode` · `spacingA` · `spacingB` · `angleA` · `angleB` · `offset` · `strokeWidth` | — | — |
 | [**Warped Fabric**](#warped-fabric) | `fabric` | `gridSize` · `warpAmount` · `noiseScale` · `mode` · `dotSize` · `strokeWidth` | ✓ | — |
 | [**Converging Chirp**](#converging-chirp) | `chirp` | `lineCount` · `freqStart` · `freqEnd` · `amplitude` · `phaseStep` · `strokeWidth` | — | — |
 

@@ -64,23 +64,19 @@ Cuarenta líneas, sin framework, sin una biblioteca oculta que haga la parte int
 
 ## El catálogo
 
-| Patrón | Familia | Patrón | Familia |
-|---|---|---|---|
-| Stipple Field | Puntos y mallas | Moiré Weave | Campos |
-| Delaunay Mesh | Puntos y mallas | Warped Fabric | Campos |
-| Voronoi Cells | Puntos y mallas | Converging Chirp | Campos |
-| Phyllotaxis | Puntos y mallas | Truchet Arcs | Teselados |
-| Apollonian Circles | Puntos y mallas | Hitomezashi | Teselados |
-| Harmonograph | Curvas | Girih Stars | Teselados |
-| Maurer Rose | Curvas | Ribbon Interlace | Teselados |
-| Times-Table Chords | Curvas | Voxel Form | Isométricos |
-| Concentric Bands | Curvas | Iso Weave | Isométricos |
-| Rose Lattice | Curvas | Nested Shafts | Isométricos |
-| Helix Ladder | Curvas | Tumbling Blocks | Isométricos |
-| Flow Field | Campos | Differential Growth | Crecimiento |
-| Coulomb Field | Campos | | |
+**Puntos y mallas** *(5)* — [Phyllotaxis](docs/patterns.md#phyllotaxis) · [Stipple Field](docs/patterns.md#stipple-field) · [Delaunay Mesh](docs/patterns.md#delaunay-mesh) · [Voronoi Cells](docs/patterns.md#voronoi-cells) · [Apollonian Circles](docs/patterns.md#apollonian-circles)
 
-Las fuentes van de Vogel y Descartes a Hankin, Truchet, Seaton, Jobard y Lefer, Quílez, Newell y Müller-Brockmann. Detalle completo — fórmula, explicación, parámetros, cita — en **[docs/patterns.md](docs/patterns.md)**.
+**Curvas** *(6)* — [Maurer Rose](docs/patterns.md#maurer-rose) · [Harmonograph](docs/patterns.md#harmonograph) · [Times-Table Chords](docs/patterns.md#times-table-chords) · [Concentric Bands](docs/patterns.md#concentric-bands) · [Rose Lattice](docs/patterns.md#rose-lattice) · [Helix Ladder](docs/patterns.md#helix-ladder)
+
+**Campos** *(5)* — [Flow Field](docs/patterns.md#flow-field) · [Coulomb Field](docs/patterns.md#coulomb-field) · [Moiré Weave](docs/patterns.md#moiré-weave) · [Warped Fabric](docs/patterns.md#warped-fabric) · [Converging Chirp](docs/patterns.md#converging-chirp)
+
+**Teselados** *(4)* — [Truchet Arcs](docs/patterns.md#truchet-arcs) · [Hitomezashi](docs/patterns.md#hitomezashi) · [Girih Stars](docs/patterns.md#girih-stars) · [Ribbon Interlace](docs/patterns.md#ribbon-interlace)
+
+**Isométricos** *(4)* — [Voxel Form](docs/patterns.md#voxel-form) · [Iso Weave](docs/patterns.md#iso-weave) · [Nested Shafts](docs/patterns.md#nested-shafts) · [Tumbling Blocks](docs/patterns.md#tumbling-blocks)
+
+**Crecimiento** *(1)* — [Differential Growth](docs/patterns.md#differential-growth)
+
+Los 25, con la fórmula, la explicación, los parámetros y la cita de cada uno, en **[docs/patterns.md](docs/patterns.md)**. Las fuentes van de Vogel y Descartes a Hankin, Truchet, Seaton, Jobard y Lefer, Quílez, Newell y Müller-Brockmann.
 
 ## Reglas de diseño
 
