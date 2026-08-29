@@ -11,8 +11,8 @@ export const maurer = definePattern({
   params: [
     { key: 'n', kind: 'int', min: 1, max: 12, step: 1, default: 6, label: 'maurer.n' },
     { key: 'd', kind: 'int', min: 1, max: 359, step: 1, default: 71, label: 'maurer.d' },
-    { key: 'strokeWidth', kind: 'float', min: 0.2, max: 3, step: 0.1, default: 0.7, label: 'maurer.strokeWidth' },
-    { key: 'envelope', kind: 'int', min: 0, max: 1, step: 1, default: 1, label: 'maurer.envelope' },
+    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 3, step: 0.1, default: 0.35, label: 'maurer.strokeWidth' },
+    { key: 'envelope', kind: 'bool', min: 0, max: 1, step: 1, default: 1, label: 'maurer.envelope' },
   ],
   generate(p, _seed, size) {
     const n = p['n']!;

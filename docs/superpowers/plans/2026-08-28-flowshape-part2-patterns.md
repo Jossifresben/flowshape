@@ -1833,6 +1833,28 @@ git add -A && git commit -m "feat: pattern switcher; all 13 launch patterns wire
 
 ---
 
+## Post-implementation tuning (commit de74904)
+
+Visual QA in a real browser after Task 18 found three patterns weak at their planned defaults. Fixed by changing default values and two slider ranges only — no algorithm changes. If you re-run this plan from scratch, apply these instead of the values written above:
+
+- **stipple**: `maxGap` default 16 → **22**, `contrast` default 0.6 → **0.15**. At 0.6 the fBm swamped the radial vignette and the field read as a muddy blotch; at 0.15 it reads as a clean radial density gradient with subtle organic variation.
+- **clifford**: `dotSize` default 0.55 → **0.85**, `opacity` default 0.45 → **0.7**. 12k subsampled dots at 0.55px read as a thin wireframe rather than the attractor's characteristic dense veil.
+- **diffgrowth**: `iterations` default 340 → **500** with `max` 500 → **600**; `repulsion` default 13 → **18** with `max` 20 → **26**. At 340/13 the coral filled barely a third of the poster. The ranges were raised alongside the defaults so neither slider sits pinned at its own maximum.
+- **`tests/patterns/harness.ts`**: added `INVARIANT_TIMEOUT_MS = 60_000` passed as the third argument to all five `it(...)` calls. A `heavy` pattern runs a full simulation per invariant (defaults plus every single-param extreme), which exceeds vitest's 5 s default once diffgrowth's ceiling rises. This is a property of the harness, not of one pattern. diffgrowth's test file now takes ~12 s; the rest of the suite is unaffected.
+
+## Part 3 kickoff items (from the final adversarial review, commit e876866)
+
+Fixed before merge: stale worker responses painting over a switched-to pattern (versioned on state generation + stage identity); worker error path (try/catch in the worker, error field, `onerror`, `.computing` always cleared); self-describing URLs (see spec §4.3). Deliberately deferred, in priority order:
+
+1. **Extract `src/core/render.ts`** exposing `renderToNode(state, size): SvgNode | Promise<SvgNode>` that owns the worker, a result cache and the generation counter. The playground, the poster composer and the exporter all call it. This single refactor closes the next three items together.
+2. **Cache the generated `SvgNode`** — a palette or theme change currently re-runs the whole simulation (~0.8 s on diffgrowth) even though role tokens resolve at serialize time. The composer will change colors constantly.
+3. **Coalesce/cancel worker requests** — a slider drag on a heavy pattern can enqueue dozens of superseded simulations; results are discarded but the CPU still burns them.
+4. **Emit the paper background inside the SVG** (`<rect fill="paper">` as child 0, added in `generateSafe` so no pattern can forget). Today the paper color lives on a `<div>`, so SVG/PNG exports would be transparent. Changes all 13 snapshots and the element budgets — do it as its own task.
+5. **Decide what `size` means** — 9 patterns scale their artwork with the canvas while 4 tile it (element counts grow ~3.7× at print size, untested). Either generate at a canonical art size and scale via `viewBox`, or make density a param and assert budgets at the largest supported format.
+6. **Panel rebuild on every `setState`** drops focus and scroll; it gets worse as the panel grows.
+
+Smaller notes worth carrying: enum indices are positional public API (mark the backing arrays append-only — the new `all.test.ts` options-length assertion guards the crash case); `clifford` is the one pattern whose exact bytes are not portable across JS engines under 1-ulp math differences (its shape is invariant, so don't advertise byte-exact permanence for it); `core/noise.ts` uses the GLSL `fract(sin·k)` hash where the existing FNV-1a `deriveSeed` would be exactly portable; 2-decimal coordinate rounding is load-bearing for determinism but implemented in four ad-hoc idioms — export one `n2()` from `core/svg` and assert it in the harness; `decodeState` admits and re-emits foreign params from hand-edited URLs.
+
 ## Self-Review (done at write time)
 
 - **Spec coverage (Part 2 scope):** 13 launch shapes ✓ (2 from Part 1 + Tasks 6–16 = 13); hardening items a/b-partial/c-deviation/d/f/g/h ✓ (Task 1–2; generic-params (b) deliberately dropped — bracket access with `!` is established style across 13 modules now, revisit only if it actually bites; lazy manifest (c) documented deviation in header); worker (e) ✓ Task 17; RESERVED future keys (i) ✓ Task 1 includes Part 3 keys.

@@ -5,21 +5,20 @@ const state: AppState = {
   patternId: 'phyllotaxis',
   seed: 71203,
   params: { points: 1500, angle: 137.51 },
-  color: { pal: 'navy-gold' },
-  theme: 'dark',
+  color: { hue: 40, chroma: 0.08, paperL: 0.2, accentShift: 30 },
   lang: 'es',
 };
 
 describe('url state', () => {
   it('round-trips', () => {
-    expect(decodeState(encodeState(state))).toEqual(state);
+    const hash = encodeState(state);
+    expect(decodeState(hash)).toEqual(state);
   });
 
   it('decodes hex overrides and omits empty fields', () => {
-    const s: AppState = { ...state, color: { bg: '131a2b' }, theme: 'light', lang: 'en' };
+    const s: AppState = { ...state, color: { bg: '131a2b' }, lang: 'en' };
     const hash = encodeState(s);
     expect(hash).not.toContain('pal=');
-    expect(hash).not.toContain('theme='); // light is default, omitted
     expect(hash).not.toContain('lang=');  // en is default, omitted
     expect(decodeState(hash)).toEqual(s);
   });
@@ -47,5 +46,13 @@ describe('url state', () => {
     const hash = encodeState({ ...state, params: { seed: 7, angle: 12 } });
     expect(decodeState(hash)!.seed).toBe(71203);
     expect(decodeState(hash)!.params).toEqual({ angle: 12 });
+  });
+
+  it('silently ignores a stale theme= param from an old shared link', () => {
+    const s = decodeState('#/p/girih?theme=light&seed=3');
+    expect(s).not.toBeNull();
+    expect(s).not.toHaveProperty('theme');
+    expect(s!.params).not.toHaveProperty('theme');
+    expect(s!.params).toEqual({});
   });
 });

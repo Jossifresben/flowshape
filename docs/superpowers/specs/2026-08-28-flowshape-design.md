@@ -109,6 +109,7 @@ interface PatternDef {
 `/#/p/<patternId>?v=1&seed=71203&points=1500&angle=137.51&...&pal=navy-gold&bg=131a2b&ink=e8dcc0&acc=d9a441&layout=titled&format=a3&title=...&caption=...&theme=dark&lang=es`
 
 - `v` is the schema version; decoding unknown/missing params falls back to defaults (old links keep working).
+- **URLs are self-describing (decided 2026-08-29).** Every render adopts the fully-resolved parameter set into state, so the URL always carries every param explicitly — never a bare `#/p/<id>` that means "whatever the defaults are today". Without this, tuning any default silently rewrites every previously shared link, which breaks the core promise above; it fired once during Part 2 development when three patterns' defaults were tuned. It also makes links robust to future param renames, and pairs with the Part 3 short-link service that keeps the resulting long URLs shareable.
 - Params round to sensible precision to keep URLs short. Title/caption URL-encoded.
 - Every control change replaces the URL (history.replaceState); "Share link" copies it.
 - **Short links (Part 3):** "Share link" also offers a branded short URL `flowshape.art/s/<code>` backed by a Netlify Function + Netlify Blobs KV (code → full URL, 301 redirect). Self-hosted deliberately: a third-party shortener would tie link permanence to someone else's free tier (CleanURI is the documented no-key fallback if Functions are ever dropped). This is the one narrow exception to "no backend": a single stateless function with a KV write, no accounts, no PII beyond the URL itself.

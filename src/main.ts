@@ -1,6 +1,31 @@
 import './style.css';
-import './patterns/phyllotaxis';
-import './patterns/maurer';
+import './patterns/index';
 import { mountPlayground } from './ui/playground';
+import { mountGallery } from './ui/gallery';
+import { decodeState } from './core/url-state';
 
-mountPlayground(document.querySelector<HTMLDivElement>('#app')!);
+const app = document.querySelector<HTMLDivElement>('#app')!;
+
+// The router owns view lifecycle: it decides which view mounts and tears the
+// previous one down (playground registers its own `hashchange` listener, so
+// leaving it mounted while switching views would fight the router's own
+// listener and re-render playground with default state on every navigation).
+let cleanup: (() => void) | null = null;
+
+function route(): void {
+  cleanup?.();
+  cleanup = null;
+  const state = decodeState(location.hash);
+  if (state) {
+    app.classList.remove('view-gallery');
+    app.classList.add('view-playground');
+    cleanup = mountPlayground(app);
+  } else {
+    app.classList.remove('view-playground');
+    app.classList.add('view-gallery');
+    mountGallery(app);
+  }
+}
+
+window.addEventListener('hashchange', route);
+route();
