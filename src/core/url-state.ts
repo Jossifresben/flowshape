@@ -26,6 +26,11 @@ export interface AppState {
   cw?: number;
   ch?: number;
   cu?: 'mm' | 'cm' | 'in';
+  /** 'a' = animate stage; undefined/'p' = poster playground. */
+  view?: 'p' | 'a';
+  stage?: '169' | '916' | '11';
+  apre?: string;
+  aint?: number;
 }
 
 export { RESERVED } from './reserved';
@@ -46,17 +51,22 @@ export function encodeState(s: AppState): string {
   if (s.cw !== undefined) q.set('cw', String(s.cw));
   if (s.ch !== undefined) q.set('ch', String(s.ch));
   if (s.cu !== undefined) q.set('cu', s.cu);
+  if (s.view === 'a') {
+    if (s.stage !== undefined && s.stage !== '169') q.set('stage', s.stage);
+    if (s.apre !== undefined) q.set('apre', s.apre);
+    if (s.aint !== undefined && s.aint !== 1) q.set('aint', String(Math.round(s.aint * 100) / 100));
+  }
   for (const [k, v] of Object.entries(s.params)) {
     if (RESERVED.has(k)) continue;
     q.set(k, String(Math.round(v * 10000) / 10000));
   }
-  return `#/p/${encodeURIComponent(s.patternId)}?${q.toString()}`;
+  return `#/${s.view === 'a' ? 'a' : 'p'}/${encodeURIComponent(s.patternId)}?${q.toString()}`;
 }
 
 export function decodeState(hash: string): AppState | null {
-  const m = /^#\/p\/([^?]+)(?:\?(.*))?$/.exec(hash);
+  const m = /^#\/(p|a)\/([^?]+)(?:\?(.*))?$/.exec(hash);
   if (!m) return null;
-  const q = new URLSearchParams(m[2] ?? '');
+  const q = new URLSearchParams(m[3] ?? '');
   const params: Record<string, number> = {};
   for (const [k, v] of q.entries()) {
     if (RESERVED.has(k)) continue;
@@ -74,7 +84,7 @@ export function decodeState(hash: string): AppState | null {
   const acc = q.get('acc'); if (acc) color.acc = acc;
   let patternId: string;
   try {
-    patternId = decodeURIComponent(m[1]!);
+    patternId = decodeURIComponent(m[2]!);
   } catch {
     return null;
   }
@@ -89,5 +99,17 @@ export function decodeState(hash: string): AppState | null {
   const cwRaw = q.get('cw'); if (cwRaw !== null) { const n = Number(cwRaw); if (Number.isFinite(n)) state.cw = n; }
   const chRaw = q.get('ch'); if (chRaw !== null) { const n = Number(chRaw); if (Number.isFinite(n)) state.ch = n; }
   const cu = q.get('cu'); if (cu === 'mm' || cu === 'cm' || cu === 'in') state.cu = cu;
+  if (m[1] === 'a') {
+    state.view = 'a';
+    const stage = q.get('stage');
+    if (stage === '169' || stage === '916' || stage === '11') state.stage = stage;
+    const apre = q.get('apre');
+    if (apre) state.apre = apre;
+    const aintRaw = q.get('aint');
+    if (aintRaw !== null) {
+      const n = Number(aintRaw);
+      state.aint = Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 1;
+    }
+  }
   return state;
 }

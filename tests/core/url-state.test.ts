@@ -69,3 +69,30 @@ describe('url state', () => {
     expect(bad!.params['cw']).toBeUndefined(); // reserved, never a pattern param
   });
 });
+
+describe('animate view state', () => {
+  it('round-trips an animate URL', () => {
+    const s = decodeState(encodeState({
+      patternId: 'harmonograph', seed: 9, params: { detune: 0.01 }, color: {}, lang: 'en',
+      view: 'a', stage: '916', apre: 'pulse', aint: 0.7,
+    }))!;
+    expect(s.view).toBe('a');
+    expect(s.stage).toBe('916');
+    expect(s.apre).toBe('pulse');
+    expect(s.aint).toBeCloseTo(0.7);
+    expect(s.params['detune']).toBeCloseTo(0.01);
+  });
+  it('leaves poster URLs byte-identical to before', () => {
+    const hash = encodeState({ patternId: 'moire', seed: 2, params: {}, color: {}, lang: 'en' });
+    expect(hash.startsWith('#/p/moire?')).toBe(true);
+    expect(hash).not.toContain('stage');
+    const s = decodeState(hash)!;
+    expect(s.view).toBeUndefined();
+  });
+  it('rejects garbage stage/aint values', () => {
+    const s = decodeState('#/a/moire?v=1&seed=1&stage=4x3&aint=7')!;
+    expect(s.view).toBe('a');
+    expect(s.stage).toBeUndefined();
+    expect(s.aint).toBe(1);
+  });
+});
