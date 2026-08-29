@@ -21,7 +21,7 @@ flowshape turns mathematics into art. Pick one of **25 deterministic pattern gen
 Then take it somewhere:
 
 - **Print.** Export **SVG or PNG** at any paper size. The SVG opens cleanly in Figma, Illustrator, Inkscape or Canva, so the finishing work happens in whatever tool you already use — flowshape deliberately does *not* try to be a poster editor.
-- **Motion.** Feed the same pattern audio — a file or the microphone — and it moves with the sound, on a 16:9, 9:16 or 1:1 stage you can record. *The animated stage is in development; see [below](#the-animated-stage--audio-visualizer).*
+- **Motion.** Feed the same pattern audio — a file or the microphone — and it moves with the sound on a 16:9, 9:16 or 1:1 stage. Record it and download an **MP4** with your audio in it. *The animated stage is in development; see [below](#the-animated-stage--audio-visualizer).*
 
 Two things make it more than a toy:
 
@@ -106,7 +106,7 @@ Take a pattern you have tuned, feed it audio — a dropped file or the microphon
 - **Beat-aware.** In file mode, onsets and tempo are precomputed over the whole buffer, so the next frame can be built *before* the downbeat and swapped exactly on it. In mic mode, detection is realtime.
 - **All 25 patterns animate.** Continuous per-frame modulation where the geometry allows it; a universal beat-quantised event mode — reroll the seed, step a structural parameter, flip a boolean — for everything else, including discrete tilings that have nothing continuous to move.
 - **Same generators, different renderer.** A small adapter draws the existing `SvgNode` tree to canvas2d, checked against the SVG output by a per-pattern pixel diff. The poster path stays pure SVG.
-- **Stage aspects** 16:9, 9:16, 1:1. Export is `MediaRecorder` capture now; a deterministic WebCodecs offline encoder — same audio + same URL ⇒ byte-identical video — is the next phase.
+- **Download the video.** Record the stage and save an **MP4** with the audio muxed in, at 1920×1080, 1080×1920 or 1080×1080. Capture goes through `MediaRecorder` first, falling back to WebM on browsers that will not record H.264/AAC; a deterministic WebCodecs offline encoder — same audio + same URL ⇒ byte-identical MP4, faster than realtime — is the next phase.
 - **Audio never leaves the browser.** There is nowhere to send it.
 
 One rule bends here and only here: **colour and gradients are permitted on the animated stage**, with spectral centroid driving hue and level driving chroma in OKLCH, so silence decays back to monochrome. The poster path is untouched — flat colours, no gradients, monochrome by default. A moving screen and a printed sheet are different media.

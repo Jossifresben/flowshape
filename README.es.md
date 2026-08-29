@@ -21,7 +21,7 @@ flowshape convierte las matemáticas en arte. Elige uno de los **25 generadores 
 Después, llévatelo a alguna parte:
 
 - **Impresión.** Exporta en **SVG o PNG** a cualquier tamaño de papel. El SVG abre limpio en Figma, Illustrator, Inkscape o Canva, de modo que el acabado se hace en la herramienta que ya usas: flowshape, deliberadamente, *no* pretende ser un editor de pósters.
-- **Movimiento.** Dale audio al mismo patrón —un archivo o el micrófono— y se moverá con el sonido, en un escenario 16:9, 9:16 o 1:1 que puedes grabar. *El escenario animado está en desarrollo; véase [más abajo](#el-escenario-animado--visualizador-de-audio).*
+- **Movimiento.** Dale audio al mismo patrón —un archivo o el micrófono— y se moverá con el sonido en un escenario 16:9, 9:16 o 1:1. Grábalo y descarga un **MP4** con tu audio dentro. *El escenario animado está en desarrollo; véase [más abajo](#el-escenario-animado--visualizador-de-audio).*
 
 Dos cosas lo separan de un juguete:
 
@@ -106,7 +106,7 @@ Coge un patrón que hayas ajustado, dale audio —un archivo o el micrófono— 
 - **Consciente del pulso.** En modo archivo, los ataques y el tempo se precalculan sobre el búfer completo, así que el siguiente fotograma puede construirse *antes* del golpe y cambiarse justo en él. En modo micrófono, la detección es en tiempo real.
 - **Los 25 patrones se animan.** Modulación continua por fotograma donde la geometría lo permite; y un modo de eventos cuantizados al pulso —resembrar, avanzar un parámetro estructural, invertir un booleano— para todo lo demás, incluidos los teselados discretos que no tienen nada continuo que mover.
 - **Los mismos generadores, otro renderizador.** Un adaptador dibuja el árbol `SvgNode` existente sobre canvas2d, contrastado con la salida SVG mediante una comparación de píxeles por patrón. La ruta del póster sigue siendo SVG puro.
-- **Formatos de escenario** 16:9, 9:16, 1:1. La exportación es hoy una captura con `MediaRecorder`; un codificador WebCodecs offline y determinista —mismo audio + misma URL ⇒ vídeo idéntico byte a byte— es la fase siguiente.
+- **Descarga el vídeo.** Graba el escenario y guarda un **MP4** con el audio incorporado, a 1920×1080, 1080×1920 o 1080×1080. La captura pasa por `MediaRecorder`, con reserva en WebM para los navegadores que no graben H.264/AAC; un codificador WebCodecs offline y determinista —mismo audio + misma URL ⇒ MP4 idéntico byte a byte, más rápido que en tiempo real— es la fase siguiente.
 - **El audio nunca sale del navegador.** No hay adónde enviarlo.
 
 Una regla se dobla aquí y solo aquí: **el color y los degradados sí se permiten en el escenario animado**, con el centroide espectral gobernando el tono y el nivel la croma en OKLCH, de modo que el silencio decae de vuelta al monocromo. La ruta del póster queda intacta: colores planos, sin degradados, monocromo por defecto. Una pantalla en movimiento y una hoja impresa son medios distintos.
