@@ -7,6 +7,10 @@ export interface ModalTab {
 export interface ModalOptions {
   title: string;
   tabs: ModalTab[];
+  /** Runs after the modal is removed from the DOM. For content that needs
+   *  more than DOM removal to stop — e.g. a playing `<video>`, where removal
+   *  alone is not reliably synchronous across browsers. */
+  onClose?: () => void;
 }
 
 /** The close function of whatever modal is currently open, if any — lets a
@@ -68,6 +72,10 @@ export function openModal(opts: ModalOptions): void {
   closeBtn.addEventListener('click', () => close());
   head.append(titleEl, closeBtn);
 
+  // A tab strip only means something when there is a choice to make — a
+  // single-tab modal (e.g. the video player) has nothing to switch between,
+  // so the bar would just be a lonely, clickless-looking chip.
+  const showTabStrip = opts.tabs.length > 1;
   const tabStrip = document.createElement('div');
   tabStrip.className = 'modal-tabs';
   tabStrip.setAttribute('role', 'tablist');
@@ -114,7 +122,9 @@ export function openModal(opts: ModalOptions): void {
     tabStrip.append(btn);
   }
 
-  panel.append(head, tabStrip, body);
+  panel.append(head);
+  if (showTabStrip) panel.append(tabStrip);
+  panel.append(body);
   backdrop.append(panel);
   backdrop.addEventListener('click', () => close());
 
@@ -153,6 +163,7 @@ export function openModal(opts: ModalOptions): void {
     document.removeEventListener('keydown', onKeydown);
     backdrop.remove();
     if (opener && document.contains(opener)) opener.focus();
+    opts.onClose?.();
   }
 
   activeClose = close;
