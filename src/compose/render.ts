@@ -5,6 +5,7 @@ import { artworkPalette, resolvePresentation, type Colorway } from './colorways'
 import type { PosterData } from './data';
 import type { Measure } from './measure';
 import { fitTitle, wrap, type Fit } from './text';
+import { encodeQr, type QrSymbol } from './qr';
 
 export interface Rect { x: number; y: number; w: number; h: number }
 export interface Size { w: number; h: number }
@@ -35,6 +36,23 @@ export type RenderResult =
 
 /** Section 7's floor, in reference px. Below this, fail rather than ellipse. */
 const TITLE_FLOOR = 76;
+
+/** What the poster's QR points at, and what is printed under it. */
+export const QR_TARGET = 'https://flowshape.art';
+const QR_WORDMARK = 'flowshape.art';
+/** Reference px for the whole plate, quiet zone included. On A3 that is ~21mm,
+ *  about 0.8mm per module at version 2 — comfortably above what a phone needs. */
+const QR_BOX = 88;
+/** Modules of quiet zone per side. The spec asks for four; three is the usual
+ *  print compromise and still leaves the symbol isolated on its own plate. */
+const QR_QUIET = 3;
+
+// The target never changes, so the symbol is encoded once per process.
+let qrSymbol: QrSymbol | null = null;
+function wordmarkQr(): QrSymbol {
+  qrSymbol ??= encodeQr(QR_TARGET);
+  return qrSymbol;
+}
 
 /** The artwork region and the type region, from the skeleton's split. */
 export function regions(sh: Sheet, s: Skeleton): { art: Rect; type: Rect } {
@@ -144,7 +162,7 @@ interface TypeOpts {
   mono?: boolean;
   weight?: number;
   tracking?: number;
-  anchor?: 'start' | 'end';
+  anchor?: 'start' | 'middle' | 'end';
   opacity?: number;
 }
 
@@ -159,7 +177,7 @@ function tx(text: string, x: number, y: number, o: TypeOpts): SvgNode {
   };
   if (o.weight !== undefined) attrs['font-weight'] = o.weight;
   if (o.tracking) attrs['letter-spacing'] = `${o.tracking}em`;
-  if (o.anchor === 'end') attrs['text-anchor'] = 'end';
+  if (o.anchor && o.anchor !== 'start') attrs['text-anchor'] = o.anchor;
   if (o.opacity !== undefined && o.opacity < 1) attrs['fill-opacity'] = o.opacity;
   return elText('text', attrs, text);
 }
@@ -213,6 +231,7 @@ interface Ctx {
   d: PosterData;
   measure: Measure;
   content: Rect;
+  artRect: Rect;
   fg: string;
   accent: string;
   bodyAlpha: number;
@@ -382,6 +401,60 @@ function buildScrim(sh: Sheet, c: Colorway, id: string): SvgNode[] {
   ];
 }
 
+/**
+ * The wordmark QR and the URL beneath it.
+ *
+ * It always sits on its own plate in the sheet's paper colour. On a paper
+ * ground that plate is invisible; over artwork or an accent field it reads as a
+ * deliberate small card — and either way the symbol gets the uniform, high
+ * contrast surround it needs to scan, which a QR laid straight onto a lattice
+ * does not get.
+ *
+ * Goes with the text when the text is hidden: it is a caption, not artwork.
+ */
+function buildQr(ctx: Ctx): SvgNode[] {
+  if (ctx.hideText) return [];
+  const { sh, s, c, content } = ctx;
+  const anchor = s.qr ?? { region: 'type' as const, corner: 'br' as const };
+  const region = anchor.region === 'art' ? ctx.artRect : content;
+
+  const sym = wordmarkQr();
+  const box = u(sh, QR_BOX);
+  const module = box / (sym.size + QR_QUIET * 2);
+  const caption = u(sh, 20);
+  const pad = u(sh, anchor.region === 'art' ? 24 : 0);
+
+  const left = anchor.corner.endsWith('l');
+  const top = anchor.corner.startsWith('t');
+  const x = left ? region.x + pad : region.x + region.w - box - pad;
+  const y = top ? region.y + pad : region.y + region.h - box - caption - pad;
+
+  const nodes: SvgNode[] = [
+    el('rect', { x, y, width: box, height: box + caption, fill: c.paper }),
+  ];
+  const origin = QR_QUIET * module;
+  for (let r = 0; r < sym.size; r++) {
+    for (let col = 0; col < sym.size; col++) {
+      if (!sym.modules[r]![col]) continue;
+      nodes.push(el('rect', {
+        x: x + origin + col * module,
+        y: y + origin + r * module,
+        // A hair of overlap: adjacent modules must not show a seam when the
+        // renderer rounds coordinates to two decimals.
+        width: module + 0.02,
+        height: module + 0.02,
+        fill: c.ink,
+      }));
+    }
+  }
+  nodes.push(tx(QR_WORDMARK, x + box / 2, y + box + caption * 0.72, {
+    size: u(sh, 17), fill: c.ink, mono: true, tracking: 0.06, anchor: 'middle',
+  }));
+  // Grouped and marked so a test can read the symbol back out of the rendered
+  // sheet, rather than only trusting the encoder that produced it.
+  return [el('g', { class: 'qr' }, nodes)];
+}
+
 /** The shared decoration layer: four corner crop marks and one vertical
  *  caption. Independent of layout, toggled per variant, never reimplemented. */
 function buildDecoration(ctx: Ctx): SvgNode[] {
@@ -453,7 +526,7 @@ export function renderPoster(o: RenderOptions): RenderResult {
   const fg = s.artwork === 'full' ? c.paper : onGround ? c.groundType : c.ink;
   const onArtwork = s.artwork === 'full';
   const ctx: Ctx = {
-    hideText, sh, s, c, d: o.data, measure: o.measure, content, fg, accent: c.accent,
+    hideText, sh, s, c, d: o.data, measure: o.measure, content, artRect: bed, fg, accent: c.accent,
     bodyAlpha: onArtwork ? BODY_ALPHA_ON_ART : BODY_ALPHA,
     labelAlpha: onArtwork ? LABEL_ALPHA_ON_ART : LABEL_ALPHA,
   };
@@ -467,6 +540,7 @@ export function renderPoster(o: RenderOptions): RenderResult {
     ...title.nodes,
     ...buildAccent(ctx, title.bottom),
     ...buildDecoration(ctx),
+    ...buildQr(ctx),
   );
 
   return {
