@@ -67,8 +67,14 @@ export const SHOWCASE_POSTERS: ShowcaseEntry[] = [
 ];
 
 /**
- * Curated videos: recordings from the animate stage, served as static files
- * from `public/showcase/`.
+ * Curated videos: recordings from the animate stage.
+ *
+ * The video files live in Cloudflare R2, not in this repository — at 1080p and
+ * full length they are ~180 MB, which git would carry forever. R2 charges
+ * nothing for egress, so hosting them there costs less than committing them
+ * and keeps the clone small. Poster frames stay local: they are ~380 KB in
+ * total and are needed on first paint, so serving them beside the site avoids
+ * a second origin on the critical path.
  *
  * Unlike designs and posters, a video is NOT a hash — it is a real file, so it
  * carries its own poster frame and an optional link back to the live stage.
@@ -84,14 +90,14 @@ export interface ShowcaseVideo {
 }
 
 export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
-  { src: '/showcase/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
     title: ['Harmonograph', 'Armonógrafo'] },
-  { src: '/showcase/timestable.mp4', poster: '/showcase/timestable.jpg',
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/timestable.mp4', poster: '/showcase/timestable.jpg',
     title: ['Times-Table Chords', 'Cuerdas de la tabla de multiplicar'] },
-  { src: '/showcase/flowfield.mp4', poster: '/showcase/flowfield.jpg',
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/flowfield.mp4', poster: '/showcase/flowfield.jpg',
     title: ['Flow Field', 'Campo de flujo'] },
-  { src: '/showcase/fabric.mp4', poster: '/showcase/fabric.jpg',
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/fabric.mp4', poster: '/showcase/fabric.jpg',
     title: ['Warped Fabric', 'Tejido deformado'] },
-  { src: '/showcase/harmonograph-wide.mp4', poster: '/showcase/harmonograph-wide.jpg',
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph-wide.mp4', poster: '/showcase/harmonograph-wide.jpg',
     title: ['Harmonograph, wide', 'Armonógrafo, panorámico'] },
 ];
