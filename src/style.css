@@ -190,6 +190,23 @@ a.gal-wordmark { text-decoration: none; }
 .nav-lang-btn:hover { color: var(--ink); }
 .nav-lang-btn.active { background: var(--ink); color: var(--paper); }
 
+.nav-share-wrap { display: inline-flex; align-items: center; gap: 8px; }
+.nav-share-url {
+  font-family: var(--font-mono); font-size: 10px; color: var(--gray);
+  max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.nav-share {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid var(--line); color: var(--ink);
+  padding: 5px 8px; cursor: pointer; line-height: 0;
+}
+.nav-share:hover { border-color: var(--ink); }
+.nav-share-msg {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em;
+  line-height: 1; white-space: nowrap;
+}
+.nav-share:not(.flashed) .nav-share-msg { display: none; }
+
 .panel-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
 /* --- site footer --- */

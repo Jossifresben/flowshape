@@ -1,4 +1,5 @@
 import { t, setLang, LANGS, type Lang } from '../i18n';
+import { shareButton } from './share';
 
 /** The EN | ES switch. Buttons rather than a select: two options, and the
  *  inactive one should read as a one-tap alternative, not a hidden menu. */
@@ -25,7 +26,7 @@ export function langSwitch(lang: Lang): HTMLElement {
 /** The site top bar: wordmark, section links, language switch. Shared by the
  *  gallery and the about page; the playground has its own narrow panel and
  *  uses `panelNav` below instead. */
-export function buildNav(lang: Lang, active: 'patterns' | 'about'): HTMLElement {
+export function buildNav(lang: Lang, active: 'patterns' | 'about' | 'saved'): HTMLElement {
   const topbar = document.createElement('div');
   topbar.className = 'gal-topbar';
 
@@ -46,8 +47,9 @@ export function buildNav(lang: Lang, active: 'patterns' | 'about'): HTMLElement 
     links.append(a);
   };
   link('#/', t('nav.patterns', lang), active === 'patterns');
+  link('#/saved', t('nav.saved', lang), active === 'saved');
   link('#/about', t('nav.about', lang), active === 'about');
-  links.append(langSwitch(lang));
+  links.append(langSwitch(lang), shareButton(lang));
 
   topbar.append(wordmark, links);
   return topbar;
@@ -64,6 +66,6 @@ export function panelNav(lang: Lang): HTMLElement {
   back.href = '#/';
   back.textContent = t('pg.back', lang);
 
-  row.append(back, langSwitch(lang));
+  row.append(back, langSwitch(lang), shareButton(lang));
   return row;
 }
