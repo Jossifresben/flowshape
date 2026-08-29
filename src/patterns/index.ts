@@ -18,3 +18,4 @@ import './roselattice';
 import './chirp';
 import './helix';
 import './voxel';
+import './apollonian';

@@ -23,6 +23,7 @@ export const NAMES: Record<string, string> = {
   chirp: 'Converging Chirp',
   helix: 'Helix Ladder',
   voxel: 'Voxel Form',
+  apollonian: 'Apollonian Circles',
 };
 
 /** Human label for each pattern family. */
