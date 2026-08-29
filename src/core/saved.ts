@@ -271,3 +271,42 @@ export function reset(): Result<void> {
   if (!r.ok && r.reason === 'future') return { ok: false, reason: 'future' };
   return write([]);
 }
+
+/** The whole collection as a portable document. `localStorage` is not a
+ *  backup, and without accounts this is the only way to move favourites
+ *  between browsers or devices. */
+export function exportJSON(): string {
+  return JSON.stringify({ sv: SV, items: list() }, null, 2);
+}
+
+/** Merges a document in. Never deletes, and never overwrites a record that is
+ *  already here — an existing hash counts as skipped. */
+export function importJSON(text: string): Result<{ added: number; skipped: number }> {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { ok: false, reason: 'invalid' };
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return { ok: false, reason: 'invalid' };
+  }
+  const o = parsed as Record<string, unknown>;
+  if (o['sv'] !== SV || !Array.isArray(o['items'])) return { ok: false, reason: 'invalid' };
+
+  const incoming = o['items'] as unknown[];
+  let added = 0;
+  let skipped = 0;
+  const r = mutate((items) => {
+    const merged = [...items];
+    const seen = new Set(items.map((i) => i.hash));
+    for (const candidate of incoming) {
+      if (!isItem(candidate) || seen.has(candidate.hash)) { skipped++; continue; }
+      seen.add(candidate.hash);
+      merged.push(candidate);
+      added++;
+    }
+    return { ok: true, value: merged };
+  });
+  return r.ok ? { ok: true, value: { added, skipped } } : r;
+}

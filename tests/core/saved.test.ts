@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   list, isSaved, kindOf, isAvailable, storageState, readState, SAVED_KEY, PROBE_KEY,
-  toggle, rename, remove, reset, type SavedItem,
+  toggle, rename, remove, reset, exportJSON, importJSON, type SavedItem,
 } from '../../src/core/saved';
 
 /** Minimal in-memory stand-in for the Storage interface. */
@@ -403,5 +403,64 @@ describe('saved — mutations', () => {
     store.setItem(SAVED_KEY, future);
     expect(reset()).toEqual({ ok: false, reason: 'future' });
     expect(store.getItem(SAVED_KEY)).toBe(future);
+  });
+});
+
+describe('saved — export and import', () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  afterEach(() => {
+    try { delete (globalThis as { localStorage?: unknown }).localStorage; } catch { /* non-configurable */ }
+    if (original) Object.defineProperty(globalThis, 'localStorage', original);
+  });
+  beforeEach(() => { install(makeStubStorage()); });
+
+  it('round-trips through export and import', () => {
+    toggle(HASH_P, 'one');
+    toggle(HASH_A, 'two');
+    const text = exportJSON();
+    reset();
+    expect(list()).toEqual([]);
+    expect(importJSON(text)).toEqual({ ok: true, value: { added: 2, skipped: 0 } });
+    expect(list().map((i) => i.title).sort()).toEqual(['one', 'two']);
+  });
+
+  it('exports a readable, versioned document', () => {
+    toggle(HASH_P, 'one');
+    const parsed = JSON.parse(exportJSON()) as { sv: number; items: unknown[] };
+    expect(parsed.sv).toBe(1);
+    expect(parsed.items).toHaveLength(1);
+  });
+
+  it('merges rather than replaces, and skips duplicates by hash', () => {
+    toggle(HASH_P, 'mine');
+    const incoming = JSON.stringify({ sv: 1, items: [
+      { hash: HASH_P, title: 'theirs', savedAt: 1 },
+      { hash: HASH_A, title: 'new', savedAt: 2 },
+    ] });
+    expect(importJSON(incoming)).toEqual({ ok: true, value: { added: 1, skipped: 1 } });
+    expect(list()).toHaveLength(2);
+    // An existing record wins: import never overwrites what is already here.
+    expect(list().find((i) => i.hash === HASH_P)!.title).toBe('mine');
+  });
+
+  it('never deletes', () => {
+    toggle(HASH_P, 'mine');
+    expect(importJSON(JSON.stringify({ sv: 1, items: [] }))).toEqual({ ok: true, value: { added: 0, skipped: 0 } });
+    expect(list()).toHaveLength(1);
+  });
+
+  it('rejects a file that is not a favourites document', () => {
+    expect(importJSON('{not json')).toEqual({ ok: false, reason: 'invalid' });
+    expect(importJSON('[]')).toEqual({ ok: false, reason: 'invalid' });
+    expect(importJSON(JSON.stringify({ items: [] }))).toEqual({ ok: false, reason: 'invalid' });
+    expect(importJSON(JSON.stringify({ sv: 99, items: [] }))).toEqual({ ok: false, reason: 'invalid' });
+  });
+
+  it('drops malformed records inside an otherwise valid file', () => {
+    const incoming = JSON.stringify({ sv: 1, items: [
+      { hash: HASH_P, title: 'good', savedAt: 1 },
+      { hash: 'not-a-hash', title: 'bad', savedAt: 2 },
+    ] });
+    expect(importJSON(incoming)).toEqual({ ok: true, value: { added: 1, skipped: 1 } });
   });
 });
