@@ -32,19 +32,18 @@ const THUMB_OVERRIDES: Record<string, Record<string, number>> = {
  * When a pattern has a curated preset (see `presets.ts`), the thumbnail
  * renders that hand-tuned state — preset params merged over the defaults,
  * the preset's own seed, and the preset's colour — instead of the bare
- * defaults. The THUMB_OVERRIDES density caps still apply on top either way,
- * since they exist purely to keep thumbnail file size down, not to reflect
- * artistic intent.
+ * defaults. A preset WINS over the THUMB_OVERRIDES density caps: the card is a
+ * sample of the state you get when you click it, so it must not diverge from
+ * it. The caps still apply to patterns with no preset, where they exist purely
+ * to keep file size down and no artistic intent is being contradicted.
  */
 function build(): Record<string, string> {
   const out: Record<string, string> = {};
   for (const def of listPatterns()) {
     const preset = PRESETS[def.id];
-    const params = {
-      ...defaultParams(def),
-      ...(preset?.params ?? {}),
-      ...(THUMB_OVERRIDES[def.id] ?? {}),
-    };
+    const params = preset
+      ? { ...defaultParams(def), ...(preset.params ?? {}) }
+      : { ...defaultParams(def), ...(THUMB_OVERRIDES[def.id] ?? {}) };
     const seed = preset?.seed ?? THUMB_SEED;
     const palette = resolvePalette(preset?.color ?? {});
     const node = generateSafe(def, params, seed, THUMB_SIZE);
