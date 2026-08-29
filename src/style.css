@@ -202,7 +202,11 @@ a.gal-wordmark { text-decoration: none; }
   border-top: 1px solid var(--line);
   font-family: var(--font-mono); font-size: 11px; color: var(--gray);
 }
-.site-footer a { color: var(--gray); text-decoration: none; border-bottom: 1px solid var(--line); }
+/* The resting underline uses currentColor, not --line: at #2e2e33 against
+   --paper the rule was invisible, so the links read as plain text and the
+   credit went unnoticed. Tying it to the text colour means it is always
+   visible and brightens with the text on hover. */
+.site-footer a { color: var(--gray); text-decoration: none; border-bottom: 1px solid currentColor; }
 .site-footer a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .site-footer-links { display: flex; flex-wrap: wrap; gap: 18px; }
 .site-footer.compact {
