@@ -11,6 +11,8 @@ import { approxMeasure, canvasMeasure, type Measure } from '../compose/measure';
 import {
   toPngBlob, downloadBlob, pixelDimensions, posterFilename,
 } from '../poster/export';
+import { favouriteButton } from './star';
+import { shareButton } from './share';
 
 /** The tree already carries literal colours, so the palette is inert here. */
 const BAKED: Palette = { paper: '#000000', ink: '#000000', accent: '#000000' };
@@ -196,6 +198,7 @@ export function mountComposer(root: HTMLElement): () => void {
     });
 
     bar.append(svgBtn, pngBtn, err);
+    bar.append(favouriteButton(state.lang, () => location.hash).el, shareButton(state.lang));
 
     const stage = document.createElement('div');
     stage.className = 'cmp-stage';
