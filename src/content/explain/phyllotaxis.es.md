@@ -3,7 +3,7 @@ source: Vogel, H. (1979) "A better way to construct the sunflower head", Mathema
 url: https://en.wikipedia.org/wiki/Phyllotaxis
 ---
 
-## Formula
+## Fórmula
 
     θₙ = n · α                  (α ≈ 137,50776°, el ángulo áureo)
     rₙ = s · n^p                (p = 0,5 en el modelo original de Vogel)

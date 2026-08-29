@@ -128,7 +128,16 @@ input[type='checkbox'] { accent-color: var(--ink); }
   border: 1px solid var(--line); padding: 14px; overflow-x: auto; margin: 0;
 }
 .modal-body p { font-size: 14px; line-height: 1.65; }
+.modal-body em { font-style: italic; }
 .modal-body a { color: var(--accent); }
+.modal-body h3 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; margin: 20px 0 8px; }
+.modal-body h3:first-child { margin-top: 0; }
+.modal-body ul { margin: 0 0 14px; padding-left: 20px; }
+.modal-body li { font-size: 14px; line-height: 1.65; margin-bottom: 4px; }
+.modal-body .explain-citation {
+  font-family: var(--font-mono); font-size: 11px; color: var(--gray);
+  margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--line);
+}
 
 /* --- mobile: layout (viewport-width dependent) --- */
 

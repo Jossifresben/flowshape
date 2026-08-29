@@ -11,9 +11,8 @@ import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '..
 import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
 import { openModal } from './modal';
 import { loadSource } from '../content/source';
-
-/** Flip to true once the Math and Code tabs have real content (Part 3 Tasks 9–10). */
-const EXPLAIN_ENABLED = false;
+import { loadExplain } from '../content/explain';
+import { renderMarkdown, renderCitation } from './markdown';
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their `label` has no '.' so `sliderRow`'s i18n-key splitting is a no-op
@@ -106,6 +105,23 @@ async function renderCodeTab(id: string): Promise<HTMLElement> {
   copyRow.append(copyBtn);
 
   wrap.append(preamble, copyRow, pre);
+  return wrap;
+}
+
+/** Builds the Math tab: the pattern's explanation content (formula, plain-
+ *  language meaning, per-parameter notes) rendered from markdown, plus its
+ *  citation as a link.
+ *  TODO: hardcoded to 'en' — the Spanish files (`*.es.md`) already exist for
+ *  every pattern, but the playground UI itself has no language toggle yet.
+ *  Wire this to the user's chosen language once that control exists. */
+async function renderMathTab(id: string): Promise<HTMLElement> {
+  const wrap = document.createElement('div');
+  const doc = await loadExplain(id, 'en');
+  if (doc === null) {
+    wrap.append(placeholderTab('No explanation found for this pattern.'));
+    return wrap;
+  }
+  wrap.innerHTML = renderMarkdown(doc.body) + renderCitation(doc.source, doc.url);
   return wrap;
 }
 
@@ -327,17 +343,13 @@ export function mountPlayground(root: HTMLElement): () => void {
       openModal({
         title: NAMES[state.patternId] ?? state.patternId,
         tabs: [
-          { id: 'math', label: 'Math', render: () => placeholderTab('Math explanation coming soon.') },
+          { id: 'math', label: 'Math', render: () => renderMathTab(state.patternId) },
           { id: 'code', label: 'Code', render: () => renderCodeTab(state.patternId) },
         ],
       });
     });
     explainRow.append(explainBtn);
-    // The modal shell is built but its two tabs are still placeholders: the
-    // explanations (Part 3 Task 9) and the source view (Task 10) do not exist yet.
-    // Shipping a button that opens "coming soon" is worse than shipping no button,
-    // so it stays hidden until there is something behind it.
-    if (EXPLAIN_ENABLED) panel.append(explainRow);
+    panel.append(explainRow);
 
     const orderedParams = [...def.params].sort((a, b) =>
       (a.key === 'size' ? -1 : 0) - (b.key === 'size' ? -1 : 0),
