@@ -1,5 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { list, isSaved, kindOf, isAvailable, storageState, readState, SAVED_KEY, PROBE_KEY } from '../../src/core/saved';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  list, isSaved, kindOf, isAvailable, storageState, readState, SAVED_KEY, PROBE_KEY,
+  toggle, rename, remove, reset, type SavedItem,
+} from '../../src/core/saved';
 
 /** Minimal in-memory stand-in for the Storage interface. */
 function makeStubStorage(): Storage {
@@ -252,5 +255,129 @@ describe('saved — read path', () => {
 
       expect(calls).toEqual([`set:${PROBE_KEY}`, `remove:${PROBE_KEY}`]);
     });
+  });
+});
+
+describe('saved — mutations', () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  afterEach(() => {
+    vi.useRealTimers();
+    try { delete (globalThis as { localStorage?: unknown }).localStorage; } catch { /* non-configurable */ }
+    if (original) Object.defineProperty(globalThis, 'localStorage', original);
+  });
+
+  let store: Storage;
+  beforeEach(() => {
+    store = makeStubStorage();
+    install(store);
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-29T12:00:00Z'));
+  });
+
+  it('saves, and reports which way the toggle went', () => {
+    const r = toggle(HASH_P, 'Times Table · 71203');
+    expect(r).toEqual({ ok: true, value: 'saved' });
+    expect(isSaved(HASH_P)).toBe(true);
+    expect(list()[0]).toEqual({
+      hash: HASH_P, title: 'Times Table · 71203',
+      savedAt: new Date('2026-08-29T12:00:00Z').getTime(),
+    });
+  });
+
+  it('toggling the same hash again removes it', () => {
+    toggle(HASH_P, 'a');
+    expect(toggle(HASH_P, 'a')).toEqual({ ok: true, value: 'removed' });
+    expect(list()).toEqual([]);
+  });
+
+  it('never creates a duplicate', () => {
+    toggle(HASH_P, 'a');
+    toggle(HASH_P, 'a');
+    toggle(HASH_P, 'b');
+    expect(list()).toHaveLength(1);
+  });
+
+  it('accepts all three kinds of creation', () => {
+    toggle(HASH_P, 'p'); toggle(HASH_A, 'a'); toggle(HASH_C, 'c');
+    expect(list().map((i) => kindOf(i.hash)).sort()).toEqual(['a', 'c', 'p']);
+  });
+
+  it('refuses a hash that is not a creation', () => {
+    expect(toggle('#/saved', 'x')).toEqual({ ok: false, reason: 'invalid' });
+    expect(toggle('#/about', 'x')).toEqual({ ok: false, reason: 'invalid' });
+    expect(list()).toEqual([]);
+  });
+
+  it('renames without changing the hash or the save time', () => {
+    toggle(HASH_P, 'before');
+    expect(rename(HASH_P, 'after')).toEqual({ ok: true, value: undefined });
+    expect(list()[0]!.title).toBe('after');
+    expect(list()[0]!.hash).toBe(HASH_P);
+    expect(list()[0]!.savedAt).toBe(new Date('2026-08-29T12:00:00Z').getTime());
+  });
+
+  it('trims a rename and refuses a blank one', () => {
+    toggle(HASH_P, 'before');
+    expect(rename(HASH_P, '  after  ')).toEqual({ ok: true, value: undefined });
+    expect(list()[0]!.title).toBe('after');
+    expect(rename(HASH_P, '   ')).toEqual({ ok: false, reason: 'invalid' });
+    expect(list()[0]!.title).toBe('after');
+  });
+
+  it('reports a rename or removal of something not saved', () => {
+    expect(rename(HASH_P, 'x')).toEqual({ ok: false, reason: 'missing' });
+    expect(remove(HASH_P)).toEqual({ ok: false, reason: 'missing' });
+  });
+
+  it('removes only the targeted record', () => {
+    toggle(HASH_P, 'p'); toggle(HASH_A, 'a');
+    expect(remove(HASH_P)).toEqual({ ok: true, value: undefined });
+    expect(list().map((i) => i.hash)).toEqual([HASH_A]);
+  });
+
+  it('does not lose a write made behind its back', () => {
+    toggle(HASH_P, 'p');
+    // A second tab saves directly into storage between our calls.
+    const outside = JSON.parse(store.getItem(SAVED_KEY)!) as { sv: number; items: SavedItem[] };
+    outside.items.push({ hash: HASH_C, title: 'other tab', savedAt: 1 });
+    store.setItem(SAVED_KEY, JSON.stringify(outside));
+    toggle(HASH_A, 'a');
+    expect(list().map((i) => i.hash).sort()).toEqual([HASH_A, HASH_C, HASH_P].sort());
+  });
+
+  it('reports quota exhaustion without changing anything', () => {
+    // A real DOMException: the duck-typed fallback was removed in Task 1.
+    install({ ...makeStubStorage(), setItem: () => {
+      throw new DOMException('full', 'QuotaExceededError');
+    } } as Storage);
+    expect(toggle(HASH_P, 'x')).toEqual({ ok: false, reason: 'quota' });
+  });
+
+  it('reports unavailable storage without changing anything', () => {
+    install(undefined);
+    expect(toggle(HASH_P, 'x')).toEqual({ ok: false, reason: 'unavailable' });
+    expect(rename(HASH_P, 'x')).toEqual({ ok: false, reason: 'unavailable' });
+    expect(remove(HASH_P)).toEqual({ ok: false, reason: 'unavailable' });
+  });
+
+  it('refuses to write over a corrupt store', () => {
+    store.setItem(SAVED_KEY, '{not json');
+    expect(toggle(HASH_P, 'x')).toEqual({ ok: false, reason: 'corrupt' });
+    expect(store.getItem(SAVED_KEY)).toBe('{not json');
+  });
+
+  it('reset is the only thing that discards a corrupt store', () => {
+    store.setItem(SAVED_KEY, '{not json');
+    expect(reset()).toEqual({ ok: true, value: undefined });
+    expect(readState()).toBe('ok');
+    expect(list()).toEqual([]);
+    expect(toggle(HASH_P, 'x')).toEqual({ ok: true, value: 'saved' });
+  });
+
+  it('refuses to reset a store written by a newer version of the site', () => {
+    const future = JSON.stringify({ sv: 99, items: [] });
+    store.setItem(SAVED_KEY, future);
+    expect(reset()).toEqual({ ok: false, reason: 'future' });
+    expect(store.getItem(SAVED_KEY)).toBe(future);
   });
 });

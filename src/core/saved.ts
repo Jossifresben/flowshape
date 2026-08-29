@@ -192,3 +192,75 @@ export function isSaved(hash: string): boolean {
   const r = read();
   return r.ok && r.store.items.some((i) => i.hash === hash);
 }
+
+function write(items: SavedItem[]): Result<void> {
+  const s = raw();
+  if (!s) return { ok: false, reason: 'unavailable' };
+  try {
+    s.setItem(SAVED_KEY, JSON.stringify({ sv: SV, items } satisfies Store));
+    return { ok: true, value: undefined };
+  } catch (e) {
+    // Reuse the helper Task 1 already has — quota detection must not be
+    // spelled two different ways in one module.
+    return { ok: false, reason: isQuotaError(e) ? 'quota' : 'unavailable' };
+  }
+}
+
+/**
+ * Every mutation is read-modify-write: the module never caches the array
+ * between calls, so a second tab's save cannot be clobbered by this one.
+ */
+function mutate(fn: (items: SavedItem[]) => Result<SavedItem[]>): Result<void> {
+  const r = read();
+  // A store we could not read is never overwritten. `reset()` is the only
+  // way to discard one, so destruction is always the visitor's choice.
+  if (!r.ok) return { ok: false, reason: r.reason };
+  const next = fn(r.store.items);
+  if (!next.ok) return next;
+  return write(next.value);
+}
+
+/** Saves `hash` if it is not saved, removes it if it is. */
+export function toggle(hash: string, title: string): Result<'saved' | 'removed'> {
+  if (!kindOf(hash)) return { ok: false, reason: 'invalid' };
+  const clean = title.trim();
+  if (!clean) return { ok: false, reason: 'invalid' };
+  let outcome: 'saved' | 'removed' = 'saved';
+  const r = mutate((items) => {
+    if (items.some((i) => i.hash === hash)) {
+      outcome = 'removed';
+      return { ok: true, value: items.filter((i) => i.hash !== hash) };
+    }
+    outcome = 'saved';
+    return { ok: true, value: [...items, { hash, title: clean, savedAt: Date.now() }] };
+  });
+  return r.ok ? { ok: true, value: outcome } : r;
+}
+
+export function rename(hash: string, title: string): Result<void> {
+  const clean = title.trim();
+  if (!clean) return { ok: false, reason: 'invalid' };
+  return mutate((items) => {
+    if (!items.some((i) => i.hash === hash)) return { ok: false, reason: 'missing' };
+    return { ok: true, value: items.map((i) => (i.hash === hash ? { ...i, title: clean } : i)) };
+  });
+}
+
+export function remove(hash: string): Result<void> {
+  return mutate((items) => {
+    if (!items.some((i) => i.hash === hash)) return { ok: false, reason: 'missing' };
+    return { ok: true, value: items.filter((i) => i.hash !== hash) };
+  });
+}
+
+/** Discards everything, including a store too corrupt to read. The only
+ *  destructive operation, and only ever reached through an explicit action.
+ *
+ *  It refuses one case: a store written by a NEWER version of the site. This
+ *  build cannot read it, but a newer one can, and a visitor on a stale cached
+ *  bundle must not be able to destroy work that is perfectly intact. */
+export function reset(): Result<void> {
+  const r = read();
+  if (!r.ok && r.reason === 'future') return { ok: false, reason: 'future' };
+  return write([]);
+}
