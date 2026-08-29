@@ -202,7 +202,14 @@ function write(items: SavedItem[]): Result<void> {
   } catch (e) {
     // Reuse the helper Task 1 already has — quota detection must not be
     // spelled two different ways in one module.
-    return { ok: false, reason: isQuotaError(e) ? 'quota' : 'unavailable' };
+    if (isQuotaError(e)) {
+      // The cache is only bypassed while it holds 'quota', so a cached 'ok'
+      // would survive a real write failure and keep claiming there is room.
+      // Dropping it here makes the memo self-correct in both directions.
+      probedFor = null;
+      return { ok: false, reason: 'quota' };
+    }
+    return { ok: false, reason: 'unavailable' };
   }
 }
 

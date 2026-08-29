@@ -353,6 +353,30 @@ describe('saved — mutations', () => {
     expect(toggle(HASH_P, 'x')).toEqual({ ok: false, reason: 'quota' });
   });
 
+  it('lets a failed write correct a stale ok probe', () => {
+    let quotaExceeded = false;
+    const tracked: Storage = {
+      ...store,
+      setItem: (k: string, v: string) => {
+        if (quotaExceeded) throw new DOMException('full', 'QuotaExceededError');
+        store.setItem(k, v);
+      },
+      // A spread copies the getter's *current* value, not a live binding —
+      // redeclare it so `.length` still reflects `store` after later writes.
+      get length() { return store.length; },
+    } as Storage;
+    install(tracked);
+
+    toggle(HASH_A, 'seed'); // something already saved, so a later throw reads as "full"
+    expect(storageState()).toBe('ok'); // probes now, caches 'ok' against `tracked`
+
+    quotaExceeded = true;
+    expect(toggle(HASH_P, 'x')).toEqual({ ok: false, reason: 'quota' });
+    // Must not return the stale cached 'ok' — the failed write should have
+    // dropped the memo so this re-probes.
+    expect(storageState()).toBe('quota');
+  });
+
   it('reports unavailable storage without changing anything', () => {
     install(undefined);
     expect(toggle(HASH_P, 'x')).toEqual({ ok: false, reason: 'unavailable' });
