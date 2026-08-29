@@ -13,9 +13,9 @@ export const truchet = definePattern({
     { key: 'cell', kind: 'int', min: 20, max: 80, step: 2, default: 30, label: 'truchet.cell' },
     { key: 'variant', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'truchet.variant', options: ['truchet.arcs', 'truchet.diagonals'] },
     { key: 'render', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'truchet.render', options: ['truchet.strokes', 'truchet.tiles'] },
-    { key: 'strokeWidth', kind: 'float', min: 0.3, max: 6, step: 0.1, default: 1.0, label: 'truchet.strokeWidth' },
-    { key: 'boldChance', kind: 'float', min: 0, max: 0.3, step: 0.01, default: 0.12, label: 'truchet.boldChance' },
-    { key: 'accentChance', kind: 'float', min: 0, max: 0.2, step: 0.01, default: 0.04, label: 'truchet.accentChance' },
+    { key: 'strokeWidth', kind: 'float', min: 0.3, max: 6, step: 0.1, default: 1.0, label: 'truchet.strokeWidth', dependsOn: { key: 'render', values: [0] } },
+    { key: 'boldChance', kind: 'float', min: 0, max: 0.3, step: 0.01, default: 0.12, label: 'truchet.boldChance', dependsOn: { key: 'render', values: [0] } },
+    { key: 'accentChance', kind: 'float', min: 0, max: 0.2, step: 0.01, default: 0.04, label: 'truchet.accentChance', dependsOn: { key: 'render', values: [0] } },
   ],
   generate(p, seed, size) {
     const rnd = mulberry32(deriveSeed(seed, 'truchet'));

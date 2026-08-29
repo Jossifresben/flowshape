@@ -55,8 +55,8 @@ export const nested = definePattern({
     { key: 'stepRatio', kind: 'float', min: 0.45, max: 0.88, step: 0.01, default: 0.66, label: 'nested.stepRatio' },
     { key: 'coreSize', kind: 'float', min: 0, max: 0.5, step: 0.01, default: 0.22, label: 'nested.coreSize' },
     { key: 'render', kind: 'enum', min: 0, max: 2, step: 1, default: 0, label: 'nested.render', options: ['nested.frames', 'nested.outline', 'nested.hatch'] },
-    { key: 'twist', kind: 'bool', min: 0, max: 1, step: 1, default: 0, label: 'nested.twist' },
-    { key: 'faceShading', kind: 'float', min: 0.15, max: 1, step: 0.01, default: 0.7, label: 'nested.faceShading' },
+    { key: 'twist', kind: 'bool', min: 0, max: 1, step: 1, default: 0, label: 'nested.twist', dependsOn: { key: 'render', values: [0, 2] } },
+    { key: 'faceShading', kind: 'float', min: 0.15, max: 1, step: 0.01, default: 0.7, label: 'nested.faceShading', dependsOn: { key: 'render', values: [0, 2] } },
     { key: 'strokeWidth', kind: 'float', min: 0.2, max: 2, step: 0.05, default: 0.6, label: 'nested.strokeWidth' },
   ],
   generate(p, _seed, size) {

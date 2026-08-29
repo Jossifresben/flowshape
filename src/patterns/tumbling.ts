@@ -59,7 +59,7 @@ export const tumbling = definePattern({
     // face", not a length. Below ~6 a face carries one or two strokes and the
     // hatch reads as broken dashes rather than tone; the range starts high
     // enough that every sampled value is a legible fill.
-    { key: 'hatchDensity', kind: 'float', min: 4, max: 20, step: 0.1, default: 11, label: 'tumbling.hatchDensity' },
+    { key: 'hatchDensity', kind: 'float', min: 4, max: 20, step: 0.1, default: 11, label: 'tumbling.hatchDensity', dependsOn: { key: 'render', values: [1] } },
     // Floored at 0.15, not 0, on purpose: randomParams samples every
     // non-cosmetic param across its whole range and *will* pick the minimum.
     // At 0 the three tones collapse to one, the rhombille reads as a flat ink

@@ -54,6 +54,28 @@ export function checkboxRow(
   return row;
 }
 
+/**
+ * Grey out a control whose `dependsOn` gate isn't satisfied.
+ *
+ * Dimmed rather than hidden, deliberately: hiding would make the panel jump
+ * on every dropdown change, and would also erase the fact that the param
+ * still exists and is still carried in the shared URL. Dimming says "this
+ * one belongs to the other mode", which is the true statement.
+ *
+ * `hint` names the mode that would bring it back, and lands on both the row
+ * and the disabled input — a disabled control doesn't fire pointer events in
+ * every browser, so the title has to sit on an enabled ancestor too.
+ */
+export function dimRow(row: HTMLElement, hint: string): void {
+  row.classList.add('ctl-dependent');
+  row.setAttribute('aria-disabled', 'true');
+  row.title = hint;
+  for (const c of row.querySelectorAll('input, select')) {
+    (c as HTMLInputElement | HTMLSelectElement).disabled = true;
+    (c as HTMLElement).title = hint;
+  }
+}
+
 export function chipRow(
   items: { id: string; label: string }[],
   current: string,

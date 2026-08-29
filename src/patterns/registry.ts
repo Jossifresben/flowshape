@@ -16,6 +16,17 @@ export interface ParamDef {
   options?: string[];
   /** Not shown in the playground controls (engine-owned params like `phase`). */
   hidden?: boolean;
+  /**
+   * This param only reaches the drawing when `key`'s current value is one of
+   * `values`; under any other value `generate` never reads it. The playground
+   * dims and disables the row instead of offering a control that does nothing.
+   *
+   * `key` must name an enum or bool param of the same pattern. The claim is
+   * not documentation — `tests/patterns/all.test.ts` renders each excluded
+   * gate value and fails if the param turns out to have an effect there, so
+   * the annotation cannot quietly drift away from the generator.
+   */
+  dependsOn?: { key: string; values: number[] };
 }
 
 export type Params = Record<string, number>;
@@ -59,6 +70,21 @@ export function definePattern(def: PatternDef): PatternDef {
     // conflicting entry, so that's guarded here instead.
     if (p.key === SIZE_PARAM.key || p.key === PHASE_PARAM.key) {
       throw new Error(`param key '${p.key}' is reserved (pattern ${def.id})`);
+    }
+  }
+  for (const p of def.params) {
+    if (!p.dependsOn) continue;
+    const gate = def.params.find((g) => g.key === p.dependsOn!.key);
+    if (!gate || (gate.kind !== 'enum' && gate.kind !== 'bool')) {
+      throw new Error(`dependsOn key '${p.dependsOn.key}' is not an enum/bool param (pattern ${def.id}.${p.key})`);
+    }
+    if (p.dependsOn.values.length === 0) {
+      throw new Error(`dependsOn on '${p.key}' lists no values (pattern ${def.id})`);
+    }
+    for (const v of p.dependsOn.values) {
+      if (v < gate.min || v > gate.max) {
+        throw new Error(`dependsOn value ${v} is outside '${gate.key}' range (pattern ${def.id}.${p.key})`);
+      }
     }
   }
   if (def.anim?.continuous) {

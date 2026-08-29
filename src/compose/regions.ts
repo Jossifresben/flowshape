@@ -32,6 +32,9 @@ export interface Skeleton {
   /** Legal sheet ratio (h / w). Above 1 portrait, below 1 landscape. */
   aspect: { min: number; max: number };
   decoration: { cropMarks: boolean; verticalCaption: boolean };
+  /** Where the wordmark QR sits. Defaults to the bottom-right of the type
+   *  region; layouts whose type region is full declare somewhere else. */
+  qr?: { region: 'type' | 'art'; corner: 'tl' | 'tr' | 'bl' | 'br' };
   /** A second accent mark offered as a browsable variant. */
   altAccent?: AccentMode;
   /** 3d's gradient over full-bleed artwork. Not optional where it is declared. */

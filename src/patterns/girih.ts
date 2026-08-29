@@ -11,8 +11,8 @@ export const girih = definePattern({
     { key: 'hexSize', kind: 'int', min: 20, max: 80, step: 2, default: 30, label: 'girih.hexSize' },
     { key: 'contactAngle', kind: 'float', min: 15, max: 80, step: 0.5, default: 60, label: 'girih.contactAngle' },
     { key: 'render', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'girih.render', options: ['girih.strokes', 'girih.ribbons'] },
-    { key: 'ribbonWidth', kind: 'float', min: 2, max: 20, step: 0.5, default: 9, label: 'girih.ribbonWidth' },
-    { key: 'strokeWidth', kind: 'float', min: 0.2, max: 5, step: 0.1, default: 0.9, label: 'girih.strokeWidth' },
+    { key: 'ribbonWidth', kind: 'float', min: 2, max: 20, step: 0.5, default: 9, label: 'girih.ribbonWidth', dependsOn: { key: 'render', values: [1] } },
+    { key: 'strokeWidth', kind: 'float', min: 0.2, max: 5, step: 0.1, default: 0.9, label: 'girih.strokeWidth', dependsOn: { key: 'render', values: [0] } },
   ],
   generate(p, _seed, size) {
     const S = p['hexSize']!;

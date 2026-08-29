@@ -65,6 +65,8 @@ export const SKELETONS: Skeleton[] = [
     margin: { t: 52, r: 60, b: 52, l: 60 }, cover: 1.18, titleSize: 132,
     oneLineTitle: true, aspect: { min: 1.20, max: 1.75 },
     decoration: { cropMarks: false, verticalCaption: false },
+    // The band holds the ruled boxes and the title with nothing to spare.
+    qr: { region: 'art', corner: 'br' },
   },
   // 4c — Tinted field. Inverted artwork multiplied onto the accent.
   // The description is omitted by design: body copy on a tint fails 4.5:1.

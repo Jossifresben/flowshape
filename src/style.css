@@ -29,6 +29,8 @@ body {
 }
 .ctl-row { display: flex; flex-direction: column; gap: 8px; }
 .ctl-head { display: flex; justify-content: space-between; }
+.ctl-row.ctl-dependent { opacity: 0.38; }
+.ctl-row.ctl-dependent input, .ctl-row.ctl-dependent select { cursor: not-allowed; }
 .ctl-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--gray); }
 .ctl-value { font-family: var(--font-mono); font-size: 12px; }
 .btn {

@@ -38,7 +38,7 @@ export const interlace = definePattern({
     { key: 'ringScale', kind: 'float', min: 0.45, max: 0.85, step: 0.01, default: 0.68, label: 'interlace.ringScale' },
     { key: 'coreRatio', kind: 'float', min: 0.25, max: 0.75, step: 0.01, default: 0.45, label: 'interlace.coreRatio' },
     { key: 'junctions', kind: 'bool', min: 0, max: 1, step: 1, default: 1, label: 'interlace.junctions' },
-    { key: 'gapScale', kind: 'float', min: 0.8, max: 2.5, step: 0.05, default: 1.2, label: 'interlace.gapScale' },
+    { key: 'gapScale', kind: 'float', min: 0.8, max: 2.5, step: 0.05, default: 1.2, label: 'interlace.gapScale', dependsOn: { key: 'junctions', values: [1] } },
     { key: 'strokeWidth', kind: 'float', min: 0.3, max: 2.5, step: 0.05, default: 0.8, label: 'interlace.strokeWidth' },
   ],
   generate(p, _seed, size) {

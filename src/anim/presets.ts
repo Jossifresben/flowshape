@@ -230,17 +230,39 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
   ],
   fabric: [
     // `noiseScale` is the spatial frequency of the warp field — the axis that
-    // decides whether the weave reads as long swells or tight ripples. It was
-    // declared continuous and never routed.
+    // decides whether the weave reads as long swells or tight ripples.
+    //
+    // These two were the same animation: both pushed warpAmount, noiseScale
+    // and dotSize up together on one 8-beat reseed, differing only in which
+    // feature drove which (0.065 of a range apart under a shared envelope).
+    // They are split along what the cloth is actually doing, which for a
+    // warped lattice is two separable things: where the threads are, and how
+    // heavy they are. Neither preset now touches the other's axis.
+    //
+    // `strokeWidth` is not available to either. It is read only in mode 1
+    // (mesh); the default is mode 0 (dots), where it moves nothing.
+    //
+    // Weave: the grain leads. Threads thicken, and the field smooths as the
+    // bass lands — a lower noiseScale is a longer swell, i.e. the weave pulls
+    // itself regular. The lattice positions hold still, so this reads as a
+    // texture change on fixed cloth. dotSize is the pattern's whole ink
+    // budget (2116 dots, area going as r^2: total ink runs 1.7k to 40k across
+    // its range) which is why it is kept positive — routed DOWN by a
+    // conventional depth it takes the frame to 30% of the still render, and
+    // that is a fade-out, not a modulation.
     { id: 'weave', label: { en: 'Weave', es: 'Trama' }, routes: [
-      { feature: 'bass', param: 'warpAmount', depth: 0.45 },
-      { feature: 'mid', param: 'noiseScale', depth: 0.12 },
-      { feature: 'high', param: 'dotSize', depth: 0.35 },
+      { feature: 'high', param: 'dotSize', depth: 0.4 },
+      { feature: 'bass', param: 'noiseScale', depth: -0.15 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
+    // Ripple: the displacement leads, and nothing else moves. warpAmount is
+    // the largest visible axis fabric has — 34 px of warp at rest, 78 at the
+    // top of this route, which slides every one of the 2116 dots off the
+    // lattice and back. `size` breathes the frame under it. Ink is constant
+    // through the whole preset: what moves is where the cloth is, not how
+    // much of it there is.
     { id: 'ripple', label: { en: 'Ripple', es: 'Ondula' }, routes: [
       { feature: 'level', param: 'warpAmount', depth: 0.55 },
-      { feature: 'bass', param: 'noiseScale', depth: 0.15 },
-      { feature: 'bright', param: 'dotSize', depth: 0.3 },
+      { feature: 'bright', param: 'size', depth: 0.08 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
   ],
   bands: [
@@ -355,31 +377,72 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
   delaunay: [
     // `points` is the mesh's own density and is smooth here: the
     // triangulation re-forms locally around each added site rather than
-    // jumping (churn 0.024 for +9 points, 0.18 for +92). vertexSize alone was
-    // just dot-size pulsing on a static mesh.
+    // jumping (churn 0.024 for +9 points, 0.18 for +92).
+    //
+    // These two used to be the same animation. Both routed points, vertexSize
+    // and strokeWidth upward, at depths within 0.05 of each other, on the same
+    // 8-beat reseed; only the feature assignment was permuted, and it swapped
+    // `level` for `bass` — two features that ride the same envelope on most
+    // music. Under a shared-envelope trajectory their param vectors never
+    // parted by more than 3.7% of a range, and Hermes reported them as
+    // indistinguishable. The permutation was the whole difference.
+    //
+    // What separates them now is the balance between the two things drawn: the
+    // edges and the sites. Measured at the defaults, the edges carry 119.3k of
+    // the 121.1k total ink and the 220 dots carry 1.8k — so strokeWidth is the
+    // param that moves this figure (ink x3.2 across its range) and vertexSize
+    // is a texture on top of it (+8% at its maximum). One preset leads with
+    // each, in opposite directions, so the pair reads as two animations.
+    //
+    // Mesh: the lattice leads. Lines thicken with the highs, the sites recede
+    // to specks so the edges read clean.
     { id: 'mesh', label: { en: 'Mesh', es: 'Malla' }, routes: [
+      { feature: 'high', param: 'strokeWidth', depth: 0.35 },
       { feature: 'level', param: 'points', depth: 0.12 },
-      { feature: 'bass', param: 'vertexSize', depth: 0.5 },
-      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'bass', param: 'vertexSize', depth: -0.3 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
+    // Scatter: the sites lead. Dots swell, the field breathes through `size`,
+    // and strokeWidth is deliberately left OUT — a fixed hairline substrate
+    // under a moving point cloud. It cannot be routed down to compensate:
+    // strokeWidth 0.4 -> its 0.1 floor takes total ink to 26% of the still
+    // render, which is a collapse, not a modulation. Reseeds twice as often
+    // as mesh, which is the scatter being re-thrown.
     { id: 'scatter', label: { en: 'Scatter', es: 'Dispersa' }, routes: [
-      { feature: 'bass', param: 'points', depth: 0.15 },
-      { feature: 'level', param: 'vertexSize', depth: 0.55 },
-      { feature: 'flux', param: 'strokeWidth', depth: 0.3 },
-    ], event: { kind: 'reseed', everyBeats: 8 } },
+      { feature: 'bass', param: 'vertexSize', depth: 0.55 },
+      { feature: 'flux', param: 'points', depth: 0.15 },
+      { feature: 'level', param: 'size', depth: 0.1 },
+    ], event: { kind: 'reseed', everyBeats: 4 } },
   ],
   voronoi: [
     // `inset` is genuinely structural — every cell shrinks toward its own
     // site, so the tessellation breathes. `sites` is not routable: adding one
     // site re-forms all of its neighbours (churn 0.05 per site), so any
     // useful swing rebuilds a third of the diagram per frame.
+    //
+    // That leaves inset, strokeWidth and size as the entire routable
+    // vocabulary, and both presets used to spend it the same way: inset down,
+    // strokeWidth up, one 8-beat reseed, 0.077 of a range between them. Each
+    // now leads with a different one and leaves the other alone.
+    //
+    // inset also has a floor. The cells' outlines ARE the figure, so shrinking
+    // them shortens every perimeter: 0.86 (rest) carries 123k of ink, 0.69
+    // carries 83k, and 0.60 carries 65k — half the still render, i.e. the
+    // tessellation eaten by its own gaps. -0.35 from the default is the most
+    // either preset can honestly ask for.
+    //
+    // Cells: the line weight leads. Ink roughly x1.4 across the route on a
+    // tessellation that stays put, with a small inset drift under it.
     { id: 'cells', label: { en: 'Cells', es: 'Células' }, routes: [
-      { feature: 'bass', param: 'inset', depth: -0.25 },
-      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.4 },
+      { feature: 'bass', param: 'inset', depth: -0.2 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
+    // Breathe: the gaps lead, at a constant line weight. Every cell contracts
+    // toward its own site and the whole field scales with it, which is the
+    // one thing in this pattern that reads as respiration rather than as a
+    // pulse.
     { id: 'breathe', label: { en: 'Breathe', es: 'Respira' }, routes: [
       { feature: 'level', param: 'inset', depth: -0.35 },
-      { feature: 'bright', param: 'strokeWidth', depth: 0.25 },
+      { feature: 'bright', param: 'size', depth: 0.1 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
   ],
   stipple: [

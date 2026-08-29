@@ -138,10 +138,10 @@ export const isoweave = definePattern({
       key: 'render', kind: 'enum', min: 0, max: 2, step: 1, default: 0, label: 'isoweave.render',
       options: ['isoweave.solid', 'isoweave.outline', 'isoweave.hatch'],
     },
-    { key: 'hatchDensity', kind: 'float', min: 1, max: 9, step: 0.1, default: 4.0, label: 'isoweave.hatchDensity' },
+    { key: 'hatchDensity', kind: 'float', min: 1, max: 9, step: 0.1, default: 4.0, label: 'isoweave.hatchDensity', dependsOn: { key: 'render', values: [2] } },
     // Min is 0.15, not 0: Randomize picks param minima, and at 0 the solid
     // mode collapses to a single ink tone with no cube reading at all.
-    { key: 'faceShading', kind: 'float', min: 0.15, max: 1, step: 0.01, default: 0.78, label: 'isoweave.faceShading' },
+    { key: 'faceShading', kind: 'float', min: 0.15, max: 1, step: 0.01, default: 0.78, label: 'isoweave.faceShading', dependsOn: { key: 'render', values: [0, 2] } },
     { key: 'strokeWidth', kind: 'float', min: 0, max: 1.5, step: 0.05, default: 0.5, label: 'isoweave.strokeWidth' },
   ],
   generate(p, _seed, size) {

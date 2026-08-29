@@ -26,7 +26,16 @@ const STAGES: Record<'169' | '916' | '11', { cw: number; ch: number }> = {
 };
 
 /** Hermes's own RHY-2B, first 60 s. Shipped so the stage is never mute. */
-const DEMO_TRACK = '/samples/rhy-2b.mp3';
+/** Four demo tracks, each 2 minutes with a fade-out. A shared animate link
+ *  opens silent — the viewer has no audio to hand — so these make the stage
+ *  immediately experienceable, and having several means the visualiser can be
+ *  judged against more than one kind of music. */
+const DEMOS = [
+  { id: '1', src: '/samples/flow-1.mp3' },
+  { id: '2', src: '/samples/flow-2.mp3' },
+  { id: '3', src: '/samples/flow-3.mp3' },
+  { id: '4', src: '/samples/flow-4.mp3' },
+] as const;
 
 export function mountAnimate(root: HTMLElement): () => void {
   // Same language rule as the playground and the gallery: an explicit
@@ -122,7 +131,17 @@ export function mountAnimate(root: HTMLElement): () => void {
     (id) => { preset = presets.find((p) => p.id === id) ?? preset; syncUrl(); rebuildChips(); },
   );
 
+  function demoChipRow(): HTMLElement {
+    return chipRow(
+      DEMOS.map((d) => ({ id: d.id, label: d.id })),
+      activeDemo ?? '',
+      (id) => void loadDemo(id),
+    );
+  }
+
   function rebuildChips(): void {
+    const nd = demoChipRow();
+    demoChips.replaceWith(nd); demoChips = nd;
     const na = chipRow(
       [{ id: '169', label: '16:9' }, { id: '916', label: '9:16' }, { id: '11', label: '1:1' }],
       stageId,
@@ -170,28 +189,45 @@ export function mountAnimate(root: HTMLElement): () => void {
   fileInput.accept = 'audio/*';
   fileInput.style.display = 'none';
   drop.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', () => { const f = fileInput.files?.[0]; if (f) void loadFile(f); });
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files?.[0];
+    if (f) { activeDemo = null; rebuildChips(); void loadFile(f); }
+  });
   stageEl.addEventListener('dragover', (e) => e.preventDefault());
   stageEl.addEventListener('drop', (e) => {
     e.preventDefault();
     const f = e.dataTransfer?.files[0];
-    if (f) void loadFile(f);
+    if (f) { activeDemo = null; rebuildChips(); void loadFile(f); }
   });
 
-  // A shared animate link opens silent — the viewer has no audio to hand. The
-  // demo track makes the stage immediately experienceable in one click.
-  const demoBtn = button(t('anim.demo', lang), async () => {
+  // Which demo is loaded, so the chip row can show it. Null whenever the
+  // source is the viewer's own file or the mic — neither is a demo.
+  let activeDemo: string | null = null;
+
+  async function loadDemo(id: string): Promise<void> {
+    const demo = DEMOS.find((d) => d.id === id);
+    if (!demo) return;
     try {
-      const res = await fetch(DEMO_TRACK);
+      const res = await fetch(demo.src);
       if (!res.ok) throw new Error(String(res.status));
       const blob = await res.blob();
-      await loadFile(new File([blob], 'rhy-2b.mp3', { type: blob.type || 'audio/mpeg' }));
-    } catch { status.textContent = t('anim.demoError', lang); }
-  });
+      activeDemo = id;
+      rebuildChips();
+      await loadFile(new File([blob], `flow-${id}.mp3`, { type: blob.type || 'audio/mpeg' }));
+    } catch {
+      activeDemo = null;
+      rebuildChips();
+      status.textContent = t('anim.demoError', lang);
+    }
+  }
+
+  const demoLabel = label(t('anim.demos', lang));
+  let demoChips = demoChipRow();
 
   const micBtn = button(t('anim.mic', lang), async () => {
     try {
       swapRig(await micRig());
+      activeDemo = null; rebuildChips();
       clock = null; bpm = null; liveBeats = -1;
       playBtn.textContent = t('anim.pause', lang);
     } catch { status.textContent = t('anim.micError', lang); }
@@ -256,7 +292,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   privacy.textContent = t('anim.privacy', lang);
 
   panel.append(navRow, title, aspectLabel, aspectChips, presetLabel, presetChips, intensityRow, colourRow,
-    drop, fileInput, demoBtn, micBtn, playBtn, scrub, recBtn, fsBtn, status, privacy);
+    drop, fileInput, demoLabel, demoChips, micBtn, playBtn, scrub, recBtn, fsBtn, status, privacy);
   wrap.append(stageEl, panel);
   root.append(wrap);
 
