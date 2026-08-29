@@ -4,7 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-111111.svg)](LICENSE)
 [![ORCID 0009-0000-2026-0836](https://img.shields.io/badge/ORCID-0009--0000--2026--0836-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0000-2026-0836)
 
-**[flowshape.art](https://flowshape.art)** — play with mathematical patterns, tune their parameters, export a print-ready poster.
+**[flowshape.art](https://flowshape.art)** — turn mathematics into art.
+
+Explore 25 pattern generators, read the maths that draws each one, and take the result out as a print-ready poster or as a visual that moves with your music.
 
 Free, open source, no accounts, no backend. Everything runs in the browser.
 
@@ -14,7 +16,12 @@ Free, open source, no accounts, no backend. Everything runs in the browser.
 
 ## What it is
 
-Pick one of **25 deterministic pattern generators**, move the sliders until it looks right, choose a paper format, and export **SVG or PNG**. The SVG opens cleanly in Figma, Illustrator, Inkscape or Canva, so the finishing work happens in whatever tool you already use — flowshape deliberately does *not* try to be a poster editor.
+flowshape turns mathematics into art. Pick one of **25 deterministic pattern generators** — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — move every parameter it has, and watch the shape respond.
+
+Then take it somewhere:
+
+- **Print.** Export **SVG or PNG** at any paper size. The SVG opens cleanly in Figma, Illustrator, Inkscape or Canva, so the finishing work happens in whatever tool you already use — flowshape deliberately does *not* try to be a poster editor.
+- **Motion.** Feed the same pattern audio — a file or the microphone — and it moves with the sound, on a 16:9, 9:16 or 1:1 stage you can record. *The animated stage is in development; see [below](#the-animated-stage--audio-visualizer).*
 
 Two things make it more than a toy:
 

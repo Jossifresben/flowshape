@@ -4,7 +4,9 @@
 [![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-111111.svg)](LICENSE)
 [![ORCID 0009-0000-2026-0836](https://img.shields.io/badge/ORCID-0009--0000--2026--0836-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0000-2026-0836)
 
-**[flowshape.art](https://flowshape.art)** — juega con patrones matemáticos, ajusta sus parámetros y exporta un póster listo para imprimir.
+**[flowshape.art](https://flowshape.art)** — convierte las matemáticas en arte.
+
+Explora 25 generadores de patrones, lee las matemáticas que dibujan cada uno y llévate el resultado como póster listo para imprimir o como un visual que se mueve con tu música.
 
 Gratuito, de código abierto, sin cuentas y sin backend. Todo ocurre en el navegador.
 
@@ -14,7 +16,12 @@ Gratuito, de código abierto, sin cuentas y sin backend. Todo ocurre en el naveg
 
 ## Qué es
 
-Elige uno de los **25 generadores de patrones deterministas**, mueve los controles hasta que te guste, escoge un formato de papel y exporta en **SVG o PNG**. El SVG abre limpio en Figma, Illustrator, Inkscape o Canva, de modo que el acabado se hace en la herramienta que ya usas: flowshape, deliberadamente, *no* pretende ser un editor de pósters.
+flowshape convierte las matemáticas en arte. Elige uno de los **25 generadores de patrones deterministas** —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— mueve cada parámetro que tenga y observa cómo responde la forma.
+
+Después, llévatelo a alguna parte:
+
+- **Impresión.** Exporta en **SVG o PNG** a cualquier tamaño de papel. El SVG abre limpio en Figma, Illustrator, Inkscape o Canva, de modo que el acabado se hace en la herramienta que ya usas: flowshape, deliberadamente, *no* pretende ser un editor de pósters.
+- **Movimiento.** Dale audio al mismo patrón —un archivo o el micrófono— y se moverá con el sonido, en un escenario 16:9, 9:16 o 1:1 que puedes grabar. *El escenario animado está en desarrollo; véase [más abajo](#el-escenario-animado--visualizador-de-audio).*
 
 Dos cosas lo separan de un juguete:
 

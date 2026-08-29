@@ -2,11 +2,12 @@ cff-version: 1.2.0
 message: "If you use flowshape in your work, please cite it as below."
 title: "flowshape"
 abstract: >-
-  A free, open-source web app for generating minimal, print-ready posters from
-  25 deterministic mathematical patterns. Pure SVG, no backend: the full poster
-  state lives in the URL, so the same link always renders the same artwork.
-  Every pattern ships with its formula, a plain-language explanation in English
-  and Spanish, and its own generator source.
+  A free, open-source web app that turns mathematics into art: 25 deterministic
+  pattern generators with every parameter exposed, exported as print-ready
+  vector artwork or driven as an audio-reactive animation. Pure SVG, no
+  backend: the full state lives in the URL, so the same link always renders the
+  same artwork. Every pattern ships with its formula, a plain-language
+  explanation in English and Spanish, and its own generator source.
 type: software
 authors:
   - family-names: "Fresco Benaim"
@@ -20,6 +21,7 @@ license: MIT
 version: "0.0.1"
 keywords:
   - generative art
+  - audio visualization
   - SVG
   - mathematical patterns
   - poster design
