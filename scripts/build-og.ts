@@ -21,9 +21,16 @@ const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '.og');
 
 const CARD = { w: 1200, h: 630 };
 const ART = { w: 430, h: 560 };
-const ART_PATTERN = 'phyllotaxis';
-const ART_SEED = 7;
-const ART_PARAMS = { points: 2200, accentEvery: 89, dotMin: 0.5, dotGrow: 0.0026 };
+const ART_PATTERN = 'voxel';
+const ART_SEED = 68182;
+const ART_PARAMS = {
+  shape: 1, dimension: 14, gap: 0.09, shellOnly: 1, scatter: 0.53,
+  faceShading: 0.75, depthShading: 0.55, strokeWidth: 0.75, size: 1.17, phase: 0,
+};
+// The card takes its ink and accent from the artwork's own colour state, so the
+// social image matches the URL it came from. `paperL` is deliberately NOT let
+// through to the card background — see `artwork()`.
+const ART_COLOR = { hue: 266, chroma: 0.115, paperL: 0.08, accentShift: 130 };
 
 const COPY = {
   en: {
@@ -43,7 +50,10 @@ function artwork(): string {
   const node = generateSafe(def, ART_PARAMS, ART_SEED, ART);
   // `paper` is transparent here: the card's own background shows through, so
   // the artwork sits on the ground colour rather than on a pasted rectangle.
-  return serialize(node, { ...resolvePalette({}), paper: 'transparent' });
+  // This is why ART_COLOR's paperL does not reach the card — the ground stays
+  // the site's #17171a and only ink/accent carry the artwork's hue, which keeps
+  // the card's left-hand type on the same background it was designed against.
+  return serialize(node, { ...resolvePalette(ART_COLOR), paper: 'transparent' });
 }
 
 function page(lang: keyof typeof COPY): string {
