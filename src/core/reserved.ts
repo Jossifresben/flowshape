@@ -5,7 +5,7 @@
  *  ignored rather than misread as a pattern param. */
 export const RESERVED = new Set([
   'v', 'seed', 'pal', 'bg', 'ink', 'acc', 'theme', 'lang',
-  'layout', 'format', 'title', 'caption',
+  'layout', 'format', 'title', 'caption', 'cway', 'notext',
   'hue', 'chroma', 'paperL', 'accentShift',
   'cw', 'ch', 'cu',
   // 'mode' is deliberately NOT reserved — delaunay, fabric and moire already

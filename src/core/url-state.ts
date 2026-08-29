@@ -26,8 +26,8 @@ export interface AppState {
   cw?: number;
   ch?: number;
   cu?: 'mm' | 'cm' | 'in';
-  /** 'a' = animate stage; undefined/'p' = poster playground. */
-  view?: 'p' | 'a';
+  /** 'a' = animate stage; 'c' = poster composer; undefined/'p' = playground. */
+  view?: 'p' | 'a' | 'c';
   stage?: '169' | '916' | '11';
   apre?: string;
   aint?: number;
@@ -35,6 +35,12 @@ export interface AppState {
    *  apre/aint do. Never read outside view === 'a' — the poster path has no
    *  concept of it. */
   acol?: boolean;
+  /** Composer only: the browsed layout variant id. */
+  layout?: string;
+  /** Composer only: the stepped colorway index. */
+  cway?: number;
+  /** Composer only: render the sheet without any text. */
+  notext?: boolean;
 }
 
 export { RESERVED } from './reserved';
@@ -61,15 +67,21 @@ export function encodeState(s: AppState): string {
     if (s.aint !== undefined && s.aint !== 1) q.set('aint', String(Math.round(s.aint * 100) / 100));
     if (s.acol) q.set('acol', '1');
   }
+  if (s.view === 'c') {
+    if (s.layout !== undefined) q.set('layout', s.layout);
+    if (s.cway !== undefined) q.set('cway', String(s.cway));
+    if (s.notext) q.set('notext', '1');
+  }
   for (const [k, v] of Object.entries(s.params)) {
     if (RESERVED.has(k)) continue;
     q.set(k, String(Math.round(v * 10000) / 10000));
   }
-  return `#/${s.view === 'a' ? 'a' : 'p'}/${encodeURIComponent(s.patternId)}?${q.toString()}`;
+  const route = s.view === 'a' || s.view === 'c' ? s.view : 'p';
+  return `#/${route}/${encodeURIComponent(s.patternId)}?${q.toString()}`;
 }
 
 export function decodeState(hash: string): AppState | null {
-  const m = /^#\/(p|a)\/([^?]+)(?:\?(.*))?$/.exec(hash);
+  const m = /^#\/(p|a|c)\/([^?]+)(?:\?(.*))?$/.exec(hash);
   if (!m) return null;
   const q = new URLSearchParams(m[3] ?? '');
   const params: Record<string, number> = {};
@@ -116,6 +128,19 @@ export function decodeState(hash: string): AppState | null {
       state.aint = Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 1;
     }
     if (q.get('acol') === '1') state.acol = true;
+  }
+  if (m[1] === 'c') {
+    state.view = 'c';
+    const layout = q.get('layout');
+    if (layout) state.layout = layout;
+    const cwayRaw = q.get('cway');
+    if (cwayRaw !== null) {
+      const n = Number(cwayRaw);
+      // A bad index is dropped rather than clamped: the view then falls back
+      // to colorway 0, which carries the user's own hue and accent offset.
+      if (Number.isInteger(n) && n >= 0) state.cway = n;
+    }
+    if (q.get('notext') === '1') state.notext = true;
   }
   return state;
 }

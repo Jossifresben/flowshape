@@ -9,6 +9,7 @@ import { sliderRow, checkboxRow, selectRow, chipRow, sectionRow } from './contro
 import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
 import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
 import { openModal } from './modal';
+import { composerUrl } from './poster';
 import { loadSource } from '../content/source';
 import { loadExplain } from '../content/explain';
 import { renderMarkdown, renderCitation } from './markdown';
@@ -454,6 +455,19 @@ export function mountPlayground(root: HTMLElement): () => void {
     const exportRow = document.createElement('div');
     exportRow.className = 'ctl-row';
 
+    const posterBtn = document.createElement('button');
+    posterBtn.className = 'btn';
+    posterBtn.textContent = state.lang === 'es' ? 'Póster ↗' : 'Poster ↗';
+    posterBtn.addEventListener('click', () => {
+      // Its own window, per the brief: the composer is a separate surface and
+      // the playground keeps its state and its scroll position.
+      window.open(
+        `${location.pathname}${location.search}${composerUrl(state)}`,
+        '_blank',
+        'noopener',
+      );
+    });
+
     const svgBtn = document.createElement('button');
     svgBtn.className = 'btn';
     svgBtn.textContent = t('pg.exportSvg', lang);
@@ -518,7 +532,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       }
     });
 
-    exportRow.append(svgBtn, dpiSel, pngBtn);
+    exportRow.append(posterBtn, svgBtn, dpiSel, pngBtn);
     exportSec.body.append(exportRow, exportError);
     panel.append(exportSec.el);
 
