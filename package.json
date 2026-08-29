@@ -2,6 +2,26 @@
   "name": "flowshape",
   "private": true,
   "version": "0.0.1",
+  "description": "Play with mathematical patterns, tune their parameters, export a print-ready poster. Deterministic pure-SVG generative art in the browser.",
+  "license": "MIT",
+  "author": "Jose \"Jossi\" Fresco Benaim (https://orcid.org/0009-0000-2026-0836)",
+  "homepage": "https://flowshape.art",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jossifresben/flowshape.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Jossifresben/flowshape/issues"
+  },
+  "keywords": [
+    "generative-art",
+    "svg",
+    "poster",
+    "mathematics",
+    "deterministic",
+    "typescript",
+    "vite"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
