@@ -19,7 +19,11 @@ function annularSectorBBox(a0: number, a1: number, rInner: number, rOuter: numbe
   ];
   const axisAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
   for (const axis of axisAngles) {
-    for (let k = -1; k <= 2; k++) {
+    // k reaches 4 so the scan still covers sectors whose start angle has
+    // been advanced by up to a full extra turn by `phase` (a1 < 6*PI then).
+    // For a0 < 2*PI no match ever lands above k = 2, so widening the range
+    // leaves every pre-phase render bit-identical.
+    for (let k = -1; k <= 4; k++) {
       const a = axis + 2 * Math.PI * k;
       if (a >= a0 && a <= a1) {
         pts.push([rOuter * Math.cos(a), rOuter * Math.sin(a)]);
@@ -43,7 +47,7 @@ export const bands = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
-  anim: { continuous: ['sweepAngle', 'growthExponent', 'gap', 'size'] },
+  anim: { continuous: ['sweepAngle', 'startAngle', 'growthExponent', 'gap', 'minThickness', 'maxThickness', 'size'], usesPhase: true },
   params: [
     { key: 'bandCount', kind: 'int', min: 3, max: 14, step: 1, default: 7, label: 'bands.bandCount' },
     { key: 'minThickness', kind: 'float', min: 2, max: 40, step: 1, default: 6, label: 'bands.minThickness' },
@@ -82,7 +86,12 @@ export const bands = definePattern({
     }
     const totalExtent = running - gap; // outer edge of the last band, unscaled
 
-    const a0 = (startAngle * Math.PI) / 180;
+    // Phase turns the fan a full revolution about its own centre. The
+    // bounding-box fit below is recomputed from the rotated sector, so the
+    // fan stays composed in frame as it turns rather than swinging out of
+    // it. `% 1` makes phase 1 add exactly 0, i.e. the identity.
+    const rot = ((p['phase'] ?? 0) % 1) * 2 * Math.PI;
+    const a0 = (startAngle * Math.PI) / 180 + rot;
     const a1 = a0 + (sweepAngle * Math.PI) / 180;
     const large = sweepAngle > 180 ? 1 : 0;
 

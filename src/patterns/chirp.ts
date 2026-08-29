@@ -10,7 +10,7 @@ export const chirp = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
-  anim: { continuous: ['amplitude', 'freqEnd', 'phaseStep', 'strokeWidth', 'size'] },
+  anim: { continuous: ['amplitude', 'freqStart', 'freqEnd', 'phaseStep', 'strokeWidth', 'size'], usesPhase: true },
   params: [
     { key: 'lineCount', kind: 'int', min: 12, max: 90, step: 1, default: 46, label: 'chirp.lineCount' },
     { key: 'freqStart', kind: 'float', min: 0, max: 20, step: 0.1, default: 1, label: 'chirp.freqStart' },
@@ -26,6 +26,10 @@ export const chirp = definePattern({
     const amplitude = p['amplitude']!;
     const phaseStep = p['phaseStep']!;
     const strokeWidth = p['strokeWidth']!;
+    // The family is already phase-defined: advancing the accumulator by one
+    // full turn per cycle makes the sweep travel and closes exactly, since
+    // sin is 2*PI-periodic (and `% 1` pins phase 1 to phase 0 bit-for-bit).
+    const drift = 2 * Math.PI * ((p['phase'] ?? 0) % 1);
 
     const W = size.w - 2 * MARGIN;
     // Inset the row band by the maximum envelope amplitude (reached at u=1,
@@ -44,7 +48,7 @@ export const chirp = definePattern({
         const u = (x - MARGIN) / W;
         const phase = 2 * Math.PI * (freqStart * u + ((freqEnd - freqStart) * u * u) / 2);
         const env = amplitude * (0.06 + 0.94 * u * u);
-        const y = yTop + i * rowSpacing + env * Math.sin(phase + i * phaseStep);
+        const y = yTop + i * rowSpacing + env * Math.sin(phase + i * phaseStep + drift);
         const xr = Math.round(x * 100) / 100;
         const yr = Math.round(y * 100) / 100;
         d += s === 0 ? `M${xr} ${yr}` : `L${xr} ${yr}`;

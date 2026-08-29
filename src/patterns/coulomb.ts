@@ -14,7 +14,7 @@ export const coulomb = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
-  anim: { continuous: ['coreRadius', 'strokeWidth', 'size'] },
+  anim: { continuous: ['coreRadius', 'steps', 'strokeWidth', 'size'], usesPhase: true },
   params: [
     { key: 'charges', kind: 'int', min: 2, max: 8, step: 1, default: 4, label: 'coulomb.charges' },
     { key: 'spacing', kind: 'int', min: 6, max: 24, step: 1, default: 10, label: 'coulomb.spacing' },
@@ -31,12 +31,18 @@ export const coulomb = definePattern({
     const core = p['coreRadius']!;
     const core2 = core * core;
     const stopDist = core * 1.5;
+    // The charges orbit their ring centre once per cycle; the field — and
+    // so every streamline — is re-solved from the moved sources, which is
+    // the whole point: the lines writhe because the field really moved.
+    // Added to the angle only, so each charge stays on the ring of radius R
+    // and the jitter draw order (and therefore the seed) is untouched.
+    const orbit = ((p['phase'] ?? 0) % 1) * 2 * Math.PI;
 
     const charges: Charge[] = [];
     for (let i = 0; i < n; i++) {
       const baseAngle = (i / n) * Math.PI * 2;
       const jitter = (rnd() - 0.5) * (Math.PI * 2 / n) * 0.6;
-      const a = baseAngle + jitter;
+      const a = baseAngle + jitter + orbit;
       const sign = i % 2 === 0 ? 1 : -1;
       charges.push({ x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), q: sign });
     }

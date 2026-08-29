@@ -8,7 +8,7 @@ export const maurer = definePattern({
   family: 'curves',
   phase: 1,
   heavy: false,
-  anim: { continuous: ['strokeWidth', 'size'] },
+  anim: { continuous: ['strokeWidth', 'size'], usesPhase: true },
   params: [
     { key: 'n', kind: 'int', min: 1, max: 12, step: 1, default: 6, label: 'maurer.n' },
     { key: 'd', kind: 'int', min: 1, max: 359, step: 1, default: 71, label: 'maurer.d' },
@@ -17,6 +17,10 @@ export const maurer = definePattern({
   ],
   generate(p, _seed, size) {
     const n = p['n']!;
+    // Precession: the whole figure (walk *and* envelope) turns once per
+    // phase cycle. `% 1` folds phase 1 back onto 0, so the turn closes on
+    // the identity exactly rather than on cos/sin of a rounded 2*PI.
+    const rot = ((p['phase'] ?? 0) % 1) * 2 * Math.PI;
     const cx = size.w / 2;
     const cy = size.h / 2;
     const R = Math.min(size.w, size.h) * 0.44;
@@ -24,7 +28,7 @@ export const maurer = definePattern({
     for (let k = 0; k <= 360; k++) {
       const th = k * p['d']! * D2R;
       const r = R * Math.sin(n * th);
-      walk.push(`${k ? 'L' : 'M'}${(cx + r * Math.cos(th)).toFixed(2)} ${(cy + r * Math.sin(th)).toFixed(2)}`);
+      walk.push(`${k ? 'L' : 'M'}${(cx + r * Math.cos(th + rot)).toFixed(2)} ${(cy + r * Math.sin(th + rot)).toFixed(2)}`);
     }
     const children: SvgNode[] = [];
     if (p['envelope']! === 1) {
@@ -32,7 +36,7 @@ export const maurer = definePattern({
       for (let k = 0; k <= 1440; k++) {
         const th = k * 0.25 * D2R;
         const r = R * Math.sin(n * th);
-        env.push(`${k ? 'L' : 'M'}${(cx + r * Math.cos(th)).toFixed(2)} ${(cy + r * Math.sin(th)).toFixed(2)}`);
+        env.push(`${k ? 'L' : 'M'}${(cx + r * Math.cos(th + rot)).toFixed(2)} ${(cy + r * Math.sin(th + rot)).toFixed(2)}`);
       }
       children.push(
         el('path', { d: env.join(''), fill: 'none', stroke: 'ink', 'stroke-width': p['strokeWidth']! * 1.4, opacity: 0.25 }),
