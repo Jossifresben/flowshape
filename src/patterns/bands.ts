@@ -94,6 +94,18 @@ export const bands = definePattern({
     const a0 = (startAngle * Math.PI) / 180 + rot;
     const a1 = a0 + (sweepAngle * Math.PI) / 180;
     const large = sweepAngle > 180 ? 1 : 0;
+    // A single elliptical arc from a0 to a1 degenerates when its endpoints
+    // coincide: SVG draws nothing at all and the figure vanishes. sweepAngle's
+    // max IS 360, so that is reachable from the playground and from any shared
+    // URL. It bites slightly before 360 too, because the endpoints are written
+    // at two decimals: at sweep 359.9999 they round to the same pair of
+    // coordinates and the arc collapses just the same. Anything from FULL_SWEEP
+    // up is therefore drawn as two half-turn arcs per edge, which closes the
+    // band into a complete annulus instead. The 0.1 deg this rounds away is
+    // well under one pixel at any radius the composer can produce.
+    const FULL_SWEEP = 359.9;
+    const full = sweepAngle >= FULL_SWEEP;
+    const aMid = a0 + Math.PI;
 
     // Compose around the actual bounding box of the drawn sector, not the
     // notional circle centre: the sector spans radii [0, totalExtent] and
@@ -117,7 +129,15 @@ export const bands = definePattern({
       const r0 = r0s[i]!;
       const r1 = r1s[i]!;
       const r1s2 = r1 * scale, r0s2 = r0 * scale;
-      const d = `M${pt(r1, a0)}A${r1s2.toFixed(2)} ${r1s2.toFixed(2)} 0 ${large} 1 ${pt(r1, a1)}L${pt(r0, a1)}A${r0s2.toFixed(2)} ${r0s2.toFixed(2)} 0 ${large} 0 ${pt(r0, a0)}Z`;
+      const R1 = r1s2.toFixed(2), R0 = r0s2.toFixed(2);
+      // Outer edge runs clockwise, inner edge back anticlockwise, so the
+      // non-zero fill rule leaves the hole in the middle. In the full case each
+      // edge is two 180 deg arcs; the seam between them is a shared point, not
+      // a gap.
+      const d = full
+        ? `M${pt(r1, a0)}A${R1} ${R1} 0 0 1 ${pt(r1, aMid)}A${R1} ${R1} 0 0 1 ${pt(r1, a0)}` +
+          `L${pt(r0, a0)}A${R0} ${R0} 0 0 0 ${pt(r0, aMid)}A${R0} ${R0} 0 0 0 ${pt(r0, a0)}Z`
+        : `M${pt(r1, a0)}A${R1} ${R1} 0 ${large} 1 ${pt(r1, a1)}L${pt(r0, a1)}A${R0} ${R0} 0 ${large} 0 ${pt(r0, a0)}Z`;
       const accent = accentEvery > 0 && (i + 1) % accentEvery === 0;
       children.push(el('path', {
         d,
