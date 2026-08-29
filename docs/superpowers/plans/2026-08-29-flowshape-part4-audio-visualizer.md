@@ -295,8 +295,8 @@ export class EnvelopeFollower {
 
 /** Running-max normalizer with exponential decay (half-life in seconds), so a
  *  quiet voice memo modulates as fully as a mastered track. `observe`/`norm`
- *  are split so several related values (the three bands) can share ONE gain —
- *  per-band gains would blow tiny leakage up to 1 and destroy band balance. */
+ *  are split so the caller can combine per-value maxima with a shared floor
+ *  (see FeaturePipeline's band normalization). */
 export class AutoGain {
   private max = 1e-4;
   constructor(private halfLifeSec: number) {}
@@ -306,9 +306,14 @@ export class AutoGain {
     if (x > this.max) this.max = x;
     if (this.max < 1e-4) this.max = 1e-4;
   }
-  /** Normalize a value against the current running max, capped at 1. */
-  norm(x: number): number {
-    return Math.min(1, x / this.max);
+  /** Normalize a value against the current running max, capped at 1. An
+   *  optional floor raises the denominator (used for per-band gains). */
+  norm(x: number, floor = 0): number {
+    return Math.min(1, x / Math.max(this.max, floor));
+  }
+  /** Current running max — lets callers derive a shared floor across gains. */
+  get peak(): number {
+    return this.max;
   }
   process(x: number, dtMs: number): number {
     this.observe(x, dtMs);
@@ -399,9 +404,13 @@ export type FeatureFrame = Record<FeatureKey, number>;
 export const ZERO_FRAME: FeatureFrame = { bass: 0, mid: 0, high: 0, level: 0, bright: 0, flux: 0 };
 
 /** Time-domain window (2048 samples) → smoothed feature frame in [0,1] each.
- *  The three bands share ONE auto-gain (driven by the loudest band) so their
- *  relative balance survives normalization; `level` and `flux` get their own;
- *  `bright` (centroid) is already scale-invariant and skips AGC entirely. */
+ *  Band normalization is per-band with a shared floor — spike-verified both
+ *  ways: ONE shared gain starves mid/high in real music (bass dominates, so
+ *  mid/high idle at 0.1–0.3 and their routes barely move), while naive
+ *  per-band gains blow leakage in an empty band up to 1. Each band therefore
+ *  normalizes against its OWN running max, floored at 10% of the global max.
+ *  `level` and `flux` get their own gains; `bright` (centroid) is already
+ *  scale-invariant and skips AGC entirely. */
 export class FeaturePipeline {
   /** AGC-normalized flux from the latest process(), BEFORE the envelope.
    *  Onset detection must consume this, not the enveloped feature — verified
@@ -409,7 +418,9 @@ export class FeaturePipeline {
    *  adaptive baseline then locks above every spike (detection stalls). */
   rawFlux = 0;
   private prevMag: Float32Array | null = null;
-  private bandAgc = new AutoGain(5);
+  private bassAgc = new AutoGain(5);
+  private midAgc = new AutoGain(5);
+  private highAgc = new AutoGain(5);
   private levelAgc = new AutoGain(5);
   private fluxAgc = new AutoGain(5);
   private env: Record<FeatureKey, EnvelopeFollower>;
@@ -430,11 +441,14 @@ export class FeaturePipeline {
       flux: spectralFlux(mag, this.prevMag),
     };
     this.prevMag = mag;
-    this.bandAgc.observe(Math.max(raw.bass, raw.mid, raw.high), dtMs);
+    this.bassAgc.observe(raw.bass, dtMs);
+    this.midAgc.observe(raw.mid, dtMs);
+    this.highAgc.observe(raw.high, dtMs);
+    const floor = 0.1 * Math.max(this.bassAgc.peak, this.midAgc.peak, this.highAgc.peak);
     const gained: FeatureFrame = {
-      bass: this.bandAgc.norm(raw.bass),
-      mid: this.bandAgc.norm(raw.mid),
-      high: this.bandAgc.norm(raw.high),
+      bass: this.bassAgc.norm(raw.bass, floor),
+      mid: this.midAgc.norm(raw.mid, floor),
+      high: this.highAgc.norm(raw.high, floor),
       level: this.levelAgc.process(raw.level, dtMs),
       bright: raw.bright,
       flux: this.fluxAgc.process(raw.flux, dtMs),
@@ -2774,6 +2788,8 @@ Two throwaway pages (`#/spike/smooth`, `#/spike/beat`) validated the design agai
 3. **Onset detection must eat raw flux** (pre-envelope) — enveloped flux stalls the adaptive threshold. Folded into Tasks 3/4/14 above.
 4. **Live onsets ≠ beats.** The detector fires on every transient (hi-hats included → ~240 events/min on a 120 BPM loop). That is correct behavior for mic mode — the sensitivity knob tames it — and it confirms the file path must use the precomputed beat grid (§4 of the spec), not live onsets.
 5. **rAF pauses in hidden tabs.** Harmless for the visualizer, but Phase A's MediaRecorder capture records frozen video if the tab is hidden mid-recording. Known Phase A caveat; the Phase B offline exporter is immune.
+6. **Band normalization must be per-band with a shared floor.** A single shared gain preserves spectral balance but starves mid/high in real music (bass dominates → "it only picks the bass"); naive per-band gains amplify leakage in empty bands to full scale. The hybrid — each band against its own running max, floored at 10% of the global max — is what Task 3 now specifies. User-confirmed against real playback.
+7. **Audio-driven stroke color** (user-requested, spike-built): spectral centroid → OKLCH hue (250° cool → 30° warm), level → chroma (silence decays to monochrome ink), lightness fixed, one flat color per frame — no gradients. If it survives the eye test it becomes an opt-in preset flavor in the mapping layer; defaults stay monochrome.
 
 ## Self-review notes (already applied)
 
