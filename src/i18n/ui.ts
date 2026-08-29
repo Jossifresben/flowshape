@@ -84,7 +84,7 @@ export const UI: Record<string, Pair> = {
   'anim.stop': ['STOP', 'PARAR'],
   'anim.fullscreen': ['FULLSCREEN', 'PANTALLA COMPLETA'],
   'anim.mic': ['MIC', 'MIC'],
-  'anim.demo': ['DEMO', 'DEMO'],
+  'anim.demos': ['DEMOS', 'DEMOS'],
   'anim.dropHint': ['DROP AUDIO / CLICK TO CHOOSE', 'ARRASTRA AUDIO / CLIC PARA ELEGIR'],
   'anim.privacy': [
     'Audio is processed in your browser and never uploaded.',

@@ -62,12 +62,12 @@ describe('i18n coverage', () => {
   });
 
   // The four keys whose Spanish is deliberately identical to the English:
-  // 'REC', 'MIC' and 'DEMO' are the same device abbreviations in both
+  // 'REC', 'MIC' and 'DEMOS' are the same device abbreviations in both
   // languages, and 'PRESET' is the loanword every Spanish-language audio tool
   // uses. Asserted as an exact list rather than merely tolerated: a NEW
   // untranslated key still fails, and translating one of these four fails too
   // until the list is updated — so the decision stays deliberate.
-  const IDENTICAL_BY_DESIGN = ['anim.demo', 'anim.mic', 'anim.preset', 'anim.record'];
+  const IDENTICAL_BY_DESIGN = ['anim.demos', 'anim.mic', 'anim.preset', 'anim.record'];
 
   it('actually translates the chrome — Spanish is not a copy of English', () => {
     const identical = Object.entries(UI).filter(([, p]) => p[0] === p[1]);
