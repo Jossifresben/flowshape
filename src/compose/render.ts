@@ -40,12 +40,26 @@ const TITLE_FLOOR = 76;
 /** What the poster's QR points at, and what is printed under it. */
 export const QR_TARGET = 'https://flowshape.art';
 const QR_WORDMARK = 'flowshape.art';
-/** Reference px for the whole plate, quiet zone included. On A3 that is ~21mm,
+/** Reference px for the symbol, quiet zone included. On A3 that is ~21mm,
  *  about 0.8mm per module at version 2 — comfortably above what a phone needs. */
 const QR_BOX = 88;
 /** Modules of quiet zone per side. The spec asks for four; three is the usual
  *  print compromise and still leaves the symbol isolated on its own plate. */
 const QR_QUIET = 3;
+const QR_CAPTION = 15;
+const QR_TRACKING = 0.06;
+/** Breathing room around whichever of the symbol and the wordmark is wider. */
+const QR_PAD = 10;
+/** IBM Plex Mono's advance width, in em. A monospace face has exactly one, so
+ *  the wordmark's width is arithmetic rather than something to measure — and
+ *  the plate has to be sized from it, not guessed. Sizing the plate to the
+ *  symbol alone left the wordmark hanging 28 reference px off each side, in
+ *  dark ink, straight onto a dark sheet. */
+const MONO_ADVANCE = 0.6;
+
+function monoWidth(text: string, size: number, tracking: number): number {
+  return text.length * size * MONO_ADVANCE + tracking * size * Math.max(0, text.length - 1);
+}
 
 // The target never changes, so the symbol is encoded once per process.
 let qrSymbol: QrSymbol | null = null;
@@ -421,24 +435,32 @@ function buildQr(ctx: Ctx): SvgNode[] {
   const sym = wordmarkQr();
   const box = u(sh, QR_BOX);
   const module = box / (sym.size + QR_QUIET * 2);
-  const caption = u(sh, 20);
-  const pad = u(sh, anchor.region === 'art' ? 24 : 0);
+  const capSize = u(sh, QR_CAPTION);
 
+  // The plate is sized to whichever is wider, the symbol or the wordmark, so
+  // neither can spill onto the sheet behind it.
+  const capWidth = u(sh, monoWidth(QR_WORDMARK, QR_CAPTION, QR_TRACKING));
+  const plateW = Math.max(box, capWidth + u(sh, QR_PAD) * 2);
+  const plateH = box + capSize * 1.7;
+
+  const inset = u(sh, anchor.region === 'art' ? 24 : 0);
   const left = anchor.corner.endsWith('l');
   const top = anchor.corner.startsWith('t');
-  const x = left ? region.x + pad : region.x + region.w - box - pad;
-  const y = top ? region.y + pad : region.y + region.h - box - caption - pad;
+  const x = left ? region.x + inset : region.x + region.w - plateW - inset;
+  const y = top ? region.y + inset : region.y + region.h - plateH - inset;
 
   const nodes: SvgNode[] = [
-    el('rect', { x, y, width: box, height: box + caption, fill: c.paper }),
+    el('rect', { x, y, width: plateW, height: plateH, fill: c.paper }),
   ];
-  const origin = QR_QUIET * module;
+  // The symbol is centred on the plate, which may be wider than it is.
+  const originX = x + (plateW - box) / 2 + QR_QUIET * module;
+  const originY = y + QR_QUIET * module;
   for (let r = 0; r < sym.size; r++) {
     for (let col = 0; col < sym.size; col++) {
       if (!sym.modules[r]![col]) continue;
       nodes.push(el('rect', {
-        x: x + origin + col * module,
-        y: y + origin + r * module,
+        x: originX + col * module,
+        y: originY + r * module,
         // A hair of overlap: adjacent modules must not show a seam when the
         // renderer rounds coordinates to two decimals.
         width: module + 0.02,
@@ -447,8 +469,8 @@ function buildQr(ctx: Ctx): SvgNode[] {
       }));
     }
   }
-  nodes.push(tx(QR_WORDMARK, x + box / 2, y + box + caption * 0.72, {
-    size: u(sh, 17), fill: c.ink, mono: true, tracking: 0.06, anchor: 'middle',
+  nodes.push(tx(QR_WORDMARK, x + plateW / 2, y + box + capSize * 1.05, {
+    size: capSize, fill: c.ink, mono: true, tracking: QR_TRACKING, anchor: 'middle',
   }));
   // Grouped and marked so a test can read the symbol back out of the rendered
   // sheet, rather than only trusting the encoder that produced it.

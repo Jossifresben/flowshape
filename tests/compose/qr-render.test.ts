@@ -91,6 +91,30 @@ describe('QR on the sheet', () => {
     expect(qr.children.some((n) => n.text === 'flowshape.art')).toBe(true);
   });
 
+  it('keeps the wordmark inside the plate, not spilling onto the sheet', () => {
+    // The plate was once sized to the symbol alone, which left the wordmark
+    // hanging 28 reference px off each side — dark ink on a dark sheet.
+    const MONO_ADVANCE = 0.6;
+    const TRACKING = 0.06;
+    for (const s of SKELETONS) {
+      const qr = findQr(render(s.id))!;
+      const plate = qr.children[0]!;
+      const label = qr.children.find((n) => n.text === 'flowshape.art')!;
+      const size = Number(label.attrs['font-size']);
+      const chars = 'flowshape.art'.length;
+      const width = chars * size * MONO_ADVANCE + TRACKING * size * (chars - 1);
+      const centre = Number(label.attrs['x']);
+      const px = Number(plate.attrs['x']);
+      const pw = Number(plate.attrs['width']);
+      expect(label.attrs['text-anchor'], s.id).toBe('middle');
+      expect(centre - width / 2, `${s.id} left edge`).toBeGreaterThanOrEqual(px);
+      expect(centre + width / 2, `${s.id} right edge`).toBeLessThanOrEqual(px + pw);
+      // And vertically inside it.
+      expect(Number(label.attrs['y']), `${s.id} baseline`)
+        .toBeLessThanOrEqual(Number(plate.attrs['y']) + Number(plate.attrs['height']));
+    }
+  });
+
   it('goes away with the rest of the text', () => {
     for (const s of SKELETONS) expect(findQr(render(s.id, true)), s.id).toBeNull();
   });
