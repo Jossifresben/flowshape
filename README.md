@@ -21,7 +21,7 @@ flowshape turns mathematics into art. Pick one of **25 deterministic pattern gen
 Then take it somewhere:
 
 - **Print.** Export **SVG or PNG** at any paper size. The SVG opens cleanly in Figma, Illustrator, Inkscape or Canva, so the finishing work happens in whatever tool you already use — flowshape deliberately does *not* try to be a poster editor.
-- **Motion.** Feed the same pattern audio — a file or the microphone — and it moves with the sound on a 16:9, 9:16 or 1:1 stage. Record it and download an **MP4** with your audio in it. *The animated stage is in development; see [below](#the-animated-stage--audio-visualizer).*
+- **Motion.** Feed the same pattern audio — a file or the microphone — and it moves with the sound on a 16:9, 9:16 or 1:1 stage. Record it and download a video file with your audio in it. *The animated stage is in development; see [below](#the-animated-stage--audio-visualizer).*
 
 Two things make it more than a toy:
 

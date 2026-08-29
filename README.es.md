@@ -21,7 +21,7 @@ flowshape convierte las matemáticas en arte. Elige uno de los **25 generadores 
 Después, llévatelo a alguna parte:
 
 - **Impresión.** Exporta en **SVG o PNG** a cualquier tamaño de papel. El SVG abre limpio en Figma, Illustrator, Inkscape o Canva, de modo que el acabado se hace en la herramienta que ya usas: flowshape, deliberadamente, *no* pretende ser un editor de pósters.
-- **Movimiento.** Dale audio al mismo patrón —un archivo o el micrófono— y se moverá con el sonido en un escenario 16:9, 9:16 o 1:1. Grábalo y descarga un **MP4** con tu audio dentro. *El escenario animado está en desarrollo; véase [más abajo](#el-escenario-animado--visualizador-de-audio).*
+- **Movimiento.** Dale audio al mismo patrón —un archivo o el micrófono— y se moverá con el sonido en un escenario 16:9, 9:16 o 1:1. Grábalo y descarga un archivo de vídeo con tu audio dentro. *El escenario animado está en desarrollo; véase [más abajo](#el-escenario-animado--visualizador-de-audio).*
 
 Dos cosas lo separan de un juguete:
 
