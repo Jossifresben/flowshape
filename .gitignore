@@ -9,3 +9,7 @@ docs/superpowers/
 
 # Intermediate Open Graph pages; the PNGs in public/ are what ship.
 scripts/.og/
+
+# Pre-implementation design mockups. Superseded by the app itself and referenced
+# by nothing that builds; kept locally, out of the repo.
+design/
