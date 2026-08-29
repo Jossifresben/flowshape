@@ -16,6 +16,7 @@ import { renderMarkdown, renderCitation } from './markdown';
 import { t, patternName, currentLang, type Lang } from '../i18n';
 import { panelNav } from './nav';
 import { buildFooter, REPO_URL } from './footer';
+import { copyOrSelect } from './clipboard';
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their labels are real i18n keys, like every other control's. */
@@ -36,29 +37,6 @@ function codeWord(text: string): HTMLElement {
   const c = document.createElement('code');
   c.textContent = text;
   return c;
-}
-
-/** Copies `text` to the clipboard; falls back to selecting `target`'s
- *  contents (so the user can copy manually) when the clipboard API is
- *  unavailable or the permission is denied. Returns whether the clipboard
- *  itself was written to. */
-async function copyOrSelect(text: string, target: HTMLElement): Promise<boolean> {
-  try {
-    if (!navigator.clipboard) throw new Error('clipboard API unavailable');
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      const range = document.createRange();
-      range.selectNodeContents(target);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    } catch {
-      // Nothing more we can do — the button label still tells the user what happened.
-    }
-    return false;
-  }
 }
 
 /** Builds the Code tab: the pattern's real, un-rewritten source, a short
