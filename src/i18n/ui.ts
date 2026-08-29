@@ -27,6 +27,7 @@ export const UI: Record<string, Pair> = {
   'pg.randomize': ['Randomize', 'Al azar'],
   'pg.explain': ['Explain the math', 'Explica las matemáticas'],
   'pg.animate': ['Animate this pattern', 'Animar este patrón'],
+  'pg.poster': ['Compose a poster from this pattern', 'Componer un póster con este patrón'],
   'pg.reset': ['Reset to sample', 'Volver al ejemplo'],
   // The action row fits three buttons on one line down to a 320px panel only
   // with mono-width abbreviations; the full wording above stays as each
@@ -34,6 +35,7 @@ export const UI: Record<string, Pair> = {
   'pg.randomizeShort': ['RANDOM', 'AZAR'],
   'pg.explainShort': ['MATH', 'FÓRMULA'],
   'pg.animateShort': ['ANIMATE', 'ANIMAR'],
+  'pg.posterShort': ['POSTER', 'PÓSTER'],
   'pg.parameters': ['PARAMETERS', 'PARÁMETROS'],
   'pg.format': ['FORMAT', 'FORMATO'],
   'pg.custom': ['Custom…', 'A medida…'],

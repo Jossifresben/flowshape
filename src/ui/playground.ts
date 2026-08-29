@@ -360,7 +360,18 @@ export function mountPlayground(root: HTMLElement): () => void {
       location.hash = encodeState({ ...state, view: 'a' });
     });
 
-    actions.append(rand, explainBtn, animateBtn);
+    const posterBtn = actionButton(t('pg.posterShort', lang), t('pg.poster', lang));
+    posterBtn.addEventListener('click', () => {
+      // Its own window, per the brief: the composer is a separate surface and
+      // the playground keeps its state and its scroll position.
+      window.open(
+        `${location.pathname}${location.search}${composerUrl(state)}`,
+        '_blank',
+        'noopener',
+      );
+    });
+
+    actions.append(rand, explainBtn, animateBtn, posterBtn);
     panel.append(actions);
 
     if (def.usesSeed) {
@@ -455,19 +466,6 @@ export function mountPlayground(root: HTMLElement): () => void {
     const exportRow = document.createElement('div');
     exportRow.className = 'ctl-row';
 
-    const posterBtn = document.createElement('button');
-    posterBtn.className = 'btn';
-    posterBtn.textContent = state.lang === 'es' ? 'Póster ↗' : 'Poster ↗';
-    posterBtn.addEventListener('click', () => {
-      // Its own window, per the brief: the composer is a separate surface and
-      // the playground keeps its state and its scroll position.
-      window.open(
-        `${location.pathname}${location.search}${composerUrl(state)}`,
-        '_blank',
-        'noopener',
-      );
-    });
-
     const svgBtn = document.createElement('button');
     svgBtn.className = 'btn';
     svgBtn.textContent = t('pg.exportSvg', lang);
@@ -532,7 +530,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       }
     });
 
-    exportRow.append(posterBtn, svgBtn, dpiSel, pngBtn);
+    exportRow.append(svgBtn, dpiSel, pngBtn);
     exportSec.body.append(exportRow, exportError);
     panel.append(exportSec.el);
 
