@@ -44,31 +44,27 @@ describe('hideText', () => {
     }
   });
 
-  it('drops every accent mark, rules included, since all of them caption', () => {
-    for (const s of SKELETONS) {
-      if (s.accent === 'ground') continue;
-      expect(dump(s.id, true), s.id).not.toContain(CW[0]!.accent);
-    }
+  it('keeps geometric marks and drops textual ones', () => {
+    // A rule belongs to the layout; a numeral and a code are text by another name.
+    const ruled = SKELETONS.find((s) => s.accent === 'rule')!;
+    expect(dump(ruled.id, true)).toContain(CW[0]!.accent);
     const numeral = SKELETONS.find((s) => s.accent === 'numeral')!;
     expect(dump(numeral.id, true)).not.toContain('71203');
   });
 
-  it('lets the artwork absorb the type region instead of leaving it empty', () => {
-    // The artwork's own ground is the tell: with text hidden it should cover
-    // the sheet, so no band of untouched sheet paper is left behind.
-    const bleed = SKELETONS.find((s) => s.artwork === 'bleed' && s.present === 'as-generated')!;
-    const shown = dump(bleed.id, false);
-    const hidden = dump(bleed.id, true);
-    // Find the artwork's own bed by its fill: for 'as-generated' the artwork
-    // ground is the colorway's ink, which the sheet rect never uses.
+  it('keeps the layout exactly, only without the text', () => {
+    // The artwork must stay in its own region rather than absorbing the empty
+    // type region: the layout the user browsed to is the thing to preserve.
     const bedHeight = (out: string) => {
       const re = new RegExp(`<rect x="[\\d.]+" y="[\\d.]+" width="[\\d.]+" height="([\\d.]+)" fill="${CW[0]!.ink}"`);
       const m = re.exec(out);
       if (!m) throw new Error('no artwork bed found');
       return Number(m[1]);
     };
-    expect(bedHeight(hidden)).toBeCloseTo(SH.h, 0);
-    expect(bedHeight(shown)).toBeLessThan(SH.h);
+    for (const s of SKELETONS) {
+      if (s.present !== 'as-generated' || s.artwork === 'full') continue;
+      expect(bedHeight(dump(s.id, true)), s.id).toBeCloseTo(bedHeight(dump(s.id, false)), 4);
+    }
   });
 
   it('keeps crop marks but drops the vertical caption', () => {

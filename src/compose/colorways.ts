@@ -1,11 +1,28 @@
-import { resolvePalette } from '../poster/palettes';
 import { COLOR_DEFAULTS, type ColorState } from '../core/url-state';
 import { oklchToHex } from '../core/oklch';
 import { relativeLuminance, pickType } from '../core/contrast';
 import type { Palette } from '../core/svg';
 
-/** A poster sheet is print-like whatever ground the user tuned for the artwork. */
+/**
+ * The sheet is print-like whatever ground the user tuned for the artwork, and
+ * it carries a little of the colorway's hue.
+ *
+ * The first version derived paper and ink from `resolvePalette` with `paperL`
+ * pinned and only `accentShift` rotating. That made them byte-identical across
+ * all twelve colorways - #ebebeb and #101010 every time - so stepping the
+ * colour moved exactly one thing, and in most layouts that thing is a hairline
+ * rule. The control worked and looked broken.
+ *
+ * A small chroma on the neutrals fixes it and is in spec: the handover pairs
+ * its colorways with neutral variants for exactly this reason, listing
+ * cool-grey and warm-cream as partners for specific accents. It stays a
+ * *tint* - two hundredths of chroma - so a monochrome sheet still reads as
+ * monochrome rather than becoming a coloured one.
+ */
 const SHEET_PAPER_L = 0.94;
+const SHEET_PAPER_C = 0.022;
+const SHEET_INK_L = 0.18;
+const SHEET_INK_C = 0.030;
 
 /**
  * The accent is sampled twice at the same hue, because it does two jobs, and
@@ -75,24 +92,25 @@ export interface Colorway {
 export function colorwaysFor(base: ColorState, count = COLORWAY_COUNT): Colorway[] {
   const hue = base.hue ?? COLOR_DEFAULTS.hue;
   const chroma = accentChroma(base.chroma ?? COLOR_DEFAULTS.chroma);
-  const baseShift = base.accentShift ?? COLOR_DEFAULTS.accentShift;
+  const shift = base.accentShift ?? COLOR_DEFAULTS.accentShift;
   const step = 360 / count;
   const out: Colorway[] = [];
   for (let i = 0; i < count; i++) {
-    const shift = baseShift + i * step;
-    // resolvePalette does not clamp accentShift, so walking past the UI
-    // slider's 180 cap is legal and covers the full circle.
-    const pal = resolvePalette({ ...base, paperL: SHEET_PAPER_L, accentShift: shift });
-    const accent = oklchToHex(MARK_L, chroma, hue + shift);
-    const ground = oklchToHex(GROUND_L, chroma, hue + shift);
+    // The whole palette rotates together, so every part of the sheet responds
+    // to the control - not just whichever corner holds the accent mark.
+    const h = hue + i * step;
+    const paper = oklchToHex(SHEET_PAPER_L, SHEET_PAPER_C, h);
+    const ink = oklchToHex(SHEET_INK_L, SHEET_INK_C, h);
+    const accent = oklchToHex(MARK_L, chroma, h + shift);
+    const ground = oklchToHex(GROUND_L, chroma, h + shift);
     out.push({
       index: i,
-      paper: pal.paper,
-      ink: pal.ink,
+      paper,
+      ink,
       accent,
-      accentType: pickType(accent, pal.paper, pal.ink),
+      accentType: pickType(accent, paper, ink),
       ground,
-      groundType: pickType(ground, pal.paper, pal.ink),
+      groundType: pickType(ground, paper, ink),
       groundLum: relativeLuminance(ground),
     });
   }

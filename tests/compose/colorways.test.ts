@@ -50,6 +50,16 @@ describe('colorways', () => {
     }
   });
 
+  it('moves the whole sheet, not just the accent corner', () => {
+    // Holding the neutrals fixed made every colorway byte-identical except for
+    // one hairline, so the control worked and looked broken.
+    for (const color of [{}, BASE]) {
+      const ways = colorwaysFor(color);
+      expect(new Set(ways.map((c) => c.paper)).size).toBe(ways.length);
+      expect(new Set(ways.map((c) => c.ink)).size).toBe(ways.length);
+    }
+  });
+
   it('picks accent type by contrast, never by hard-coded rule', () => {
     for (const c of colorwaysFor(BASE)) {
       expect([c.paper, c.ink]).toContain(c.accentType);

@@ -17,14 +17,12 @@ export interface RenderOptions {
   /** Generated at `artworkSize(sheet, skeleton)`, with role tokens intact. */
   artwork: SvgNode;
   measure: Measure;
-  /** Drop every text element and let the artwork absorb the type region.
+  /** Drop the text, keep the layout.
    *
-   *  Keeping the split would leave a large empty band where the type was —
-   *  3c would be 56% blank paper — which is not something anyone would print.
-   *  What survives is what still means something without type: the colorway,
-   *  the presentation treatment, and the crop marks. Accent *marks* are
-   *  caption devices and go with the captions; an accent *ground* stays,
-   *  because a plate is a framed composition in its own right.
+   *  The composition is exactly what it would be with type - same split, same
+   *  grounds, same rules and crop marks - only nothing is written on it. An
+   *  earlier version let the artwork absorb the empty type region; the layout
+   *  the user browsed to and chose is the thing to preserve.
    *
    *  A layout that cannot fit its title is valid here, because there is none. */
   hideText?: boolean;
@@ -70,9 +68,9 @@ function plateRect(sh: Sheet, s: Skeleton, art: Rect): Rect {
  * short edge 600, matching the convention `poster/formats.ts` already sets so
  * stroke weights read the same everywhere.
  */
-export function artworkSize(sh: Sheet, s: Skeleton, hideText = false): Size {
+export function artworkSize(sh: Sheet, s: Skeleton): Size {
   const { art } = regions(sh, s);
-  const region = artworkBed(sh, s, art, hideText);
+  const region = artworkBed(sh, s, art);
   return region.w <= region.h
     ? { w: 600, h: Math.round((600 * region.h) / region.w) }
     : { w: Math.round((600 * region.w) / region.h), h: 600 };
@@ -81,14 +79,8 @@ export function artworkSize(sh: Sheet, s: Skeleton, hideText = false): Size {
 /** The rectangle the artwork is placed into. With the text hidden, a bleed or
  *  column region takes the whole sheet rather than leaving the type region
  *  empty; a plate keeps its inset, since the plate *is* the composition. */
-function artworkBed(sh: Sheet, s: Skeleton, art: Rect, hideText: boolean): Rect {
-  if (s.artwork === 'plate') {
-    // With no caption below it, the plate centres on the sheet rather than
-    // staying pinned to the top of a split that no longer holds anything.
-    return plateRect(sh, s, hideText ? { x: 0, y: 0, w: sh.w, h: sh.h } : art);
-  }
-  if (hideText && s.artwork !== 'full') return { x: 0, y: 0, w: sh.w, h: sh.h };
-  return art;
+function artworkBed(sh: Sheet, s: Skeleton, art: Rect): Rect {
+  return s.artwork === 'plate' ? plateRect(sh, s, art) : art;
 }
 
 let clipSeq = 0;
@@ -331,10 +323,9 @@ function buildData(ctx: Ctx, top: number): SvgNode[] {
  */
 function buildAccent(ctx: Ctx, titleBottom: number): SvgNode[] {
   const { sh, s, d, content, accent } = ctx;
-  // Every accent mark is a caption device — a rule underlines a caption as much
-  // as a numeral labels one — so they all go when the captions do. The accent
-  // *ground* is not a mark and is painted in renderPoster regardless.
-  if (ctx.hideText) return [];
+  // A rule is geometry and belongs to the layout, so it stays. A numeral and a
+  // code are text by another name, so they go with the rest of the text.
+  if (ctx.hideText && (s.accent === 'numeral' || s.accent === 'code')) return [];
   switch (s.accent) {
     case 'none':
     // `title` colours the title itself, in buildTitle. `ground` is a field,
@@ -437,13 +428,13 @@ export function renderPoster(o: RenderOptions): RenderResult {
   ];
 
   const hideText = o.hideText === true;
-  const bed = artworkBed(sh, s, art, hideText);
+  const bed = artworkBed(sh, s, art);
   const pal = artworkPalette(c, present);
   // The bed under the artwork: `paper` in the artwork's own palette, which for
   // 'as-generated' is the dark ground and for 'tinted' is the accent field.
   children.push(el('rect', { x: bed.x, y: bed.y, width: bed.w, height: bed.h, fill: pal.paper }));
   const pos = artworkPosition(s);
-  children.push(placeArtwork(bed, resolveRoles(artwork, pal), artworkSize(sh, s, hideText), s, pos.x, pos.y));
+  children.push(placeArtwork(bed, resolveRoles(artwork, pal), artworkSize(sh, s), s, pos.x, pos.y));
 
   if (s.scrim) children.push(...buildScrim(sh, c, `scrim${++clipSeq}`));
 
@@ -455,7 +446,7 @@ export function renderPoster(o: RenderOptions): RenderResult {
   const groundIsSheet = s.accent === 'ground' && s.artwork === 'plate';
   if (groundIsSheet) {
     children[0] = el('rect', { x: 0, y: 0, width: sh.w, height: sh.h, fill: c.ground });
-  } else if (onGround && !hideText) {
+  } else if (onGround) {
     children.push(el('rect', { x: type.x, y: type.y, width: type.w, height: type.h, fill: c.ground }));
   }
 

@@ -45,7 +45,7 @@ export function composerModel(state: AppState, measure: Measure = approxMeasure(
   const hideText = state.notext === true;
 
   const renderWith = (v: Variant, c: Colorway): RenderResult => {
-    const artwork = generateSafe(def, state.params, state.seed, artworkSize(sh, v.skeleton, hideText));
+    const artwork = generateSafe(def, state.params, state.seed, artworkSize(sh, v.skeleton));
     return renderPoster({ sheet: sh, skeleton: v.skeleton, colorway: c, data, artwork, measure, hideText });
   };
 
