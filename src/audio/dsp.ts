@@ -84,3 +84,43 @@ export function spectralFlux(mag: Float32Array, prev: Float32Array | null): numb
   }
   return s / mag.length;
 }
+
+/** One-pole attack/release smoother. Fast up, slow down — the compressor-style
+ *  shaping that makes audio-driven motion feel musical instead of jittery. */
+export class EnvelopeFollower {
+  private y = 0;
+  constructor(private attackMs: number, private releaseMs: number) {}
+  process(x: number, dtMs: number): number {
+    const tau = x > this.y ? this.attackMs : this.releaseMs;
+    this.y += (x - this.y) * (1 - Math.exp(-dtMs / tau));
+    return this.y;
+  }
+}
+
+/** Running-max normalizer with exponential decay (half-life in seconds), so a
+ *  quiet voice memo modulates as fully as a mastered track. `observe`/`norm`
+ *  are split so the caller can combine per-value maxima with a shared floor
+ *  (see FeaturePipeline's band normalization). */
+export class AutoGain {
+  private max = 1e-4;
+  constructor(private halfLifeSec: number) {}
+  /** Decay the running max and fold in a new observation. */
+  observe(x: number, dtMs: number): void {
+    this.max *= Math.pow(0.5, dtMs / 1000 / this.halfLifeSec);
+    if (x > this.max) this.max = x;
+    if (this.max < 1e-4) this.max = 1e-4;
+  }
+  /** Normalize a value against the current running max, capped at 1. An
+   *  optional floor raises the denominator (used for per-band gains). */
+  norm(x: number, floor = 0): number {
+    return Math.min(1, x / Math.max(this.max, floor));
+  }
+  /** Current running max — lets callers derive a shared floor across gains. */
+  get peak(): number {
+    return this.max;
+  }
+  process(x: number, dtMs: number): number {
+    this.observe(x, dtMs);
+    return this.norm(x);
+  }
+}

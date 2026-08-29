@@ -61,3 +61,37 @@ describe('spectralFlux', () => {
     expect(spectralFlux(b, a)).toBeGreaterThan(0);
   });
 });
+
+// append to tests/audio/dsp.test.ts
+import { EnvelopeFollower, AutoGain } from '../../src/audio/dsp';
+
+describe('EnvelopeFollower', () => {
+  it('reaches ~63% of a step after one attack constant, decays after release', () => {
+    const env = new EnvelopeFollower(50, 400);
+    let y = 0;
+    for (let t = 0; t < 50; t += 10) y = env.process(1, 10);
+    expect(y).toBeGreaterThan(0.55);
+    expect(y).toBeLessThan(0.75);
+    for (let t = 0; t < 400; t += 10) y = env.process(0, 10);
+    expect(y).toBeLessThan(0.45);
+    expect(y).toBeGreaterThan(0.15);
+  });
+});
+
+describe('AutoGain', () => {
+  it('normalizes a steady input toward 1 and re-opens after the peak decays', () => {
+    const agc = new AutoGain(5);
+    let y = 0;
+    for (let i = 0; i < 20; i++) y = agc.process(0.2, 16);
+    expect(y).toBeCloseTo(1, 2);
+    y = agc.process(0.1, 16);
+    expect(y).toBeCloseTo(0.5, 1);
+    for (let i = 0; i < 700; i++) y = agc.process(0.1, 16); // ~11 s: max halves ~2×
+    expect(y).toBeGreaterThan(0.9);
+  });
+  it('never exceeds 1 and survives silence', () => {
+    const agc = new AutoGain(5);
+    expect(agc.process(3, 16)).toBeLessThanOrEqual(1);
+    expect(agc.process(0, 16)).toBe(0);
+  });
+});
