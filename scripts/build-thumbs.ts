@@ -14,12 +14,11 @@ import '../src/patterns/index';
 import { listPatterns, generateSafe, defaultParams } from '../src/patterns/registry';
 import { serialize } from '../src/core/svg';
 import { resolvePalette } from '../src/poster/palettes';
+import { PRESETS } from '../src/patterns/presets';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-/** Site-default colours, so thumbnails always match what a fresh visit renders. */
-const THUMB_PALETTE = resolvePalette({});
 const THUMB_SIZE = { w: 240, h: 320 };
 const THUMB_SEED = 1;
 
@@ -29,12 +28,27 @@ const THUMB_OVERRIDES: Record<string, Record<string, number>> = {
   phyllotaxis: { points: 900 },
 };
 
+/**
+ * When a pattern has a curated preset (see `presets.ts`), the thumbnail
+ * renders that hand-tuned state — preset params merged over the defaults,
+ * the preset's own seed, and the preset's colour — instead of the bare
+ * defaults. The THUMB_OVERRIDES density caps still apply on top either way,
+ * since they exist purely to keep thumbnail file size down, not to reflect
+ * artistic intent.
+ */
 function build(): Record<string, string> {
   const out: Record<string, string> = {};
   for (const def of listPatterns()) {
-    const params = { ...defaultParams(def), ...(THUMB_OVERRIDES[def.id] ?? {}) };
-    const node = generateSafe(def, params, THUMB_SEED, THUMB_SIZE);
-    out[def.id] = serialize(node, THUMB_PALETTE);
+    const preset = PRESETS[def.id];
+    const params = {
+      ...defaultParams(def),
+      ...(preset?.params ?? {}),
+      ...(THUMB_OVERRIDES[def.id] ?? {}),
+    };
+    const seed = preset?.seed ?? THUMB_SEED;
+    const palette = resolvePalette(preset?.color ?? {});
+    const node = generateSafe(def, params, seed, THUMB_SIZE);
+    out[def.id] = serialize(node, palette);
   }
   return out;
 }
