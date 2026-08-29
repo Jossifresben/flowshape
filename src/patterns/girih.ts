@@ -9,6 +9,8 @@ export const girih = definePattern({
   params: [
     { key: 'hexSize', kind: 'int', min: 20, max: 80, step: 2, default: 30, label: 'girih.hexSize' },
     { key: 'contactAngle', kind: 'float', min: 15, max: 80, step: 0.5, default: 60, label: 'girih.contactAngle' },
+    { key: 'render', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'girih.render', options: ['girih.strokes', 'girih.ribbons'] },
+    { key: 'ribbonWidth', kind: 'float', min: 2, max: 20, step: 0.5, default: 9, label: 'girih.ribbonWidth' },
     { key: 'strokeWidth', kind: 'float', min: 0.2, max: 5, step: 0.1, default: 0.9, label: 'girih.strokeWidth' },
   ],
   generate(p, _seed, size) {
@@ -54,6 +56,20 @@ export const girih = definePattern({
         }
       }
     }
+    if (p['render']! === 1) {
+      const rw = p['ribbonWidth']!;
+      return el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }, [
+        el('path', {
+          d, fill: 'none', stroke: 'ink',
+          'stroke-width': rw, 'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+        }),
+        el('path', {
+          d, fill: 'none', stroke: 'paper',
+          'stroke-width': rw * 0.45, 'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+        }),
+      ]);
+    }
+
     return el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }, [
       el('path', { d, fill: 'none', stroke: 'ink', 'stroke-width': p['strokeWidth']!, 'stroke-linecap': 'round' }),
     ]);
