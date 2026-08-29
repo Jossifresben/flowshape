@@ -173,7 +173,7 @@ export function mountSaved(root: HTMLElement): () => void {
 
   function render(): void {
     const items = list();
-    count.textContent = `${items.length} ${t('saved.count', lang)}`;
+    count.textContent = `${items.length} ${t(items.length === 1 ? 'saved.countOne' : 'saved.count', lang)}`;
     observer.disconnect();
     observer = new IntersectionObserver(onVisible, { rootMargin: '200px' });
     grid.innerHTML = '';

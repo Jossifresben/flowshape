@@ -134,6 +134,7 @@ export const UI: Record<string, Pair> = {
   'nav.saved': ['Saved', 'Guardados'],
   'saved.title': ['SAVED', 'GUARDADOS'],
   'saved.count': ['ITEMS', 'ELEMENTOS'],
+  'saved.countOne': ['ITEM', 'ELEMENTO'],
   'saved.empty': [
     'Nothing saved yet. Open a pattern, make it yours, then press the star.',
     'Aún no hay nada guardado. Abre un patrón, hazlo tuyo y pulsa la estrella.',
