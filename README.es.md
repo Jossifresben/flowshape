@@ -16,6 +16,16 @@ Gratuito, de código abierto, sin cuentas y sin backend. Todo ocurre en el naveg
 
 ---
 
+## Novedades
+
+**v1.2.0 — una galería comisariada.** Obra escogida a mano en **[flowshape.art/#/gallery](https://flowshape.art/#/gallery)**, en tres pestañas: diseños, pósters y grabaciones del escenario animado. Los pósters son URL vivas del compositor, no imágenes exportadas: se mantienen nítidos a cualquier tamaño y se abren en el compositor en ese estado exacto. Los vídeos suenan y se ven enteros, al pulsar y no al pasar.
+
+**v1.1.0 — guardar y compartir.** Guarda cualquier diseño, póster o animación y vuelve a encontrarlo en **#/saved** — renómbralo, elimínalo o exporta la colección como JSON para llevártela a otro navegador. Un control de compartir en cada vista entrega el enlace que reproduce exactamente lo que estás viendo.
+
+Ambas cosas descansan sobre la misma idea que todo lo demás: un favorito *es* una URL, así que nada de la obra se duplica y nada se queda desfasado.
+
+---
+
 ## Qué es
 
 flowshape convierte las matemáticas en arte. Elige uno de los **25 generadores de patrones deterministas** —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— mueve cada parámetro que tenga y observa cómo responde la forma.
@@ -24,11 +34,12 @@ Después, llévatelo a alguna parte:
 
 - **Impresión.** Exporta el patrón desnudo en **SVG o PNG** a cualquier tamaño de papel. El SVG abre limpio en Figma, Illustrator, Inkscape o Canva, de modo que el acabado se hace en la herramienta que ya usas.
 - **Composición.** O coloca el patrón dentro de una hoja diseñada —campo de obra, bloque de título, tabla de parámetros, marca de acento— y recorre composiciones con una flecha. flowshape sigue sin ser un editor por elementos: eliges entre composiciones validadas en lugar de arrastrar cajas. *Véase [el compositor de pósters](#el-compositor-de-pósters).*
+- **Guardar.** Marca con una estrella lo que merezca la pena y te espera en **#/saved** — diseños, pósters y animaciones juntos, con nombre editable y exportables a un archivo.
 - **Movimiento.** Dale audio al mismo patrón —un archivo o el micrófono— y se moverá con el sonido en un escenario 16:9, 9:16 o 1:1. Grábalo y descarga un archivo de vídeo con tu audio dentro. *Véase [el escenario animado](#el-escenario-animado--visualizador-de-audio).*
 
 Dos cosas lo separan de un juguete:
 
-- **La URL es el estado.** El identificador del patrón, cada parámetro, la semilla, el color y el formato van codificados en la barra de direcciones. Copia el enlace y cualquiera obtiene exactamente la misma obra, byte a byte. No hay nada que guardar ni sesión que iniciar.
+- **La URL es el estado.** El identificador del patrón, cada parámetro, la semilla, el color y el formato van codificados en la barra de direcciones. Copia el enlace y cualquiera obtiene exactamente la misma obra, byte a byte. No hay cuenta ni servidor: lo que decidas conservar se guarda en tu propio navegador.
 - **Las matemáticas y el código están a la vista.** Cada patrón muestra la fórmula real que lo dibuja, su lectura en lenguaje llano, qué hace cada parámetro, la cita bibliográfica — y el código fuente del generador, sin retocar.
 
 ## Dentro de cada patrón
@@ -156,14 +167,16 @@ Todos los patrones pasan por un banco de pruebas común que comprueba el determi
 
 ```
 src/
-  core/       prng · url-state · constructor SVG · ruido · geometría · oklch · persist
+  core/       prng · url-state · constructor SVG · ruido · geometría · oklch · persist · saved
   patterns/   registro + un módulo por patrón (25) + presets, randomize
   poster/     formatos · paletas · exportación (SVG / PNG)
   compose/    compositor de pósters — units · colorways · regions · skeletons · variants · render
-  ui/         galería · playground · póster · animate · acerca de · nav · pie · controles · modal
+  ui/         galería · showcase · playground · póster · animate · saved · acerca de
+              nav · pie · controles · modal · tabs · thumb · star · share · toast
   i18n/       tablas EN/ES: textos de la interfaz, nombres de patrones, etiquetas
   content/    explain/<patrón>.<en|es>.md — fórmula, explicación, cita
               blurbs.ts — la descripción de una línea EN/ES que imprime cada póster
+              showcase.ts — la galería comisariada: diseños, pósters, vídeos
   audio/      dsp · features · onsets (capa de análisis del escenario animado)
   workers/    generación fuera del hilo principal para patrones pesados
 scripts/      build-thumbs.ts (paso prebuild)

@@ -16,6 +16,16 @@ Free, open source, no accounts, no backend. Everything runs in the browser.
 
 ---
 
+## What's new
+
+**v1.2.0 — a curated gallery.** Hand-picked work at **[flowshape.art/#/gallery](https://flowshape.art/#/gallery)**, in three tabs: designs, posters and recordings from the animated stage. Posters are live composer URLs rather than exported images, so they stay crisp at any size and open in the composer at that exact state. Videos play full length with sound, on click rather than on scroll.
+
+**v1.1.0 — keep and share.** Save any design, poster or animation and find it again at **#/saved** — rename, delete, and export the collection as JSON to carry between browsers. A share control on every view hands over the link that reproduces exactly what you are looking at.
+
+Both are built on the same idea as everything else here: a saved favourite *is* a URL, so nothing about the artwork is duplicated and nothing can drift out of date.
+
+---
+
 ## What it is
 
 flowshape turns mathematics into art. Pick one of **25 deterministic pattern generators** — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — move every parameter it has, and watch the shape respond.
@@ -24,11 +34,12 @@ Then take it somewhere:
 
 - **Print.** Export the bare pattern as **SVG or PNG** at any paper size. The SVG opens cleanly in Figma, Illustrator, Inkscape or Canva, so the finishing work happens in whatever tool you already use.
 - **Compose.** Or set the pattern into a designed sheet — artwork field, title block, parameter table, accent mark — and browse composed layouts with an arrow key. flowshape still isn't an element-level editor: you pick from validated compositions rather than dragging boxes. *See [the poster composer](#the-poster-composer).*
+- **Keep.** Star anything worth returning to and it waits for you at **#/saved** — designs, posters and animations together, renameable, exportable as a file.
 - **Motion.** Feed the same pattern audio — a file or the microphone — and it moves with the sound on a 16:9, 9:16 or 1:1 stage. Record it and download a video file with your audio in it. *See [the animated stage](#the-animated-stage--audio-visualizer).*
 
 Two things make it more than a toy:
 
-- **The URL is the state.** Pattern id, every parameter, seed, colour and format are encoded in the address bar. Copy the link and anyone gets the identical artwork, byte for byte. There is nothing to save and nothing to log in to.
+- **The URL is the state.** Pattern id, every parameter, seed, colour and format are encoded in the address bar. Copy the link and anyone gets the identical artwork, byte for byte. There is no account and no server — anything you choose to keep is saved in your own browser.
 - **The maths and the code are both on the page.** Every pattern exposes the actual formula that draws it, a plain-language reading of that formula, a note on what each parameter does, a real citation — and the generator's own source, unedited.
 
 ## Inside every pattern
@@ -156,14 +167,16 @@ Every pattern is covered by a shared test harness that checks determinism, snaps
 
 ```
 src/
-  core/       prng · url-state · svg builder · noise · geometry · oklch · persist
+  core/       prng · url-state · svg builder · noise · geometry · oklch · persist · saved
   patterns/   registry + one module per pattern (25) + presets, randomize
   poster/     formats · palettes · export (SVG / PNG)
   compose/    poster composer — units · colorways · regions · skeletons · variants · render
-  ui/         gallery · playground · poster · animate · about · nav · footer · controls · modal
+  ui/         gallery · showcase · playground · poster · animate · saved · about
+              nav · footer · controls · modal · tabs · thumb · star · share · toast
   i18n/       EN/ES tables: chrome strings, pattern names, parameter labels
   content/    explain/<pattern>.<en|es>.md — formula, explanation, citation
               blurbs.ts — the one-line EN/ES description each poster prints
+              showcase.ts — the curated gallery: designs, posters, videos
   audio/      dsp · features · onsets (analysis layer for the animated stage)
   workers/    off-thread generation for heavy patterns
 scripts/      build-thumbs.ts (prebuild step)
