@@ -33,11 +33,11 @@ export const tumbling = definePattern({
   // precisely so a reordering-only seed fails).
   //
   // Two independent seed-derived streams reach the output here:
-  //   1. `voidChance` (default 0.07, deliberately non-zero) drops ~7% of
-  //      hexagons. A different seed drops a *different* set, so in `tones`
-  //      mode the polygon count and coordinates both change, and in `hatch`
-  //      mode — where the element count is pinned at 4 — the `d` strings of
-  //      all four paths change.
+  //   1. `voidChance` drops that fraction of hexagons. A different seed drops a
+  //      *different* set, so in `tones` mode the polygon count and coordinates
+  //      both change, and in `hatch` mode — where the element count is pinned at
+  //      4 — the `d` strings of all four paths change. This stream is INERT at
+  //      the default, which is 0; stream 2 is what keeps the seed live there.
   //   2. The flip decision mixes a white-noise draw with an fbm field that is
   //      itself seed-derived ('tumbling-field'), so the seed stays live at
   //      *every* coherence value, not just at coherence 0. A flip moves a
@@ -48,7 +48,10 @@ export const tumbling = definePattern({
     { key: 'cell', kind: 'int', min: 8, max: 44, step: 1, default: 24, label: 'tumbling.cell' },
     { key: 'flipChance', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.38, label: 'tumbling.flipChance' },
     { key: 'coherence', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.45, label: 'tumbling.coherence' },
-    { key: 'voidChance', kind: 'float', min: 0, max: 0.5, step: 0.01, default: 0.07, label: 'tumbling.voidChance' },
+    // Defaults to 0: the tumbling-blocks illusion is the point of this pattern,
+    // and dropped hexagons read as holes punched in a solid, which fights it.
+    // The eroded look is still one drag away.
+    { key: 'voidChance', kind: 'float', min: 0, max: 0.5, step: 0.01, default: 0, label: 'tumbling.voidChance' },
     { key: 'render', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'tumbling.render', options: ['tumbling.tones', 'tumbling.hatch'] },
     // Line count per face is scale-invariant — spacing is S/(density·tone) while
     // the face itself is ∝ S — so this is literally "lines across the darkest
