@@ -9,7 +9,7 @@ export const flowfield = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
-  anim: { continuous: ['curl', 'strokeWidth', 'size'] },
+  anim: { continuous: ['curl', 'freq', 'steps', 'strokeWidth', 'size'], usesPhase: true },
   params: [
     { key: 'freq', kind: 'float', min: 0.004, max: 0.03, step: 0.001, default: 0.011, label: 'flowfield.freq' },
     { key: 'curl', kind: 'float', min: 0.5, max: 3, step: 0.05, default: 1.9, label: 'flowfield.curl' },
@@ -21,8 +21,22 @@ export const flowfield = definePattern({
   generate(p, seed, size) {
     const noise = fbm2D(deriveSeed(seed, 'flow'), 2);
     const rnd = mulberry32(deriveSeed(seed, 'flow-seeds'));
+    // Advection: the noise the streamlines are integrated through is itself
+    // moving, so the lines are re-solved every frame from a field that has
+    // actually travelled — they writhe and stream instead of sitting still.
+    // The sample point walks a circle in noise space once per cycle: value
+    // noise is periodic in nothing (makeNoise2D hashes absolute cells), so a
+    // closed path is the only drift that can return to its own field, and
+    // (cos - 1) / sin are exactly 0 at phase 0 so the identity is exact.
+    // Radius is deliberately over half a cell here — flowfield wants the
+    // large slow reshaping, and nothing downstream is a threshold, so the
+    // higher harmonics a wide orbit picks up cost nothing.
+    const ph = (p['phase'] ?? 0) % 1;
+    const R = 0.6;
+    const dx = R * (Math.cos(2 * Math.PI * ph) - 1);
+    const dy = R * Math.sin(2 * Math.PI * ph);
     const angle = (x: number, y: number): number =>
-      noise(x * p['freq']!, y * p['freq']!) * Math.PI * p['curl']!;
+      noise(x * p['freq']! + dx, y * p['freq']! + dy) * Math.PI * p['curl']!;
     const m = 20;
     const CELL = 4;
     const gw = Math.ceil(size.w / CELL), gh = Math.ceil(size.h / CELL);

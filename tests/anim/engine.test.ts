@@ -59,7 +59,11 @@ describe('frameParams', () => {
     const hp = PRESETS_BY_PATTERN['harmonograph']![0]!;
     const out = frameParams({ def: h, baseParams: defaultParams(h), baseSeed: 1, preset: hp, intensity: 1, features: ZERO_FRAME, phase: 0.4, beatIndex: 0 });
     expect(out.params['phase']).toBe(0.4);
-    const ff = frameParams({ ...base, features: ZERO_FRAME, phase: 0.4, beatIndex: 0 });
-    expect('phase' in ff.params).toBe(false);
+    // truchet stands for the non-adopters: a tiling with no time axis of its
+    // own, so the engine must not hand it one.
+    const t = getPattern('truchet')!;
+    const tp = PRESETS_BY_PATTERN['truchet']![0]!;
+    const tf = frameParams({ def: t, baseParams: defaultParams(t), baseSeed: 1, preset: tp, intensity: 1, features: ZERO_FRAME, phase: 0.4, beatIndex: 0 });
+    expect('phase' in tf.params).toBe(false);
   });
 });

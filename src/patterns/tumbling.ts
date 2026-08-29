@@ -44,7 +44,7 @@ export const tumbling = definePattern({
   //      rhombus between tone buckets, which in hatch mode moves its hatch
   //      lines between the three path elements.
   usesSeed: true,
-  anim: { continuous: ['flipChance', 'coherence', 'voidChance', 'faceShading', 'size'] },
+  anim: { continuous: ['flipChance', 'coherence', 'voidChance', 'faceShading', 'size'], usesPhase: true },
   params: [
     { key: 'cell', kind: 'int', min: 8, max: 44, step: 1, default: 24, label: 'tumbling.cell' },
     { key: 'flipChance', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.38, label: 'tumbling.flipChance' },
@@ -81,6 +81,67 @@ export const tumbling = definePattern({
     const field = fbm2D(deriveSeed(seed, 'tumbling-field'), 2);
     // ~3 noise cells across the short edge: continent-sized regions, not grain.
     const kappa = 3 / Math.min(size.w, size.h);
+
+    // Intrinsic motion: the lattice never moves, the flip field does. The
+    // sample point walks a circle in noise space, once per cycle.
+    //
+    // A circle and not a straight drift, for two independent reasons.
+    //   1. makeNoise2D hashes absolute integer lattice cells, so it is not
+    //      periodic in anything: no non-zero translation ever returns to the
+    //      field it started from. A closed path does, exactly — and `% 1`
+    //      plus (cos - 1)/sin, both exactly 0 at phase 0, make phase 1 the
+    //      literal phase-0 sample rather than an approximation of it.
+    //   2. Fizz. `u < flipChance` is a hard threshold, so a hexagon whose u
+    //      wanders across it repeatedly would strobe. Over a circle small
+    //      relative to a noise cell a smooth field is well approximated by
+    //      its own gradient, which makes u(phase) a single sinusoid: one
+    //      up-crossing and one down-crossing per cycle per hexagon. RADIUS
+    //      is what buys that, and it is why it is under a third of a cell
+    //      and not a whole one — push it past ~0.5 and the second fbm octave
+    //      (period 0.5 cells) starts folding higher harmonics into u, which
+    //      is exactly the chatter it avoids.
+    const TAU = 2 * Math.PI;
+    const ph = (p['phase'] ?? 0) % 1;
+    const RADIUS = 0.3;
+    const driftX = RADIUS * (Math.cos(TAU * ph) - 1);
+    const driftY = RADIUS * Math.sin(TAU * ph);
+
+    // The drift alone does not read as a wave, and it took watching the stage
+    // to find out why. The field is ~3 noise cells across, so its coastlines
+    // run all over the quilt at once; drifting it flips hexagons along every
+    // one of them simultaneously, which the eye reads as cubes popping at
+    // random over the whole surface rather than as anything crossing it.
+    // Worse at the default coherence of 0.45, where 55% of `u` is
+    // per-hexagon white noise and the coastline is dithered to begin with.
+    // Two rounds on the stage: a full-wavelength sinusoid in the flip
+    // threshold was no better, because half the frame is inside it at any
+    // moment and the flips stay spread out.
+    //
+    // What reads as a wave is a *narrow, strong* one. A raised cosine to the
+    // fourth is a pulse about a fifth of the frame diagonal wide; at 0.65 it
+    // lifts the threshold far enough that essentially every hexagon it
+    // reaches reverses, and reverses back as it leaves. That is what the
+    // quilt needed: cubes popping in and out along a moving front, a band of
+    // agreeing cubes crossing a mottled field. Measured over one cycle, 41%
+    // of hexagons take part and every single one of them flips exactly twice
+    // — in and back — so the front is emphatic and there is no chatter
+    // anywhere in it. A weaker pulse (0.22) was tried first and was too
+    // faint to see against the dither at all.
+    //
+    // sin²(pi*ph) is the envelope that makes the pulse vanish at phase 0 —
+    // no travelling wave can be identically zero at one phase on its own,
+    // and an envelope costs less than the alternative, which is a companion
+    // term that leaves a permanent stripe frozen at one edge. It is also
+    // smooth at the wrap (it is (1 - cos(2pi*ph))/2, so value and slope both
+    // return), and it puts the front at full strength mid-crossing, which is
+    // where it is most visible anyway. The orbit underneath never stops, so
+    // the surface is still alive at phase 0 where the pulse is nil.
+    //
+    // Faded out near either end of flipChance, so the parameter values that
+    // mean "every cube the same way round" go on meaning it.
+    const gateAmp = 0.65 * Math.min(1, flipChance / 0.15, (1 - flipChance) / 0.15);
+    const gateEnv = gateAmp * 0.5 * (1 - Math.cos(TAU * ph));
+    const gateSpan = size.w + size.h;
 
     // Hexagon corners, pointy-top, as offsets from the centre:
     //   V_k = S·(cos(-π/2 + kπ/3), sin(-π/2 + kπ/3))
@@ -142,8 +203,12 @@ export const tumbling = definePattern({
         if (hx < -S || hx > size.w + S || hy < -S || hy > size.h + S) continue;
         if (r0 < voidChance) continue;
 
-        const u = (1 - coherence) * r1 + coherence * (0.5 + 0.5 * field(hx * kappa, hy * kappa));
-        const flipped = u < flipChance;
+        const u = (1 - coherence) * r1
+          + coherence * (0.5 + 0.5 * field(hx * kappa + driftX, hy * kappa + driftY));
+        const sp = (hx + hy) / gateSpan;
+        const bump = 0.5 * (1 + Math.cos(TAU * (ph - sp)));
+        const gate = gateEnv * bump * bump * bump * bump;
+        const flipped = u < flipChance + gate;
 
         if (renderMode === 1) {
           outline.push(

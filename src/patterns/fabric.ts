@@ -9,7 +9,7 @@ export const fabric = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
-  anim: { continuous: ['warpAmount', 'dotSize', 'noiseScale', 'size'] },
+  anim: { continuous: ['warpAmount', 'dotSize', 'noiseScale', 'strokeWidth', 'size'], usesPhase: true },
   params: [
     { key: 'gridSize', kind: 'int', min: 20, max: 80, step: 1, default: 46, label: 'fabric.gridSize' },
     { key: 'warpAmount', kind: 'float', min: 0, max: 80, step: 1, default: 34, label: 'fabric.warpAmount' },
@@ -26,6 +26,23 @@ export const fabric = definePattern({
     const s = p['noiseScale']! / Math.min(size.w, size.h);
     const warp = p['warpAmount']!;
 
+    // The lattice stays where it is; the warp field slides underneath it, so
+    // the cloth ripples rather than the weave sliding off the frame. Both
+    // noise reads share the same drift, which is what keeps the displacement
+    // a coherent flow field and not two unrelated wobbles.
+    //
+    // The drift is a circle in noise space, one turn per cycle: value noise
+    // has no period (makeNoise2D hashes absolute lattice cells), so a closed
+    // path is the only drift that returns to the field it started from.
+    // (cos - 1) and sin are both exactly 0 at phase 0, so phase 0 and phase 1
+    // are the identical read. The radius is small on purpose — the warp is
+    // 34px at default, so a fifth of a noise cell already moves every dot
+    // several pixels, and more turns the cloth into a churn.
+    const ph = (p['phase'] ?? 0) % 1;
+    const R = 0.2;
+    const dx = R * (Math.cos(2 * Math.PI * ph) - 1);
+    const dy = R * Math.sin(2 * Math.PI * ph);
+
     // Lattice of (gridSize x gridSize) points, warped in-place.
     const px: number[][] = [];
     const py: number[][] = [];
@@ -35,8 +52,8 @@ export const fabric = definePattern({
       for (let i = 0; i < g; i++) {
         const x = margin + (g === 1 ? 0 : (i / (g - 1)) * w);
         const y = margin + (g === 1 ? 0 : (j / (g - 1)) * h);
-        const nx = noise(x * s, y * s);
-        const ny = noise(x * s + 5.2, y * s + 1.3);
+        const nx = noise(x * s + dx, y * s + dy);
+        const ny = noise(x * s + 5.2 + dx, y * s + 1.3 + dy);
         px[j]!.push(x + warp * nx);
         py[j]!.push(y + warp * ny);
       }

@@ -45,7 +45,7 @@ export const nested = definePattern({
   // Every cell of the rhombille lattice carries the identical nest of frames,
   // so a seed could only ever be a lie. Randomize varies the params instead.
   usesSeed: false,
-  anim: { continuous: ['faceShading', 'strokeWidth', 'size'] },
+  anim: { continuous: ['stepRatio', 'coreSize', 'faceShading', 'strokeWidth', 'size'], usesPhase: true },
   params: [
     // Defaulted large on purpose: the nesting is the subject, and below ~40 the
     // rings collapse into each other and the field reads as riveted plate
@@ -68,21 +68,52 @@ export const nested = definePattern({
     const fs = p['faceShading']!;
     const sw = p['strokeWidth']!;
 
-    // Degeneracy 1: coreSize and stepRatio^depth can cross (at depth 5 /
-    // stepRatio 0.88 the innermost ring's inner edge sits at 0.53 while
-    // coreSize reaches 0.5), which fuses the core into the last frame and
-    // muddles the centre. Keep the core strictly inside the innermost hole.
-    const core = Math.min(p['coreSize']!, Math.pow(ratio, depth) * 0.8);
+    // nested holds no field and calls no PRNG — every cell of the lattice is
+    // the identical nest — so there is nothing here to drift underneath the
+    // structure. What there *is* is a continuous shape parameter, stepRatio,
+    // that decides how fast each shaft recedes; a travelling wave in it makes
+    // the depth of the shafts the thing that moves. Rings widen and narrow in
+    // a swell crossing the quilt, and the core cube at the bottom of each
+    // shaft follows for free, because its clamp is a power of the same ratio.
+    //
+    // `cos(TAU*(ph - sp)) - cos(TAU*sp)` is exactly 0 at phase 0 for every
+    // cell (which is what keeps phase 0 the existing poster) and 1-periodic
+    // in ph (which closes the loop); `% 1` pins phase 1 to phase 0 literally.
+    // The price of vanishing identically at one phase is that the swell
+    // breathes rather than sliding at constant amplitude — unavoidable for a
+    // pattern with no field to reparametrise, and honest at this speed.
+    const ph = (p['phase'] ?? 0) % 1;
+    const TAU = Math.PI * 2;
+    const SWELL = 0.055;
+    const still = ph === 0;
 
-    // Degeneracy 2: at stepRatio ≈ 0.45 with depth 5 the inner rings collapse
-    // below a hairline. Stop once a ring's circumradius is under one stroke
-    // diameter — the ring would be pure stroke and no fill would show.
-    const scales: number[] = [];
-    for (let n = 0; n < depth; n++) {
-      const s = Math.pow(ratio, n);
-      if (S * s < 2 * sw) break;
-      scales.push(s);
-    }
+    /** The ring scales and core radius for one cell, at its own wave phase. */
+    const nestAt = (rat: number): { scales: number[]; core: number } => {
+      // Degeneracy 1: coreSize and stepRatio^depth can cross (at depth 5 /
+      // stepRatio 0.88 the innermost ring's inner edge sits at 0.53 while
+      // coreSize reaches 0.5), which fuses the core into the last frame and
+      // muddles the centre. Keep the core strictly inside the innermost hole.
+      const core = Math.min(p['coreSize']!, Math.pow(rat, depth) * 0.8);
+
+      // Degeneracy 2: at stepRatio ≈ 0.45 with depth 5 the inner rings
+      // collapse below a hairline. Stop once a ring's circumradius is under
+      // one stroke diameter — the ring would be pure stroke and no fill would
+      // show.
+      const scales: number[] = [];
+      for (let n = 0; n < depth; n++) {
+        const s = Math.pow(rat, n);
+        if (S * s < 2 * sw) break;
+        scales.push(s);
+      }
+      return { scales, core };
+    };
+
+    const stillNest = nestAt(ratio);
+    // Fade the swell out as stepRatio approaches either end of its own range,
+    // instead of clipping against it: a clamp would freeze whole cells at the
+    // extremes mid-cycle, which reads as a stutter. At the extreme values the
+    // pattern simply holds still, which is the honest answer there.
+    const amp = Math.min(SWELL, (0.88 - ratio) / 2, (ratio - 0.45) / 2);
 
     // voxel.ts:162-164's orientation tones, by face identity (top/right/left).
     const TONE = [1, 1 - 0.75 * fs, 1 - 0.45 * fs];
@@ -116,9 +147,15 @@ export const nested = definePattern({
         const hy = S * 1.5 * r;
         if (hx < -S || hx > size.w + S || hy < -S || hy > size.h + S) continue;
 
+        // 1.5 wavelengths on the frame diagonal: enough that the swell reads
+        // as travelling rather than as the whole quilt pumping in unison.
+        const sp = (1.5 * (hx + hy)) / (size.w + size.h);
+        const rat = still ? ratio : ratio + amp * (Math.cos(TAU * (ph - sp)) - Math.cos(TAU * sp));
+        const { scales, core } = still ? stillNest : nestAt(rat);
+
         for (let n = 0; n < scales.length; n++) {
           const s = scales[n]!;
-          const si = s * ratio;
+          const si = s * rat;
           for (let f = 0; f < 3; f++) {
             const [ka, km, kb] = FACES[f]!;
             const ua = U[ka]!, um = U[km]!, ub = U[kb]!;
@@ -156,7 +193,7 @@ export const nested = definePattern({
               const lines = Math.min(40, Math.floor(edge / gap));
               for (let i = 0; i < lines; i++) {
                 const b = (i + 0.5) / lines;
-                const a0 = b < ratio ? ratio : 0;
+                const a0 = b < rat ? rat : 0;
                 const x0 = hx + a0 * e1[0] + b * e2[0];
                 const y0 = hy + a0 * e1[1] + b * e2[1];
                 const x1 = hx + e1[0] + b * e2[0];
