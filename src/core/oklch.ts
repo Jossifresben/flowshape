@@ -3,13 +3,21 @@
  * matrices (https://bottosson.github.io/posts/oklab/).
  *
  * Pipeline: OKLCH -> OKLab -> LMS' (cubed) -> LMS -> linear sRGB -> gamma
- * sRGB -> clamp -> hex.
+ * sRGB -> hex.
  *
- * Gamut handling: out-of-gamut linear sRGB values are simply clamped to
- * [0,1] per channel after gamma encoding. This is not a perceptually
- * accurate gamut mapping (it can shift hue/chroma at the edges) but it is
- * simple, fast, and good enough for a generative decorative palette where
- * we already keep chroma within a conservative [0, 0.22] range.
+ * Gamut handling: chroma-reduction gamut mapping. L and H are held fixed —
+ * they are what our contrast and distinctness guarantees are expressed
+ * in — and C is binary-searched down to the largest value that still
+ * lands inside sRGB. This is real gamut mapping, not a per-channel clamp:
+ * clamping each of R/G/B independently after the fact distorts hue and
+ * lightness simultaneously at the boundary, which is not a subtle effect —
+ * it is why saturated colours at extreme lightness used to crush toward
+ * black/white almost independent of hue, and why the ink/paper contrast
+ * ceiling stalled at a fixed value no matter how `inkL` was reshaped. The
+ * one honest consequence of doing this properly: a request for very high
+ * chroma at extreme lightness now comes back *less saturated* rather than
+ * *wrong*. For a colour system whose whole promise is that L and H mean
+ * what they say, that is the correct trade.
  */
 
 function clamp01(x: number): number {
@@ -27,13 +35,8 @@ function toHexByte(c: number): string {
   return v.toString(16).padStart(2, '0');
 }
 
-/**
- * Converts an OKLCH colour to a `#rrggbb` hex string.
- * @param L lightness, roughly [0, 1]
- * @param C chroma, roughly [0, 0.4]
- * @param H hue, degrees
- */
-export function oklchToHex(L: number, C: number, H: number): string {
+/** OKLCH -> linear sRGB, before gamma encoding or clamping. */
+function oklchToLinearSrgb(L: number, C: number, H: number): [number, number, number] {
   const hRad = (H * Math.PI) / 180;
   const a = C * Math.cos(hRad);
   const b = C * Math.sin(hRad);
@@ -49,13 +52,51 @@ export function oklchToHex(L: number, C: number, H: number): string {
   const s = s_ * s_ * s_;
 
   // LMS -> linear sRGB
-  const rLin = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
-  const gLin = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
-  const bLin = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s;
+  const r = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+  const g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+  const bl = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s;
+  return [r, g, bl];
+}
 
+const GAMUT_EPS = 1e-6;
+
+/** Whether (L, C, H) lands inside the sRGB cube (in *linear* sRGB), allowing a small epsilon. */
+function inGamut(L: number, C: number, H: number): boolean {
+  const [r, g, b] = oklchToLinearSrgb(L, C, H);
+  return (
+    r >= -GAMUT_EPS && r <= 1 + GAMUT_EPS &&
+    g >= -GAMUT_EPS && g <= 1 + GAMUT_EPS &&
+    b >= -GAMUT_EPS && b <= 1 + GAMUT_EPS
+  );
+}
+
+/**
+ * Converts an OKLCH colour to a `#rrggbb` hex string.
+ * @param L lightness, roughly [0, 1]
+ * @param C chroma, roughly [0, 0.4]
+ * @param H hue, degrees
+ */
+export function oklchToHex(L: number, C: number, H: number): string {
+  let c = C;
+  if (!inGamut(L, c, H)) {
+    // Chroma-reduction gamut mapping: hold L and H fixed and binary-search
+    // the largest in-gamut chroma. (If L itself is out of a sane range —
+    // e.g. a caller passes L < 0 or L > 1 — even C=0 may be out of gamut;
+    // the search then converges toward c=0 and the final clamp below
+    // is the real safety net for that case.)
+    let lo = 0;
+    let hi = C;
+    for (let i = 0; i < 20; i++) {
+      const mid = (lo + hi) / 2;
+      if (inGamut(L, mid, H)) lo = mid; else hi = mid;
+    }
+    c = lo;
+  }
+
+  const [rLin, gLin, blLin] = oklchToLinearSrgb(L, c, H);
   const r = gammaEncode(rLin);
   const g = gammaEncode(gLin);
-  const bl = gammaEncode(bLin);
+  const bl = gammaEncode(blLin);
 
   return `#${toHexByte(r)}${toHexByte(g)}${toHexByte(bl)}`;
 }
