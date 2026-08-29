@@ -174,4 +174,13 @@ export const UI: Record<string, Pair> = {
   ],
   'saved.reset': ['Reset saved data', 'Restablecer datos guardados'],
   'saved.gone': ['Unavailable pattern', 'Patrón no disponible'],
+
+  // --- curated gallery ----------------------------------------------------
+  'nav.gallery': ['Gallery', 'Galería'],
+  'show.title': ['GALLERY', 'GALERÍA'],
+  'show.subtitle': [
+    'A selection, chosen by hand. Open any one to take it apart and make it yours.',
+    'Una selección, elegida a mano. Abre cualquiera para desmontarla y hacerla tuya.',
+  ],
+  'show.empty': ['Nothing here yet.', 'Aún no hay nada aquí.'],
 };

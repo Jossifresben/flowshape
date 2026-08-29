@@ -6,6 +6,7 @@ import { mountAnimate } from './ui/animate';
 import { mountAbout } from './ui/about';
 import { mountComposer } from './ui/poster';
 import { mountSaved } from './ui/saved';
+import { mountShowcase } from './ui/showcase';
 import { decodeState } from './core/url-state';
 import { LANG_EVENT } from './i18n';
 
@@ -17,9 +18,15 @@ const app = document.querySelector<HTMLDivElement>('#app')!;
 // listener and re-render playground with default state on every navigation).
 let cleanup: (() => void) | null = null;
 
-function setView(name: 'gallery' | 'playground' | 'about' | 'animate' | 'composer' | 'saved'): void {
+// 'gallery' is the pattern grid at `#/` (module `ui/gallery.ts`); 'showcase'
+// is the curated set at `#/gallery` (module `ui/showcase.ts`). Two different
+// names on purpose — see `ui/showcase.ts`'s header comment.
+function setView(
+  name: 'gallery' | 'showcase' | 'playground' | 'about' | 'animate' | 'composer' | 'saved',
+): void {
   app.classList.remove(
-    'view-gallery', 'view-playground', 'view-about', 'view-animate', 'view-composer', 'view-saved',
+    'view-gallery', 'view-showcase', 'view-playground', 'view-about', 'view-animate', 'view-composer',
+    'view-saved',
   );
   app.classList.add(`view-${name}`);
 }
@@ -39,6 +46,14 @@ function route(): void {
   if (location.hash.startsWith('#/saved')) {
     setView('saved');
     cleanup = mountSaved(app);
+    return;
+  }
+  // Matched before `decodeState`: that decoder only recognises `^#/(p|a|c)/…`,
+  // so `#/gallery` decodes to null and would otherwise fall through to the
+  // pattern grid below.
+  if (location.hash.startsWith('#/gallery')) {
+    setView('showcase');
+    cleanup = mountShowcase(app);
     return;
   }
   const state = decodeState(location.hash);

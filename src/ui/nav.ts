@@ -26,7 +26,7 @@ export function langSwitch(lang: Lang): HTMLElement {
 /** The site top bar: wordmark, section links, language switch. Shared by the
  *  gallery and the about page; the playground has its own narrow panel and
  *  uses `panelNav` below instead. */
-export function buildNav(lang: Lang, active: 'patterns' | 'about' | 'saved'): HTMLElement {
+export function buildNav(lang: Lang, active: 'patterns' | 'gallery' | 'about' | 'saved'): HTMLElement {
   const topbar = document.createElement('div');
   topbar.className = 'gal-topbar';
 
@@ -47,6 +47,7 @@ export function buildNav(lang: Lang, active: 'patterns' | 'about' | 'saved'): HT
     links.append(a);
   };
   link('#/', t('nav.patterns', lang), active === 'patterns');
+  link('#/gallery', t('nav.gallery', lang), active === 'gallery');
   link('#/saved', t('nav.saved', lang), active === 'saved');
   link('#/about', t('nav.about', lang), active === 'about');
   links.append(langSwitch(lang), shareButton(lang));

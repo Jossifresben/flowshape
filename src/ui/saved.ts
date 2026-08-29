@@ -2,58 +2,10 @@ import { list, readState, reset, rename, remove, importJSON, exportJSON, SAVED_K
 import { currentLang, t, type Lang } from '../i18n';
 import { buildNav } from './nav';
 import { buildFooter } from './footer';
-import { decodeState } from '../core/url-state';
-import { getPattern, generateSafe } from '../patterns/registry';
-import { serialize, type SvgNode } from '../core/svg';
-import { resolvePalette } from '../poster/palettes';
-import { renderSize } from '../poster/formats';
-import { AnimWorkerClient } from '../anim/worker-client';
 import { showToast } from './toast';
 // `kind` is derived from the hash, never stored — a stored copy could contradict it.
-import { composerThumb } from './poster';
 import { kindOf, type SavedItem, type Kind } from '../core/saved';
-
-let worker: AnimWorkerClient | null = null;
-const queue: Array<() => void> = [];
-let busy = false;
-
-function pump(): void {
-  if (busy) return;
-  const next = queue.shift();
-  if (!next) return;
-  busy = true;
-  next();
-}
-
-/** One shared worker for the whole page, one request at a time. A saved grid
- *  can hold many heavy items and each is a full generation, so they are
- *  serialised rather than raced. Built on `AnimWorkerClient` — the id-
- *  correlated wrapper the animation stage already uses against
- *  `compute.worker.ts` — rather than a second hand-rolled `postMessage`
- *  protocol. */
-function computeHeavy(
-  patternId: string, params: Record<string, number>, seed: number,
-  size: { w: number; h: number }, onNode: (node: SvgNode | null) => void,
-): void {
-  queue.push(() => {
-    worker ??= new AnimWorkerClient();
-    worker.request(patternId, params, seed, size).then((node) => {
-      busy = false;
-      onNode(node);
-      pump();
-    });
-  });
-  pump();
-}
-
-/** Terminates the shared worker. Called from the view's teardown so leaving
- *  the page does not leave a thread running. */
-export function stopSavedWorker(): void {
-  worker?.dispose();
-  worker = null;
-  queue.length = 0;
-  busy = false;
-}
+import { renderThumb, onVisible, stopThumbWorker } from './thumb';
 
 /** Mounts the saved page. Returns a teardown, because this view registers a
  *  `storage` listener and an IntersectionObserver that must not outlive it. */
@@ -196,80 +148,13 @@ export function mountSaved(root: HTMLElement): () => void {
   return () => {
     window.removeEventListener('storage', onStorage);
     observer.disconnect();
-    stopSavedWorker();
+    stopThumbWorker();
   };
 }
 
 const KIND_KEY: Record<Kind, string> = {
   p: 'saved.kindP', a: 'saved.kindA', c: 'saved.kindC',
 };
-
-/** The render size a saved hash implies. Designs and posters follow their
- *  paper format; an animation follows its stage aspect. Both go through the
- *  same normalised short edge, so a card is one code path. */
-function sizeFor(state: NonNullable<ReturnType<typeof decodeState>>): { w: number; h: number } {
-  if (state.view !== 'a') return renderSize(state);
-  const stage = state.stage ?? '169';
-  const ratio = stage === '169' ? 16 / 9 : stage === '916' ? 9 / 16 : 1;
-  return ratio >= 1 ? { w: Math.round(600 * ratio), h: 600 } : { w: 600, h: Math.round(600 / ratio) };
-}
-
-/** Renders a saved item's artwork, live. A `heavy` pattern (currently just
- *  `diffgrowth`) is routed through the shared compute worker instead of
- *  running inline: at default params it costs ~660ms and on a real saved
- *  hash with non-default params it has measured over 4s on the main thread,
- *  against a few ms for every other pattern — inline, one heavy card would
- *  freeze the whole grid while it computes. */
-function renderThumb(box: HTMLElement, item: SavedItem, lang: Lang): void {
-  const state = decodeState(item.hash);
-  const def = state ? getPattern(state.patternId) : undefined;
-  if (!state || !def) {
-    box.classList.add('gone');
-    box.textContent = t('saved.gone', lang);
-    return;
-  }
-  const size = sizeFor(state);
-  box.style.aspectRatio = `${size.w} / ${size.h}`;
-
-  // A poster is its composition, not its artwork. Rendering the bare pattern
-  // here made a saved poster byte-identical to the design it came from — same
-  // SVG, same aspect, only the badge differing.
-  if (state.view === 'c') {
-    try {
-      const svg = composerThumb(state);
-      if (svg) { box.innerHTML = svg; return; }
-    } catch {
-      // Fall through to the plain artwork rather than showing nothing.
-    }
-  }
-  if (def.heavy) {
-    box.classList.add('computing');
-    computeHeavy(state.patternId, state.params, state.seed, size, (node) => {
-      box.classList.remove('computing');
-      if (!node) { box.classList.add('gone'); box.textContent = t('saved.gone', lang); return; }
-      box.innerHTML = serialize(node, resolvePalette(state.color));
-    });
-    return;
-  }
-  try {
-    const node = generateSafe(def, state.params, state.seed, size);
-    box.innerHTML = serialize(node, resolvePalette(state.color));
-  } catch {
-    box.classList.add('gone');
-    box.textContent = t('saved.gone', lang);
-  }
-}
-
-/** Renders a card the first time it comes near the viewport, then stops
- *  watching it — a card is generated once per mount, never again on scroll. */
-function onVisible(entries: IntersectionObserverEntry[], obs: IntersectionObserver): void {
-  for (const entry of entries) {
-    if (!entry.isIntersecting) continue;
-    const el = entry.target as HTMLElement & { render?: () => void };
-    obs.unobserve(el);
-    el.render?.();
-  }
-}
 
 function buildCard(item: SavedItem, lang: Lang, observer: IntersectionObserver, refresh: () => void): HTMLElement {
   const card = document.createElement('div');
@@ -283,7 +168,7 @@ function buildCard(item: SavedItem, lang: Lang, observer: IntersectionObserver, 
   box.className = 'gal-thumb saved-thumb';
   // Rendering is deferred to the observer: a card off screen costs nothing,
   // and a saved card costs exactly what its playground render cost.
-  (box as HTMLElement & { render?: () => void }).render = () => renderThumb(box, item, lang);
+  (box as HTMLElement & { render?: () => void }).render = () => renderThumb(box, item.hash, lang);
   observer.observe(box);
 
   const meta = document.createElement('div');
