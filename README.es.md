@@ -1,6 +1,7 @@
 # flowshape
 
 [![en vivo en flowshape.art](https://img.shields.io/badge/en%20vivo-flowshape.art-E3261A)](https://flowshape.art)
+[![DOI 10.5281/zenodo.22164866](https://zenodo.org/badge/DOI/10.5281/zenodo.22164866.svg)](https://doi.org/10.5281/zenodo.22164866)
 [![código en GitHub](https://img.shields.io/badge/c%C3%B3digo-GitHub-181717?logo=github&logoColor=white)](https://github.com/Jossifresben/flowshape)
 [![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-111111.svg)](LICENSE)
 [![ORCID 0009-0000-2026-0836](https://img.shields.io/badge/ORCID-0009--0000--2026--0836-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0000-2026-0836)
