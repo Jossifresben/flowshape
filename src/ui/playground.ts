@@ -1,5 +1,4 @@
 import { getPattern, defaultParams, clampParams, generateSafe, listPatterns, type PatternDef, type ParamDef } from '../patterns/registry';
-import { randomParams } from '../patterns/randomize';
 import { serialize, type SvgNode } from '../core/svg';
 import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palettes';
@@ -7,10 +6,8 @@ import { rememberState, forgetState } from '../core/persist';
 import { PRESETS } from '../patterns/presets';
 import { sliderRow, checkboxRow, selectRow, chipRow, sectionRow } from './controls';
 import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
-import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
-import { openModal } from './modal';
-import { composerUrl } from './poster';
-import { renderCodeTab, renderMathTab } from './tabs';
+import { buildExportRow } from './export-row';
+import { buildActionsRow } from './panel-actions';
 import { t, patternName, currentLang } from '../i18n';
 import { panelNav } from './nav';
 import { buildFooter } from './footer';
@@ -24,17 +21,6 @@ const COLOR_PARAM_DEFS: Record<keyof typeof COLOR_DEFAULTS, ParamDef> = {
   paperL: { key: 'paperL', kind: 'float', min: 0.04, max: 0.96, step: 0.01, default: COLOR_DEFAULTS.paperL, label: 'color.paperL' },
   accentShift: { key: 'accentShift', kind: 'float', min: 0, max: 180, step: 1, default: COLOR_DEFAULTS.accentShift, label: 'color.accentShift' },
 };
-
-/** One button in the three-up action row: short visible label, full wording
- *  kept as the accessible name so nothing is lost to the abbreviation. */
-function actionButton(short: string, full: string): HTMLButtonElement {
-  const b = document.createElement('button');
-  b.className = 'btn';
-  b.textContent = short;
-  b.title = full;
-  b.setAttribute('aria-label', full);
-  return b;
-}
 
 const DEFAULT_STATE: AppState = {
   patternId: 'phyllotaxis',
@@ -241,47 +227,7 @@ export function mountPlayground(root: HTMLElement): () => void {
 
     // The three things a visitor reaches for constantly, side by side above
     // the fold instead of three stacked full-width buttons.
-    const actions = document.createElement('div');
-    actions.className = 'panel-actions';
-
-    const rand = actionButton(t('pg.randomizeShort', lang), t('pg.randomize', lang));
-    rand.addEventListener('click', () => {
-      if (def.usesSeed) {
-        setState({ seed: 1 + Math.floor(Math.random() * 99999) });
-      } else {
-        setState({ params: randomParams(def, Math.random, state.params) });
-      }
-    });
-
-    const explainBtn = actionButton(t('pg.explainShort', lang), t('pg.explain', lang));
-    explainBtn.addEventListener('click', () => {
-      openModal({
-        title: patternName(state.patternId, lang),
-        tabs: [
-          { id: 'math', label: t('modal.math', lang), render: () => renderMathTab(state.patternId, lang) },
-          { id: 'code', label: t('modal.code', lang), render: () => renderCodeTab(state.patternId, lang) },
-        ],
-      });
-    });
-
-    const animateBtn = actionButton(t('pg.animateShort', lang), t('pg.animate', lang));
-    animateBtn.addEventListener('click', () => {
-      location.hash = encodeState({ ...state, view: 'a' });
-    });
-
-    const posterBtn = actionButton(t('pg.posterShort', lang), t('pg.poster', lang));
-    posterBtn.addEventListener('click', () => {
-      // Its own window, per the brief: the composer is a separate surface and
-      // the playground keeps its state and its scroll position.
-      window.open(
-        `${location.pathname}${location.search}${composerUrl(state)}`,
-        '_blank',
-        'noopener',
-      );
-    });
-
-    actions.append(rand, explainBtn, animateBtn, posterBtn);
-    panel.append(actions);
+    panel.append(buildActionsRow(def, state, lang, setState));
 
     if (def.usesSeed) {
       const seedVal = document.createElement('div');
@@ -370,78 +316,12 @@ export function mountPlayground(root: HTMLElement): () => void {
     panel.append(formatSec.el);
 
     // --- export -----------------------------------------------------------
-    const exportSec = sectionRow('export', t('pg.export', lang), false);
-
-    const exportRow = document.createElement('div');
-    exportRow.className = 'ctl-row';
-
-    const svgBtn = document.createElement('button');
-    svgBtn.className = 'btn';
-    svgBtn.textContent = t('pg.exportSvg', lang);
-
-    const dpiSel = document.createElement('select');
-    dpiSel.className = 'ctl-select';
-    for (const dpi of [150, 300]) {
-      const px = pixelDimensions(phys, dpi);
-      const o = document.createElement('option');
-      o.value = String(dpi);
-      o.textContent = `${dpi} dpi · ${px.w} × ${px.h}`;
-      if (dpi === 300) o.selected = true;
-      dpiSel.append(o);
-    }
-
-    const pngBtn = document.createElement('button');
-    pngBtn.className = 'btn';
-    pngBtn.textContent = t('pg.exportPng', lang);
-
-    const exportError = document.createElement('div');
-    exportError.className = 'ctl-value export-error';
-    exportError.textContent = '';
-
-    if (!lastNode) {
-      svgBtn.disabled = true;
-      pngBtn.disabled = true;
-      onExportReady = () => {
-        svgBtn.disabled = false;
-        pngBtn.disabled = false;
-      };
-    } else {
-      onExportReady = null;
-    }
-
-    svgBtn.addEventListener('click', () => {
-      if (!lastNode) return;
-      const pal = resolvePalette(state.color);
-      const svg = toSvgString(lastNode, pal, phys);
-      const name = exportFilename(state.patternId, state.seed, state.format ?? DEFAULT_FORMAT, 'svg');
-      downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), name);
-    });
-
-    pngBtn.addEventListener('click', async () => {
-      if (!lastNode) return;
-      const originalText = pngBtn.textContent;
-      pngBtn.disabled = true;
-      pngBtn.textContent = t('pg.rendering', lang);
-      exportError.textContent = '';
-      try {
-        const pal = resolvePalette(state.color);
-        const svg = toSvgString(lastNode, pal, phys);
-        const dpi = Number(dpiSel.value);
-        const px = pixelDimensions(phys, dpi);
-        const blob = await toPngBlob(svg, px);
-        const name = exportFilename(state.patternId, state.seed, state.format ?? DEFAULT_FORMAT, 'png');
-        downloadBlob(blob, name);
-      } catch (err) {
-        exportError.textContent = err instanceof Error ? err.message : String(err);
-      } finally {
-        pngBtn.disabled = false;
-        pngBtn.textContent = originalText;
-      }
-    });
-
-    exportRow.append(svgBtn, dpiSel, pngBtn);
-    exportSec.body.append(exportRow, exportError);
-    panel.append(exportSec.el);
+    // `getNode` reads the live `lastNode`, not a value snapshot: a heavy
+    // pattern's node can land asynchronously (via the worker) after this row
+    // is built, and the buttons must see that instead of a stale null.
+    const exportRow = buildExportRow(state, phys, lang, () => lastNode);
+    onExportReady = lastNode ? null : exportRow.markReady;
+    panel.append(exportRow.el);
 
     // Once a pattern's state has been remembered (any change), the gallery
     // card for it points at that remembered state instead of the curated
