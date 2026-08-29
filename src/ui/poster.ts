@@ -73,6 +73,32 @@ export function composerModel(state: AppState, measure: Measure = approxMeasure(
   };
 }
 
+/**
+ * One composed poster, for a saved-card thumbnail.
+ *
+ * Deliberately NOT `composerModel().toSvg()`: that renders every candidate
+ * layout in order to filter the ones that fit, which is roughly ten full
+ * pattern generations. A thumbnail needs exactly one. It also means a saved
+ * poster shows the poster — layout, colourway and type block — rather than the
+ * bare artwork, which is indistinguishable from the design it came from.
+ */
+export function composerThumb(state: AppState): string | null {
+  const def = getPattern(state.patternId);
+  if (!def) return null;
+  const sh = sheet(state);
+  const colorways = colorwaysFor(state.color);
+  const colorway = colorways[state.cway ?? 0] ?? colorways[0];
+  const variant = findVariant(variantsFor(SKELETONS, sh.ratio), state.layout)
+    ?? variantsFor(SKELETONS, sh.ratio)[0];
+  if (!variant || !colorway) return null;
+  const artwork = generateSafe(def, state.params, state.seed, artworkSize(sh, variant.skeleton));
+  const r = renderPoster({
+    sheet: sh, skeleton: variant.skeleton, colorway, data: posterData(def, state),
+    artwork, measure: approxMeasure(), hideText: state.notext === true,
+  });
+  return r.ok ? serialize(r.node, BAKED) : null;
+}
+
 /** The composer route for a playground state. Layout, colorway and the text
  *  flag are deliberately dropped: opening the composer starts a fresh browse
  *  at variant 0 rather than restoring a stale pick. */

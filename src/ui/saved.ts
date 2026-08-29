@@ -10,6 +10,7 @@ import { renderSize } from '../poster/formats';
 import { AnimWorkerClient } from '../anim/worker-client';
 import { showToast } from './toast';
 // `kind` is derived from the hash, never stored — a stored copy could contradict it.
+import { composerThumb } from './poster';
 import { kindOf, type SavedItem, type Kind } from '../core/saved';
 
 let worker: AnimWorkerClient | null = null;
@@ -229,6 +230,18 @@ function renderThumb(box: HTMLElement, item: SavedItem, lang: Lang): void {
   }
   const size = sizeFor(state);
   box.style.aspectRatio = `${size.w} / ${size.h}`;
+
+  // A poster is its composition, not its artwork. Rendering the bare pattern
+  // here made a saved poster byte-identical to the design it came from — same
+  // SVG, same aspect, only the badge differing.
+  if (state.view === 'c') {
+    try {
+      const svg = composerThumb(state);
+      if (svg) { box.innerHTML = svg; return; }
+    } catch {
+      // Fall through to the plain artwork rather than showing nothing.
+    }
+  }
   if (def.heavy) {
     box.classList.add('computing');
     computeHeavy(state.patternId, state.params, state.seed, size, (node) => {
