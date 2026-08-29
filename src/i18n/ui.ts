@@ -70,7 +70,7 @@ export const UI: Record<string, Pair> = {
   // `pg.colour` is reused for the stage's COLOUR toggle: it is literally the
   // same word for the same concept, and a second key would be a second place
   // to keep it in sync.
-  'anim.back': ['← POSTER', '← PÓSTER'],
+  'anim.back': ['← DESIGN', '← DISEÑO'],
   'anim.play': ['PLAY', 'REPRODUCIR'],
   'anim.pause': ['PAUSE', 'PAUSA'],
   'anim.record': ['REC', 'REC'],
