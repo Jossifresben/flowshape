@@ -150,14 +150,14 @@ export const UI: Record<string, Pair> = {
   'saved.export': ['Export', 'Exportar'],
   'saved.import': ['Import', 'Importar'],
   'saved.imported': ['Added {added}, skipped {skipped}', 'Añadidos {added}, omitidos {skipped}'],
-  'saved.importFailed': ['That is not a favourites file.', 'Ese archivo no es de favoritos.'],
+  'saved.importFailed': ['That is not a favourites file.', 'Ese archivo no es favorito'],
   'saved.importFuture': [
     'That file was saved by a newer version of the site. Reload and try again.',
     'Ese archivo se guardó con una versión más reciente del sitio. Recarga e inténtalo de nuevo.',
   ],
   'saved.exportFailed': [
     'Your saved data could not be read, so there is nothing safe to export.',
-    'No se han podido leer tus datos guardados, así que no hay nada seguro que exportar.',
+    'Nada por exportar',
   ],
   'saved.future': [
     'These favourites were saved by a newer version of the site. Reload to see them.',
