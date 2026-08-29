@@ -100,12 +100,18 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
   ],
   timestable: [
     { id: 'sweep', label: { en: 'Sweep', es: 'Barrido' }, routes: [
-      { feature: 'mid', param: 'multiplier', depth: 0.22 },
+      // `multiplier` spans 2..100 and the figure reconfigures completely every
+      // ~1.0 of M — it is chaotic in this param, not continuous. depth is a
+      // fraction of the FULL range, so the usual 0.2-0.5 depths give a 20-44
+      // multiplier swing and the chords strobe. Held to well under one
+      // multiplier so audio nudges the envelope instead of shredding it.
+      { feature: 'mid', param: 'multiplier', depth: 0.006 },
       { feature: 'bass', param: 'opacity', depth: 0.4 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
     ] },
     { id: 'morph', label: { en: 'Morph', es: 'Muta' }, routes: [
-      { feature: 'bright', param: 'multiplier', depth: 0.45 },
+      // See the note in `sweep`: ~1.2 multipliers of travel, not 44.
+      { feature: 'bright', param: 'multiplier', depth: 0.012 },
       { feature: 'level', param: 'opacity', depth: 0.5 },
     ] },
   ],
