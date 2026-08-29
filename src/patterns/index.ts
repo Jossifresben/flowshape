@@ -16,3 +16,4 @@ import './moire';
 import './fabric';
 import './roselattice';
 import './chirp';
+import './helix';

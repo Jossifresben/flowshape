@@ -21,6 +21,7 @@ export const NAMES: Record<string, string> = {
   fabric: 'Warped Fabric',
   roselattice: 'Rose Lattice',
   chirp: 'Converging Chirp',
+  helix: 'Helix Ladder',
 };
 
 /** Human label for each pattern family. */
