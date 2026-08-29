@@ -20,8 +20,9 @@ flowshape turns mathematics into art. Pick one of **25 deterministic pattern gen
 
 Then take it somewhere:
 
-- **Print.** Export **SVG or PNG** at any paper size. The SVG opens cleanly in Figma, Illustrator, Inkscape or Canva, so the finishing work happens in whatever tool you already use — flowshape deliberately does *not* try to be a poster editor.
-- **Motion.** Feed the same pattern audio — a file or the microphone — and it moves with the sound on a 16:9, 9:16 or 1:1 stage. Record it and download a video file with your audio in it. *The animated stage is in development; see [below](#the-animated-stage--audio-visualizer).*
+- **Print.** Export the bare pattern as **SVG or PNG** at any paper size. The SVG opens cleanly in Figma, Illustrator, Inkscape or Canva, so the finishing work happens in whatever tool you already use.
+- **Compose.** Or set the pattern into a designed sheet — artwork field, title block, parameter table, accent mark — and browse composed layouts with an arrow key. flowshape still isn't an element-level editor: you pick from validated compositions rather than dragging boxes. *See [the poster composer](#the-poster-composer).*
+- **Motion.** Feed the same pattern audio — a file or the microphone — and it moves with the sound on a 16:9, 9:16 or 1:1 stage. Record it and download a video file with your audio in it. *See [the animated stage](#the-animated-stage--audio-visualizer).*
 
 Two things make it more than a toy:
 
@@ -91,14 +92,31 @@ These are constraints, not accidents:
 
 - **Determinism.** No `Math.random`, no `Date`. All randomness derives from a seeded `mulberry32` PRNG, split per subsystem so two random streams inside one pattern never interfere. Same URL ⇒ same SVG, always. The test suite snapshots every pattern's output to enforce it.
 - **Pure SVG.** No canvas in the poster path, no raster steps, no gradients, no filters, no blur. Quality comes from line craft, not from rendering tricks.
-- **Monochrome by default.** Ink on paper. Colour is opt-in, flat, and generated in OKLCH so lightness stays perceptually even across hues — with a brute-force-verified floor on the paper/ink contrast gap across the whole control space.
+- **Monochrome by default.** Ink on paper. Colour is opt-in, flat, and generated in OKLCH so lightness stays perceptually even across hues — with a brute-force-verified floor on the paper/ink contrast gap across the whole control space. The composer's colorways tint the sheet, but only ever as a tint; a monochrome pattern still composes to a monochrome poster.
 - **Colour roles, not hex codes.** Generators emit `ink` / `paper` / `accent` tokens; the palette is resolved at render time. That is what lets any palette — ink on near-black, ink on paper white — apply to every pattern without touching a single generator.
 - **Normalised frame.** The short edge is fixed at 600 user units, so a stroke width means the same visual weight on A5 and on 24×36″.
 - **No file over ~400 lines.** One file per concern.
 
+## The poster composer
+
+Export gives you the artwork. The composer gives you the sheet: the pattern set into a designed poster with a title block, its one-sentence description, a parameter table and a single accent mark.
+
+It is not an editor. **A layout is data, not code** — a record naming one mode per region (artwork field, title block, data block, accent mark) plus a split point, margins and a legal aspect range. One renderer resolves any such record; a validator holds every compositional rule in one predicate. Adding a ninth layout is a record in `src/compose/skeletons.ts` and no other file, and nothing outside that file may branch on a layout's id.
+
+- **Eight reference layouts, expanded.** Each is varied across its free axes — split position, decoration, accent mark — giving 68 browsable variants on A3, all validated. One pass through the list shows every distinct layout before it starts refining them.
+- **The format you already chose drives it.** Split points are stored as fractions, never pixels, and each layout declares the sheet ratios it survives. Pick a square or a landscape sheet and you are offered the layouts that read at that ratio (20 of the 68) rather than one that will break.
+- **Colorways are generated, not tabulated.** Twelve steps around the hue circle, sampled in OKLCH at fixed lightnesses. The accent is sampled twice, because it does two jobs: a mark at L 0.50 that clears 4.5:1 against paper for every hue, and a field at L 0.78 for layouts where the accent becomes a full ground. The neutrals carry a small chroma so the whole sheet responds to the control, not just whichever corner holds the mark.
+- **Inversion is a palette swap.** The artwork is SVG with colour-role tokens, so putting dark forms on a light sheet re-emits the tree in a different palette. No filters, no raster step, no blend modes — the export stays a clean vector file.
+- **Hide the text.** A checkbox drops every text element and keeps the composition, for when you want the sheet without the words.
+- **Overflow is specified, not hoped for.** A title that will not fit steps down 8% at a time to a floor, and below that the layout is refused rather than ellipsed — the browse list simply does not offer a layout that cannot hold the pattern's name.
+
+Everything lands in the URL like the rest of the app, so a composed poster reproduces from its link.
+
+Full design: **[docs/poster-composer.md](docs/poster-composer.md)**.
+
 ## The animated stage — audio visualizer
 
-> **In development.** Specced, planned, de-risked by a working spike, analysis layer built and tested. Not on `main` and not live yet.
+> **Live.**
 
 Take a pattern you have tuned, feed it audio — a dropped file or the microphone — and it moves with the sound. The live screen is the product; movie export is a capture of the same pipeline.
 
@@ -139,13 +157,15 @@ src/
   core/       prng · url-state · svg builder · noise · geometry · oklch · persist
   patterns/   registry + one module per pattern (25) + presets, randomize
   poster/     formats · palettes · export (SVG / PNG)
-  ui/         gallery · playground · about · nav · footer · controls · modal
+  compose/    poster composer — units · colorways · regions · skeletons · variants · render
+  ui/         gallery · playground · poster · animate · about · nav · footer · controls · modal
   i18n/       EN/ES tables: chrome strings, pattern names, parameter labels
   content/    explain/<pattern>.<en|es>.md — formula, explanation, citation
+              blurbs.ts — the one-line EN/ES description each poster prints
   audio/      dsp · features · onsets (analysis layer for the animated stage)
   workers/    off-thread generation for heavy patterns
 scripts/      build-thumbs.ts (prebuild step)
-tests/        Vitest — core, patterns (snapshotted), poster, ui, audio
+tests/        Vitest — core, patterns (snapshotted), poster, compose, ui, audio, anim
 docs/         architecture, patterns, URL schema, audio visualizer, specs and plans
 ```
 
@@ -154,6 +174,7 @@ docs/         architecture, patterns, URL schema, audio visualizer, specs and pl
 - **[docs/architecture.md](docs/architecture.md)** — how the pieces fit, the pattern contract, the colour-role system, non-goals
 - **[docs/patterns.md](docs/patterns.md)** — every pattern's formula, explanation, parameters and source, plus how to add one
 - **[docs/url-state.md](docs/url-state.md)** — the URL schema and its compatibility rules
+- **[docs/poster-composer.md](docs/poster-composer.md)** — the composer's region model, layout registry and colour system
 - **[docs/audio-visualizer.md](docs/audio-visualizer.md)** — the animated stage design
 - **[docs/research/](docs/research/)** — the verified maths catalogues the patterns were built from
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — conventions, tests, and what a new pattern must satisfy

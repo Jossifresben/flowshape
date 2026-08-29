@@ -152,8 +152,12 @@ Full design: [audio-visualizer.md](audio-visualizer.md).
 
 ## Deliberate non-goals
 
-- **No in-house poster editor.** Element-level editing is delegated to Figma,
-  Illustrator, Inkscape or Canva via the SVG export.
+- **No element-level poster editor.** The composer sets a pattern into a
+  designed sheet, but the user picks from validated compositions rather than
+  moving boxes: a layout is a data record resolved by one renderer, never a
+  canvas of draggable objects. Element-level editing stays delegated to Figma,
+  Illustrator, Inkscape or Canva via the SVG export. See
+  [poster-composer.md](poster-composer.md).
 - **No accounts and no backend.** The URL is the save file.
 - **No canvas in the poster path.** Vector in, vector out.
 - **No file over ~400 lines.** One concern per module; split before it grows.

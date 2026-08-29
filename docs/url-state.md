@@ -4,6 +4,20 @@ The address bar is the save file. Everything needed to reproduce a poster —
 pattern, parameters, seed, colour, paper format and language — is encoded in the
 hash, so a copied link is a complete, self-contained document.
 
+## Routes
+
+The first path segment names the surface. All three carry the same pattern
+state; each adds only its own keys.
+
+| Route | Surface |
+|---|---|
+| `#/p/<patternId>` | Playground — tune the pattern. The default. |
+| `#/c/<patternId>` | Poster composer — the pattern set into a designed sheet. |
+| `#/a/<patternId>` | Animated stage — the pattern driven by audio. |
+
+A route's own keys are written only on that route, so a playground link never
+carries composer or stage state.
+
 ## Schema
 
 ```
@@ -21,6 +35,23 @@ hash, so a copied link is a complete, self-contained document.
 | `format` | A format id (`a3`, `letter`, `cm50x70`, …) or `custom`. Omitted when `a3`. |
 | `cw` `ch` `cu` | Custom width, height and unit (`mm` \| `cm` \| `in`), used when `format=custom`. |
 | *everything else* | Pattern parameters, by key, rounded to four decimals. |
+
+### Composer keys (`#/c/` only)
+
+| Key | Meaning |
+|---|---|
+| `layout` | Layout variant id, e.g. `3c.s1.d0.a0` — skeleton, split, decoration, accent. Falls back to the first offered variant when unknown, which is what makes it safe to drop a layout from the registry. |
+| `cway` | Colorway index, a non-negative integer. A value past the end falls back to 0. |
+| `notext` | `1` when the sheet is rendered without any text. Omitted when off. |
+
+### Stage keys (`#/a/` only)
+
+| Key | Meaning |
+|---|---|
+| `stage` | Aspect: `169` (default, omitted), `916` or `11`. |
+| `apre` | Animation preset id. |
+| `aint` | Intensity, clamped to `0…1`. Omitted at `1`. |
+| `acol` | `1` when the stage's colour mode is on. Omitted when off. |
 
 Keys owned by the app shell are listed in `src/core/reserved.ts`; a pattern
 parameter may never use one, and `definePattern` throws if it tries. `theme` is

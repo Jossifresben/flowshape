@@ -20,8 +20,9 @@ flowshape convierte las matemáticas en arte. Elige uno de los **25 generadores 
 
 Después, llévatelo a alguna parte:
 
-- **Impresión.** Exporta en **SVG o PNG** a cualquier tamaño de papel. El SVG abre limpio en Figma, Illustrator, Inkscape o Canva, de modo que el acabado se hace en la herramienta que ya usas: flowshape, deliberadamente, *no* pretende ser un editor de pósters.
-- **Movimiento.** Dale audio al mismo patrón —un archivo o el micrófono— y se moverá con el sonido en un escenario 16:9, 9:16 o 1:1. Grábalo y descarga un archivo de vídeo con tu audio dentro. *El escenario animado está en desarrollo; véase [más abajo](#el-escenario-animado--visualizador-de-audio).*
+- **Impresión.** Exporta el patrón desnudo en **SVG o PNG** a cualquier tamaño de papel. El SVG abre limpio en Figma, Illustrator, Inkscape o Canva, de modo que el acabado se hace en la herramienta que ya usas.
+- **Composición.** O coloca el patrón dentro de una hoja diseñada —campo de obra, bloque de título, tabla de parámetros, marca de acento— y recorre composiciones con una flecha. flowshape sigue sin ser un editor por elementos: eliges entre composiciones validadas en lugar de arrastrar cajas. *Véase [el compositor de pósters](#el-compositor-de-pósters).*
+- **Movimiento.** Dale audio al mismo patrón —un archivo o el micrófono— y se moverá con el sonido en un escenario 16:9, 9:16 o 1:1. Grábalo y descarga un archivo de vídeo con tu audio dentro. *Véase [el escenario animado](#el-escenario-animado--visualizador-de-audio).*
 
 Dos cosas lo separan de un juguete:
 
@@ -96,9 +97,26 @@ Son restricciones, no accidentes:
 - **Marco normalizado.** El lado corto está fijo en 600 unidades de usuario, así que un grosor de trazo pesa lo mismo en A5 que en 24×36″.
 - **Ningún archivo por encima de ~400 líneas.** Un archivo por responsabilidad.
 
+## El compositor de pósters
+
+La exportación te da la obra. El compositor te da la hoja: el patrón colocado dentro de un póster diseñado, con bloque de título, su descripción de una frase, una tabla de parámetros y una única marca de acento.
+
+No es un editor. **Una composición es un dato, no código**: un registro que nombra un modo por región (campo de obra, bloque de título, bloque de datos, marca de acento) más un punto de corte, márgenes y el rango de proporciones que admite. Un único renderizador resuelve cualquiera de esos registros, y un validador reúne en un solo predicado todas las reglas de composición. Añadir una novena composición es un registro en `src/compose/skeletons.ts` y ningún otro archivo; fuera de ese archivo, nada puede ramificar según el id de una composición.
+
+- **Ocho composiciones de referencia, expandidas.** Cada una varía en sus ejes libres —posición del corte, decoración, marca de acento— hasta dar 68 variantes navegables en A3, todas validadas. Una pasada por la lista muestra cada composición distinta antes de empezar a refinarlas.
+- **Manda el formato que ya elegiste.** Los puntos de corte se guardan como fracciones, nunca como píxeles, y cada composición declara las proporciones de hoja que resiste. Elige una hoja cuadrada o apaisada y se te ofrecen las que funcionan en esa proporción (20 de las 68) en vez de una que se romperá.
+- **Las gamas se generan, no se tabulan.** Doce pasos alrededor del círculo de tono, muestreados en OKLCH a claridades fijas. El acento se muestrea dos veces, porque hace dos trabajos: una marca en L 0,50 que supera 4,5:1 sobre el papel en todos los tonos, y un campo en L 0,78 para las composiciones donde el acento pasa a ser fondo entero. Los neutros llevan algo de croma para que responda la hoja entera, y no solo el rincón que sostiene la marca.
+- **Invertir es cambiar la paleta.** La obra es SVG con tokens de rol de color, así que poner formas oscuras sobre una hoja clara reemite el árbol con otra paleta. Sin filtros, sin paso rasterizado, sin modos de fusión: la exportación sigue siendo un vector limpio.
+- **Ocultar el texto.** Una casilla elimina todo elemento de texto y conserva la composición, para cuando quieras la hoja sin las palabras.
+- **El desbordamiento está especificado, no confiado a la suerte.** Un título que no cabe reduce un 8% por intento hasta un suelo, y por debajo de ahí la composición se rechaza en vez de recortarse con puntos suspensivos: la lista sencillamente no ofrece una composición incapaz de sostener el nombre del patrón.
+
+Todo queda en la URL como en el resto de la app, así que un póster compuesto se reproduce desde su enlace.
+
+Diseño completo: **[docs/poster-composer.md](docs/poster-composer.md)**.
+
 ## El escenario animado — visualizador de audio
 
-> **En desarrollo.** Especificado, planificado, con un spike funcional que quitó el riesgo, y la capa de análisis construida y testeada. Aún no está en `main` ni publicado.
+> **En producción.**
 
 Coge un patrón que hayas ajustado, dale audio —un archivo o el micrófono— y se mueve con el sonido. La pantalla en vivo es el producto; la exportación de vídeo es una captura de esa misma tubería.
 
@@ -139,13 +157,15 @@ src/
   core/       prng · url-state · constructor SVG · ruido · geometría · oklch · persist
   patterns/   registro + un módulo por patrón (25) + presets, randomize
   poster/     formatos · paletas · exportación (SVG / PNG)
-  ui/         galería · playground · acerca de · nav · pie · controles · modal
+  compose/    compositor de pósters — units · colorways · regions · skeletons · variants · render
+  ui/         galería · playground · póster · animate · acerca de · nav · pie · controles · modal
   i18n/       tablas EN/ES: textos de la interfaz, nombres de patrones, etiquetas
   content/    explain/<patrón>.<en|es>.md — fórmula, explicación, cita
+              blurbs.ts — la descripción de una línea EN/ES que imprime cada póster
   audio/      dsp · features · onsets (capa de análisis del escenario animado)
   workers/    generación fuera del hilo principal para patrones pesados
 scripts/      build-thumbs.ts (paso prebuild)
-tests/        Vitest — core, patrones (con instantáneas), póster, ui, audio
+tests/        Vitest — core, patrones (con instantáneas), póster, compose, ui, audio, anim
 docs/         arquitectura, patrones, esquema de URL, visualizador de audio, specs y planes
 ```
 
@@ -154,6 +174,7 @@ docs/         arquitectura, patrones, esquema de URL, visualizador de audio, spe
 - **[docs/architecture.md](docs/architecture.md)** — cómo encajan las piezas, el contrato de patrón, el sistema de roles de color, los no-objetivos
 - **[docs/patterns.md](docs/patterns.md)** — fórmula, explicación, parámetros y fuente de cada patrón, y cómo añadir uno
 - **[docs/url-state.md](docs/url-state.md)** — el esquema de URL y sus reglas de compatibilidad
+- **[docs/poster-composer.md](docs/poster-composer.md)** — el modelo de regiones, el registro de composiciones y el sistema de color
 - **[docs/audio-visualizer.md](docs/audio-visualizer.md)** — el diseño del escenario animado
 - **[docs/research/](docs/research/)** — los catálogos matemáticos verificados de los que salieron los patrones
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — convenciones, tests y qué debe cumplir un patrón nuevo

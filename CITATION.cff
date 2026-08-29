@@ -4,7 +4,8 @@ title: "flowshape"
 abstract: >-
   A free, open-source web app that turns mathematics into art: 25 deterministic
   pattern generators with every parameter exposed, exported as print-ready
-  vector artwork or driven as an audio-reactive animation. Pure SVG, no
+  vector artwork, composed into designed posters, or driven as an
+  audio-reactive animation. Pure SVG, no
   backend: the full state lives in the URL, so the same link always renders the
   same artwork. Every pattern ships with its formula, a plain-language
   explanation in English and Spanish, and its own generator source.
