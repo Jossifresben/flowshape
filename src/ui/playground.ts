@@ -9,6 +9,7 @@ import { sliderRow, checkboxRow, selectRow, chipRow } from './controls';
 import { NAMES } from './gallery';
 import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
 import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
+import { openModal } from './modal';
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their `label` has no '.' so `sliderRow`'s i18n-key splitting is a no-op
@@ -19,6 +20,12 @@ const COLOR_PARAM_DEFS: Record<keyof typeof COLOR_DEFAULTS, ParamDef> = {
   paperL: { key: 'paperL', kind: 'float', min: 0.04, max: 0.96, step: 0.01, default: COLOR_DEFAULTS.paperL, label: 'PAPER' },
   accentShift: { key: 'accentShift', kind: 'float', min: 0, max: 180, step: 1, default: COLOR_DEFAULTS.accentShift, label: 'ACCENT SHIFT' },
 };
+
+function placeholderTab(text: string): HTMLElement {
+  const p = document.createElement('p');
+  p.textContent = text;
+  return p;
+}
 
 const DEFAULT_STATE: AppState = {
   patternId: 'phyllotaxis',
@@ -228,6 +235,23 @@ export function mountPlayground(root: HTMLElement): () => void {
     });
     seedRow.append(rand);
     panel.append(seedRow);
+
+    const explainRow = document.createElement('div');
+    explainRow.className = 'ctl-row';
+    const explainBtn = document.createElement('button');
+    explainBtn.className = 'btn';
+    explainBtn.textContent = 'Explain the math';
+    explainBtn.addEventListener('click', () => {
+      openModal({
+        title: NAMES[state.patternId] ?? state.patternId,
+        tabs: [
+          { id: 'math', label: 'Math', render: () => placeholderTab('Math explanation coming soon.') },
+          { id: 'code', label: 'Code', render: () => placeholderTab('Source code view coming soon.') },
+        ],
+      });
+    });
+    explainRow.append(explainBtn);
+    panel.append(explainRow);
 
     const orderedParams = [...def.params].sort((a, b) =>
       (a.key === 'size' ? -1 : 0) - (b.key === 'size' ? -1 : 0),

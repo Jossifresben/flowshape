@@ -110,3 +110,22 @@ input[type='checkbox'] { accent-color: var(--ink); }
   font-family: var(--font-mono); font-size: 11px; padding: 5px 6px;
   border: 1px solid var(--line); background: var(--paper); color: var(--ink);
 }
+
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.72);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.modal {
+  background: var(--paper); border: 1px solid var(--line);
+  width: min(760px, 92vw); max-height: 86vh; display: flex; flex-direction: column;
+}
+.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-tabs { display: flex; gap: 6px; padding: 12px 20px 0; }
+.modal-body { padding: 20px; overflow: auto; }
+.modal-body pre {
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.55;
+  border: 1px solid var(--line); padding: 14px; overflow-x: auto; margin: 0;
+}
+.modal-body p { font-size: 14px; line-height: 1.65; }
+.modal-body a { color: var(--accent); }
