@@ -11,6 +11,9 @@ import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '..
 import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
 import { openModal } from './modal';
 
+/** Flip to true once the Math and Code tabs have real content (Part 3 Tasks 9–10). */
+const EXPLAIN_ENABLED = false;
+
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their `label` has no '.' so `sliderRow`'s i18n-key splitting is a no-op
  *  and the text renders as-is. */
@@ -251,7 +254,11 @@ export function mountPlayground(root: HTMLElement): () => void {
       });
     });
     explainRow.append(explainBtn);
-    panel.append(explainRow);
+    // The modal shell is built but its two tabs are still placeholders: the
+    // explanations (Part 3 Task 9) and the source view (Task 10) do not exist yet.
+    // Shipping a button that opens "coming soon" is worse than shipping no button,
+    // so it stays hidden until there is something behind it.
+    if (EXPLAIN_ENABLED) panel.append(explainRow);
 
     const orderedParams = [...def.params].sort((a, b) =>
       (a.key === 'size' ? -1 : 0) - (b.key === 'size' ? -1 : 0),
