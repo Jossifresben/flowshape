@@ -96,3 +96,16 @@ input[type='checkbox'] { accent-color: var(--ink); }
 }
 .gal-name { font-size: 13px; font-weight: 700; color: var(--ink); }
 .gal-family { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--gray); }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font-family: var(--font-mono); font-size: 11px; padding: 6px 12px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+}
+.chip.selected { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.custom-size { display: flex; gap: 6px; align-items: center; }
+.custom-size input { width: 64px; }
+.custom-size input, .custom-size select {
+  font-family: var(--font-mono); font-size: 11px; padding: 5px 6px;
+  border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+}

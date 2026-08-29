@@ -48,6 +48,23 @@ export function checkboxRow(
   return row;
 }
 
+export function chipRow(
+  items: { id: string; label: string }[],
+  current: string,
+  onPick: (id: string) => void,
+): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'chip-row';
+  for (const it of items) {
+    const b = document.createElement('button');
+    b.className = 'chip' + (it.id === current ? ' selected' : '');
+    b.textContent = it.label;
+    b.addEventListener('click', () => onPick(it.id));
+    row.append(b);
+  }
+  return row;
+}
+
 export function selectRow(
   def: ParamDef,
   value: number,

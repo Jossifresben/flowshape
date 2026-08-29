@@ -5,8 +5,9 @@ import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palettes';
 import { rememberState, forgetState } from '../core/persist';
 import { PRESETS } from '../patterns/presets';
-import { sliderRow, checkboxRow, selectRow } from './controls';
+import { sliderRow, checkboxRow, selectRow, chipRow } from './controls';
 import { NAMES } from './gallery';
+import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their `label` has no '.' so `sliderRow`'s i18n-key splitting is a no-op
@@ -41,7 +42,7 @@ export function mountPlayground(root: HTMLElement): () => void {
   let lastNode: SvgNode | null = null;
   let lastKey = '';
   function nodeKey(): string {
-    return JSON.stringify([state.patternId, state.params, state.seed]);
+    return JSON.stringify([state.patternId, state.params, state.seed, renderSize(state)]);
   }
 
   /** Writes the current state to the URL bar (without a history entry) and
@@ -97,7 +98,7 @@ export function mountPlayground(root: HTMLElement): () => void {
       lastKey = myKey;
       onNode(e.data.node);
     };
-    worker!.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: { w: 600, h: 840 } });
+    worker!.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: renderSize(state) });
   }
 
   function computeInWorker(onNode: (node: SvgNode) => void): void {
@@ -134,7 +135,7 @@ export function mountPlayground(root: HTMLElement): () => void {
         stage.innerHTML = serialize(node, resolvePalette(state.color));
       });
     } else {
-      const node = generateSafe(def, state.params, state.seed, { w: 600, h: 840 });
+      const node = generateSafe(def, state.params, state.seed, renderSize(state));
       lastNode = node;
       lastKey = key;
       stage.innerHTML = serialize(node, pal);
@@ -233,6 +234,54 @@ export function mountPlayground(root: HTMLElement): () => void {
         panel.append(sliderRow(pd, v, (nv) => setParam(pd.key, nv)));
       }
     }
+    const formatHeading = document.createElement('div');
+    formatHeading.className = 'ctl-section-heading';
+    formatHeading.textContent = 'FORMAT';
+    panel.append(formatHeading);
+
+    const currentFormat = state.format ?? DEFAULT_FORMAT;
+    for (const group of ['iso', 'us', 'other'] as const) {
+      const items = FORMATS.filter((f) => f.group === group).map((f) => ({ id: f.id, label: f.label }));
+      panel.append(chipRow(items, currentFormat, (id) => setState({ format: id })));
+    }
+    panel.append(
+      chipRow([{ id: 'custom', label: 'Custom…' }], currentFormat, () => setState({ format: 'custom' })),
+    );
+
+    if (state.format === 'custom') {
+      const customRow = document.createElement('div');
+      customRow.className = 'custom-size';
+      const wInput = document.createElement('input');
+      wInput.type = 'number';
+      wInput.min = '1';
+      wInput.value = String(state.cw ?? 30);
+      wInput.addEventListener('change', () => setState({ cw: Number(wInput.value) }));
+      const xSpan = document.createElement('span');
+      xSpan.textContent = '×';
+      const hInput = document.createElement('input');
+      hInput.type = 'number';
+      hInput.min = '1';
+      hInput.value = String(state.ch ?? 40);
+      hInput.addEventListener('change', () => setState({ ch: Number(hInput.value) }));
+      const unitSel = document.createElement('select');
+      for (const u of ['mm', 'cm', 'in'] as Unit[]) {
+        const o = document.createElement('option');
+        o.value = u;
+        o.textContent = u;
+        if ((state.cu ?? 'mm') === u) o.selected = true;
+        unitSel.append(o);
+      }
+      unitSel.addEventListener('change', () => setState({ cu: unitSel.value as Unit }));
+      customRow.append(wInput, xSpan, hInput, unitSel);
+      panel.append(customRow);
+    }
+
+    const phys = physicalSize(state);
+    const physLabel = document.createElement('div');
+    physLabel.className = 'ctl-value';
+    physLabel.textContent = `${phys.wmm} × ${phys.hmm} mm`;
+    panel.append(physLabel);
+
     const colorHeading = document.createElement('div');
     colorHeading.className = 'ctl-section-heading';
     colorHeading.textContent = 'COLOUR';
