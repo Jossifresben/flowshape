@@ -73,4 +73,15 @@ export interface ShowcaseVideo {
   title?: Pair;
 }
 
-export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [];
+export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
+  { src: '/showcase/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
+    title: ['Harmonograph', 'Armonógrafo'] },
+  { src: '/showcase/timestable.mp4', poster: '/showcase/timestable.jpg',
+    title: ['Times-Table Chords', 'Cuerdas de la tabla de multiplicar'] },
+  { src: '/showcase/flowfield.mp4', poster: '/showcase/flowfield.jpg',
+    title: ['Flow Field', 'Campo de flujo'] },
+  { src: '/showcase/fabric.mp4', poster: '/showcase/fabric.jpg',
+    title: ['Warped Fabric', 'Tejido deformado'] },
+  { src: '/showcase/harmonograph-wide.mp4', poster: '/showcase/harmonograph-wide.jpg',
+    title: ['Harmonograph, wide', 'Armonógrafo, panorámico'] },
+];
