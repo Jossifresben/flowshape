@@ -117,4 +117,61 @@ export const UI: Record<string, Pair> = {
   'footer.source': ['Source on GitHub', 'Código en GitHub'],
   'footer.licence': ['MIT licence', 'Licencia MIT'],
   'footer.about': ['About this project', 'Acerca del proyecto'],
+
+  // --- share --------------------------------------------------------------
+  'share.action': ['Share', 'Compartir'],
+  'share.copied': ['Link copied', 'Enlace copiado'],
+  'share.selected': ['Link selected', 'Enlace seleccionado'],
+
+  // --- favourites ---------------------------------------------------------
+  'fav.save': ['Save to favourites', 'Guardar en favoritos'],
+  'fav.remove': ['Remove from favourites', 'Quitar de favoritos'],
+  'fav.unavailable': [
+    'Saving is unavailable in this browser mode.',
+    'No se puede guardar en este modo del navegador.',
+  ],
+  'fav.quota': [
+    'Storage is full — remove a favourite and try again.',
+    'El almacenamiento está lleno: quita un favorito e inténtalo de nuevo.',
+  ],
+
+  // --- saved page ---------------------------------------------------------
+  'nav.saved': ['Saved', 'Guardados'],
+  'saved.title': ['SAVED', 'GUARDADOS'],
+  'saved.count': ['ITEMS', 'ELEMENTOS'],
+  'saved.countOne': ['ITEM', 'ELEMENTO'],
+  'saved.empty': [
+    'Nothing saved yet. Open a pattern, make it yours, then press the star.',
+    'Aún no hay nada guardado. Abre un patrón, hazlo tuyo y pulsa la estrella.',
+  ],
+  'saved.emptyCta': ['Browse patterns', 'Ver patrones'],
+  'saved.kindP': ['DESIGN', 'DISEÑO'],
+  'saved.kindA': ['ANIMATION', 'ANIMACIÓN'],
+  'saved.kindC': ['POSTER', 'PÓSTER'],
+  'saved.rename': ['Rename', 'Renombrar'],
+  'saved.delete': ['Delete', 'Eliminar'],
+  'saved.deleted': ['Deleted', 'Eliminado'],
+  'saved.undo': ['Undo', 'Deshacer'],
+  'saved.export': ['Export', 'Exportar'],
+  'saved.import': ['Import', 'Importar'],
+  'saved.imported': ['Added {added}, skipped {skipped}', 'Añadidos {added}, omitidos {skipped}'],
+  'saved.importFailed': ['That is not a favourites file.', 'Ese archivo no es favorito'],
+  'saved.importFuture': [
+    'That file was saved by a newer version of the site. Reload and try again.',
+    'Ese archivo se guardó con una versión más reciente del sitio. Recarga e inténtalo de nuevo.',
+  ],
+  'saved.exportFailed': [
+    'Your saved data could not be read, so there is nothing safe to export.',
+    'Nada por exportar',
+  ],
+  'saved.future': [
+    'These favourites were saved by a newer version of the site. Reload to see them.',
+    'Estos favoritos se guardaron con una versión más reciente del sitio. Recarga para verlos.',
+  ],
+  'saved.corrupt': [
+    'Your saved data could not be read. It has been left untouched — resetting will discard it.',
+    'No se han podido leer tus datos guardados. Se han dejado intactos: restablecer los descartará.',
+  ],
+  'saved.reset': ['Reset saved data', 'Restablecer datos guardados'],
+  'saved.gone': ['Unavailable pattern', 'Patrón no disponible'],
 };

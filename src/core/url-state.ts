@@ -16,6 +16,10 @@ export interface ColorState {
  *  it as `COLOR_DEFAULTS` for colour resolution. */
 export const COLOR_DEFAULTS = { hue: 250, chroma: 0, paperL: 0.09, accentShift: 150 } as const;
 
+/** The three routes a creation hash can name. 'a' = animate stage; 'c' =
+ *  poster composer; 'p' = playground. */
+export type View = 'p' | 'a' | 'c';
+
 export interface AppState {
   patternId: string;
   seed: number;
@@ -26,8 +30,8 @@ export interface AppState {
   cw?: number;
   ch?: number;
   cu?: 'mm' | 'cm' | 'in';
-  /** 'a' = animate stage; 'c' = poster composer; undefined/'p' = playground. */
-  view?: 'p' | 'a' | 'c';
+  /** undefined behaves as 'p' — see `View`. */
+  view?: View;
   stage?: '169' | '916' | '11';
   apre?: string;
   aint?: number;
@@ -143,4 +147,13 @@ export function decodeState(hash: string): AppState | null {
     if (q.get('notext') === '1') state.notext = true;
   }
   return state;
+}
+
+/** The route a creation hash belongs to, or null when it is not one. The
+ *  single source of truth for "is this a renderable creation URL" — callers
+ *  must not re-derive it with their own regex. decodeState leaves `view`
+ *  unset for the playground route, hence the `?? 'p'` fallback. */
+export function routeOf(hash: string): View | null {
+  const s = decodeState(hash);
+  return s ? (s.view ?? 'p') : null;
 }

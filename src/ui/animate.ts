@@ -13,6 +13,8 @@ import { AnimWorkerClient } from '../anim/worker-client';
 import { chipRow } from './controls';
 import { t, patternName, currentLang } from '../i18n';
 import { langSwitch } from './nav';
+import { shareButton } from './share';
+import { favouriteButton, type FavouriteControl } from './star';
 
 /** Stage geometry: fixed internal pixel resolution per aspect; patterns keep
  *  composing in user units (600 on the short edge), scaled up 1.8× to pixels. */
@@ -76,6 +78,9 @@ export function mountAnimate(root: HTMLElement): () => void {
   let recorder: StageRecorder | null = null;
   let recordingMime: { mime: string; ext: string } | null = null;
 
+  // --- save ---
+  let favourite: FavouriteControl | null = null;
+
   // --- DOM ---
   root.innerHTML = '';
   const wrap = document.createElement('div');
@@ -101,7 +106,8 @@ export function mountAnimate(root: HTMLElement): () => void {
   back.href = encodeState({
     ...state, view: undefined, stage: undefined, apre: undefined, aint: undefined, acol: undefined,
   });
-  navRow.append(back, langSwitch(lang));
+  favourite = favouriteButton(lang, () => location.hash);
+  navRow.append(back, langSwitch(lang), favourite.el, shareButton(lang));
 
   const title = document.createElement('h1');
   title.textContent = patternName(def.id, lang).toUpperCase();
@@ -308,6 +314,8 @@ export function mountAnimate(root: HTMLElement): () => void {
     history.replaceState(null, '', encodeState({
       ...state, view: 'a', stage: stageId, apre: preset.id, aint: intensity, acol: colourOn,
     }));
+    // replaceState fires no hashchange, so the star has to be told.
+    favourite?.sync();
   }
 
   function swapRig(next: AudioRig): void {

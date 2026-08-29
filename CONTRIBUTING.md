@@ -53,3 +53,27 @@ existing comments record exactly that, and they are worth reading before
 ## Licence
 
 Contributions are accepted under the [MIT licence](LICENSE) of this project.
+
+## Cutting a release
+
+```bash
+npm run set-version 1.2.0     # package.json, CITATION.cff (+ date), .zenodo.json
+npm test && npm run build
+git commit -am "chore(release): v1.2.0"
+git tag -a v1.2.0 -m "v1.2.0"
+git push && git push --tags
+```
+
+`.zenodo.json` is the deposit's metadata and Zenodo reads it from the repository
+on each GitHub release, so it is written to be reusable: the prose carries no
+version number and no tag name, and `set-version` touches only the `version`
+field. Edit the description when what the software *is* changes, not when the
+number does.
+
+Two things the script cannot know, so check them by hand when they apply:
+
+- If a deposit is meant to carry sample files (the v1.0.0 record has six poster
+  PNGs), they must be uploaded to that Zenodo record — the description's links
+  point at a specific record id and do not follow to later versions.
+- A new DOI is minted per version. Update the README badge if it should track
+  the new one rather than the concept DOI.
