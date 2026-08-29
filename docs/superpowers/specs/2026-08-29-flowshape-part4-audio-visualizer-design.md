@@ -13,9 +13,12 @@ Sequencing: this is Part 4. Nothing in this spec touches the Part 3 branch; impl
 - **Live screen first.** The realtime player is the product; export is a capture of it. The deterministic offline exporter is Phase B, not a prerequisite.
 - **Stage and movie aspects: 16:9, 9:16, 1:1.** Screen-native, decoupled from the poster format system. Internal canvas resolutions 1920×1080, 1080×1920, 1080×1080.
 - **Canvas renderer.** A small adapter interprets the existing `SvgNode` tree into canvas2d. The poster path stays SVG, untouched.
-- **All 19 patterns participate.** Continuous per-frame modulation where geometry allows; universal beat-quantized event mode everywhere else. No pattern is excluded.
+- **All 25 patterns participate.** Continuous per-frame modulation where geometry allows; universal beat-quantized event mode everywhere else. No pattern is excluded.
 - **Curated presets, no mod-matrix UI.** Each pattern ships 2–3 named mappings; one master intensity slider. Power routing can come later if ever needed.
-- **Monochrome, EN/ES, URL state** — the standing rules apply unchanged. No gradients, no color reactivity.
+- **EN/ES and URL state** apply unchanged.
+- **Colour and gradients are permitted on the animated stage, and only there** (Hermes, 2026-08-29, superseding this spec's original "no gradients, no colour reactivity"). Audio-reactive colour — spectral centroid to hue, level to chroma, in OKLCH — is approved after he played the spike. **The poster path is untouched: flat colours only, no gradients, monochrome by default.** A moving screen and a printed sheet are different media and no longer share this constraint.
+  - Monochrome remains the stage's *default*; colour arrives through a preset, not automatically.
+  - Colour still resolves through the existing `paper`/`ink`/`accent` role tokens and the OKLCH model, so the contrast guarantee that keeps a poster legible keeps the stage legible too.
 - **No text overlays on exports.** A 9:16 export is a clean audiogram; captions and titles are Canva's job.
 
 ---
@@ -102,7 +105,7 @@ URL additions (all reserved keys): `mode=animate`, `stage` (`169` | `916` | `11`
 
 ## 3. Renderer (`src/anim/canvas-render.ts`)
 
-Interprets an `SvgNode` tree into canvas2d calls. `Path2D` accepts SVG path `d` strings natively, so paths — the bulk of every pattern — translate one-to-one. The adapter covers exactly the node/attribute vocabulary the 19 patterns emit (audit at implementation time: expected `path`, `circle`, `rect`, `line`, `polyline`, `g`; fill, stroke, stroke-width, stroke-linecap, opacity, transform). Anything outside the audited vocabulary throws in dev — silent visual drift between SVG and canvas is the failure mode to fear.
+Interprets an `SvgNode` tree into canvas2d calls. `Path2D` accepts SVG path `d` strings natively, so paths — the bulk of every pattern — translate one-to-one. The adapter covers exactly the node/attribute vocabulary the 25 patterns emit (audit at implementation time: expected `path`, `circle`, `rect`, `line`, `polyline`, `g`; fill, stroke, stroke-width, stroke-linecap, opacity, transform). Anything outside the audited vocabulary throws in dev — silent visual drift between SVG and canvas is the failure mode to fear.
 
 Role tokens (paper/ink) resolve at draw time exactly as the SVG path does, honoring theme.
 

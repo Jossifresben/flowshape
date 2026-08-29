@@ -26,7 +26,7 @@
 | Create `src/audio/onsets.ts` | Offline onset detection, tempo estimate, beat grid; `LiveOnsetDetector` for mic |
 | Create `src/audio/sources.ts` | Browser glue: `AudioRig` for file + mic (AudioContext graph, transport) |
 | Create `src/anim/mapping.ts` | `ModRoute`, `applyRoutes` over `ParamDef` ranges |
-| Create `src/anim/presets.ts` | `AnimPreset`/`EventSpec` types + curated preset table for all 19 patterns |
+| Create `src/anim/presets.ts` | `AnimPreset`/`EventSpec` types + curated preset table for all 25 patterns (incl. the four isometric newcomers: tumbling, nested, interlace, isoweave — all discrete/tiling family, so beat-event presets, `reseed` where `usesSeed`, else `step` on the most structural int param) |
 | Create `src/anim/canvas-render.ts` | `drawTree(ctx, node, palette)` — SvgNode→canvas2d, throws on unknown vocabulary |
 | Create `src/anim/engine.ts` | Pure frame logic: `BeatClock`, `phaseAt`, `eventState`, `frameParams` |
 | Create `src/anim/recorder.ts` | `pickMimeType`, `StageRecorder` (MediaRecorder) |
@@ -1084,6 +1084,10 @@ Add the line after each pattern's `heavy:`/`usesSeed:` line. (`size` is a legal 
 | `girih.ts` | `anim: { continuous: ['contactAngle', 'ribbonWidth', 'strokeWidth', 'size'] },` |
 | `apollonian.ts` | `anim: { continuous: ['strokeWidth', 'size'] },` |
 | `voxel.ts` | `anim: { continuous: ['gap', 'faceShading', 'depthShading', 'size'] },` |
+| `tumbling.ts` | `anim: { continuous: ['flipChance', 'coherence', 'voidChance', 'faceShading', 'size'] },` |
+| `nested.ts` | `anim: { continuous: ['faceShading', 'strokeWidth', 'size'] },` |
+| `interlace.ts` | `anim: { continuous: ['strokeWidth', 'size'] },` |
+| `isoweave.ts` | `anim: { continuous: ['strokeWidth', 'size'] },` |
 | `diffgrowth.ts` | `anim: {},` |
 
 (harmonograph, phyllotaxis, helix already got theirs in Task 6.)
@@ -1339,7 +1343,7 @@ Expected: ALL PASS. If any `reseed` event trips the `usesSeed` assertion (a patt
 
 ```bash
 git add src/patterns src/anim/presets.ts tests/anim/presets.test.ts
-git commit -m "feat(anim): anim metadata on all 19 patterns + curated presets"
+git commit -m "feat(anim): anim metadata on all 25 patterns + curated presets"
 ```
 
 ---
@@ -1615,7 +1619,7 @@ git commit -m "feat(anim): SvgNode-to-canvas renderer with strict vocabulary"
 
 ---
 
-### Task 10: Vocabulary audit across all 19 patterns
+### Task 10: Vocabulary audit across all 25 patterns
 
 The audit IS executing `drawTree` on every pattern's real output — anything the renderer can't draw throws with the tag/attr name.
 
@@ -1682,7 +1686,7 @@ Expected: ALL PASS (19 audit cases green)
 
 ```bash
 git add src/anim/canvas-render.ts tests/anim/vocabulary-audit.test.ts
-git commit -m "test(anim): all 19 patterns render clean through the canvas adapter"
+git commit -m "test(anim): all 25 patterns render clean through the canvas adapter"
 ```
 
 ---
@@ -2753,7 +2757,7 @@ In `route()`, before the `decodeState` branch:
 
 Run `npm run dev`, then verify each item (Chrome first, then Safari):
 
-1. `#/dev/fidelity` — step through all 19 patterns; SVG and canvas sides must be visually identical (stroke weights, fills, accent placement). Fix `canvas-render.ts` for any drift and re-run the anim test suite.
+1. `#/dev/fidelity` — step through all 25 patterns; SVG and canvas sides must be visually identical (stroke weights, fills, accent placement). Fix `canvas-render.ts` for any drift and re-run the anim test suite.
 2. Playground → ANIMATE → stage opens with the same pattern/params/seed; back link returns with state intact.
 3. Silence: harmonograph/phyllotaxis/helix drift slowly (phase); others hold still.
 4. Load an MP3 (music): status shows BPM; continuous patterns move with the music; event patterns (truchet, voronoi, voxel) switch on the beat; diffgrowth (heavy) swaps without any frame jank.
