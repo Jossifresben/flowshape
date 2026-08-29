@@ -150,7 +150,7 @@ All labels through the existing i18n table, EN/ES.
 
 ### Phase A — capture (MediaRecorder)
 
-Record button captures the live stage: `canvas.captureStream(60)` video + a `MediaStreamAudioDestinationNode` tap of the audio graph, muxed by `MediaRecorder`. Mimetype fallback chain probed with `isTypeSupported`: `mp4; h264,aac` → `webm; vp9,opus` → `webm; vp8,opus`; the resulting container is named honestly in the download. Realtime capture (a 3-minute song records for 3 minutes); recording indicator on the stage; mic-mode recording works identically. Movie resolution = internal stage resolution.
+Record button captures the live stage: `canvas.captureStream(60)` video + a `MediaStreamAudioDestinationNode` tap of the audio graph, muxed by `MediaRecorder`. Mimetype fallback chain probed with `isTypeSupported`: `mp4; h264,aac` → `webm; vp9,opus` → `webm; vp8,opus`; the resulting container is named honestly in the download. Realtime capture (a 3-minute song records for 3 minutes); recording indicator on the stage; mic-mode recording works identically. Movie resolution = internal stage resolution. Known caveat (spike-verified): browsers pause `requestAnimationFrame` in hidden tabs, so a recording made while the tab is hidden captures frozen video — the Phase B offline exporter is immune.
 
 ### Phase B — deterministic export (WebCodecs)
 

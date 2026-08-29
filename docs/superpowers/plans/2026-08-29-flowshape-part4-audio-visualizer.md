@@ -403,6 +403,11 @@ export const ZERO_FRAME: FeatureFrame = { bass: 0, mid: 0, high: 0, level: 0, br
  *  relative balance survives normalization; `level` and `flux` get their own;
  *  `bright` (centroid) is already scale-invariant and skips AGC entirely. */
 export class FeaturePipeline {
+  /** AGC-normalized flux from the latest process(), BEFORE the envelope.
+   *  Onset detection must consume this, not the enveloped feature — verified
+   *  in the audio spike: the envelope smears transients and the detector's
+   *  adaptive baseline then locks above every spike (detection stalls). */
+  rawFlux = 0;
   private prevMag: Float32Array | null = null;
   private bandAgc = new AutoGain(5);
   private levelAgc = new AutoGain(5);
@@ -434,6 +439,7 @@ export class FeaturePipeline {
       bright: raw.bright,
       flux: this.fluxAgc.process(raw.flux, dtMs),
     };
+    this.rawFlux = gained.flux;
     const out = { ...ZERO_FRAME };
     for (const k of FEATURE_KEYS) out[k] = this.env[k].process(gained[k], dtMs);
     return out;
@@ -620,15 +626,18 @@ export function beatGrid(onsets: number[], bpm: number | null, durationSec: numb
 }
 
 /** Realtime onset detection for mic mode: adaptive threshold over an EMA of
- *  flux, with a refractory period so one hit fires once. */
+ *  flux, with a refractory period so one hit fires once.
+ *  MUST be fed UN-enveloped flux (FeaturePipeline.rawFlux) — spike-verified:
+ *  enveloped flux stalls detection. The slow EMA (2%/frame) keeps single
+ *  spikes from inflating their own baseline. */
 export class LiveOnsetDetector {
   private avg = 0;
   private sinceMs = 1e9;
-  constructor(private multiplier = 2.2, private refractoryMs = 150) {}
-  process(flux: number, dtMs: number): boolean {
+  constructor(private multiplier = 2.2, private refractoryMs = 180) {}
+  process(rawFlux: number, dtMs: number): boolean {
     this.sinceMs += dtMs;
-    const fire = this.sinceMs >= this.refractoryMs && flux > Math.max(0.01, this.avg * this.multiplier);
-    this.avg = this.avg * 0.95 + flux * 0.05;
+    const fire = this.sinceMs >= this.refractoryMs && rawFlux > Math.max(0.05, this.avg * this.multiplier);
+    this.avg = this.avg * 0.98 + rawFlux * 0.02;
     if (fire) this.sinceMs = 0;
     return fire;
   }
@@ -2514,7 +2523,8 @@ export function mountAnimate(root: HTMLElement): () => void {
       tSec = rig.position();
       if (clock) beatIndex = clock.beatIndex(tSec);
       else {
-        if (liveDet.process(features.flux, dtMs)) liveBeats++;
+        // raw (un-enveloped) flux — see LiveOnsetDetector's contract
+        if (liveDet.process(pipeline.rawFlux, dtMs)) liveBeats++;
         beatIndex = liveBeats;
       }
       if (rig.duration != null && !scrubActive()) {
@@ -2754,6 +2764,16 @@ git commit -m "feat(anim): dev fidelity route; manual verification pass"
 ```
 
 ---
+
+## Spike findings (2026-08-29, branch `spike/audio-anim`, already folded in)
+
+Two throwaway pages (`#/spike/smooth`, `#/spike/beat`) validated the design against real playback before this plan executes:
+
+1. **Continuous mode is cheaper than assumed.** Harmonograph at its maximum duration (24k points) regenerates in ~3.5 ms/frame and holds 60 fps with plain SVG attribute updates. The canvas renderer stays in the plan (movie capture needs a canvas, and dense patterns like stipple will not enjoy SVG), but if Task 14 hits schedule pressure, the live stage could ship SVG-first with canvas only wrapping the recorder.
+2. **Event mode is trivial on cost.** Voronoi/truchet regenerate in 2–11 ms with a 0.5–4 ms innerHTML swap — beat-locked full swaps are nowhere near a bottleneck.
+3. **Onset detection must eat raw flux** (pre-envelope) — enveloped flux stalls the adaptive threshold. Folded into Tasks 3/4/14 above.
+4. **Live onsets ≠ beats.** The detector fires on every transient (hi-hats included → ~240 events/min on a 120 BPM loop). That is correct behavior for mic mode — the sensitivity knob tames it — and it confirms the file path must use the precomputed beat grid (§4 of the spec), not live onsets.
+5. **rAF pauses in hidden tabs.** Harmless for the visualizer, but Phase A's MediaRecorder capture records frozen video if the tab is hidden mid-recording. Known Phase A caveat; the Phase B offline exporter is immune.
 
 ## Self-review notes (already applied)
 
