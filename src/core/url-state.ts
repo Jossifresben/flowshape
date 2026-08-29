@@ -144,3 +144,12 @@ export function decodeState(hash: string): AppState | null {
   }
   return state;
 }
+
+/** The route a creation hash belongs to, or null when it is not one. The
+ *  single source of truth for "is this a renderable creation URL" — callers
+ *  must not re-derive it with their own regex. decodeState leaves `view`
+ *  unset for the playground route, hence the `?? 'p'` fallback. */
+export function routeOf(hash: string): 'p' | 'a' | 'c' | null {
+  const s = decodeState(hash);
+  return s ? (s.view ?? 'p') : null;
+}
