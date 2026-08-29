@@ -16,6 +16,10 @@ let cleanup: (() => void) | null = null;
 function route(): void {
   cleanup?.();
   cleanup = null;
+  if (import.meta.env.DEV && location.hash === '#/dev/fidelity') {
+    void import('./ui/fidelity').then((m) => m.mountFidelity(app));
+    return;
+  }
   const state = decodeState(location.hash);
   if (state && state.view === 'a') {
     app.classList.remove('view-gallery', 'view-playground');
