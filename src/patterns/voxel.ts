@@ -37,12 +37,13 @@ export const voxel = definePattern({
   heavy: true,
   usesSeed: true,
   params: [
-    { key: 'shape', kind: 'enum', min: 0, max: 2, step: 1, default: 0, label: 'voxel.shape', options: ['voxel.sphere', 'voxel.cube', 'voxel.torus'] },
+    { key: 'shape', kind: 'enum', min: 0, max: 2, step: 1, default: 1, label: 'voxel.shape', options: ['voxel.sphere', 'voxel.cube', 'voxel.torus'] },
     { key: 'dimension', kind: 'int', min: 4, max: 18, step: 1, default: 12, label: 'voxel.dimension' },
     { key: 'gap', kind: 'float', min: 0, max: 0.4, step: 0.01, default: 0.08, label: 'voxel.gap' },
     { key: 'shellOnly', kind: 'bool', min: 0, max: 1, step: 1, default: 1, label: 'voxel.shellOnly' },
     { key: 'scatter', kind: 'float', min: 0, max: 0.6, step: 0.01, default: 0, label: 'voxel.scatter' },
     { key: 'faceShading', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.75, label: 'voxel.faceShading' },
+    { key: 'depthShading', kind: 'float', min: 0, max: 0.9, step: 0.01, default: 0.55, label: 'voxel.depthShading' },
     { key: 'strokeWidth', kind: 'float', min: 0, max: 1.2, step: 0.05, default: 0.5, label: 'voxel.strokeWidth' },
   ],
   generate(p, seed, size) {
@@ -53,6 +54,7 @@ export const voxel = definePattern({
     const shellOnly = p['shellOnly']! >= 0.5;
     const scatter = p['scatter']!;
     const faceShading = p['faceShading']!;
+    const depthShading = p['depthShading']!;
     const strokeWidth = p['strokeWidth']!;
 
     const D = Math.floor(dimension / 2);
@@ -111,6 +113,15 @@ export const voxel = definePattern({
       return el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }, []);
     }
 
+    // Depth (view-axis) range actually present in this form, for shading normalisation.
+    let depthMin = Infinity, depthMax = -Infinity;
+    for (const { i, j, k } of cells) {
+      const depth = i + j + k;
+      if (depth < depthMin) depthMin = depth;
+      if (depth > depthMax) depthMax = depth;
+    }
+    const depthSpan = Math.max(depthMax - depthMin, 1e-6);
+
     // 4. Isometric projection at unit cube edge (s = 1); fit-to-frame scale applied after.
     const s = 1;
     const w = (s * Math.sqrt(3)) / 2;
@@ -127,13 +138,17 @@ export const voxel = definePattern({
       const { i, j, k } = cell;
       const px = (i - k) * w;
       const py = (i + k) * h - j * v;
+      const depth = i + j + k;
+      const dn = (depth - depthMin) / depthSpan;
+      const depthFactor = 1 - depthShading * (1 - dn);
+      const shaded = (orientationOpacity: number): number => Math.max(0.06, orientationOpacity * depthFactor);
       const top: Vec2[] = [[0, 0], [w, h], [0, 2 * h], [-w, h]];
       const left: Vec2[] = [[-w, h], [0, 2 * h], [0, 2 * h + v], [-w, h + v]];
       const right: Vec2[] = [[w, h], [0, 2 * h], [0, 2 * h + v], [w, h + v]];
       const faces: Face[] = [
-        { pts: shrink(top, f).map(([x, y]): Vec2 => [px + x, py + y]), fillOpacity: 1 },
-        { pts: shrink(left, f).map(([x, y]): Vec2 => [px + x, py + y]), fillOpacity: 1 - 0.45 * faceShading },
-        { pts: shrink(right, f).map(([x, y]): Vec2 => [px + x, py + y]), fillOpacity: 1 - 0.75 * faceShading },
+        { pts: shrink(top, f).map(([x, y]): Vec2 => [px + x, py + y]), fillOpacity: shaded(1) },
+        { pts: shrink(left, f).map(([x, y]): Vec2 => [px + x, py + y]), fillOpacity: shaded(1 - 0.45 * faceShading) },
+        { pts: shrink(right, f).map(([x, y]): Vec2 => [px + x, py + y]), fillOpacity: shaded(1 - 0.75 * faceShading) },
       ];
       for (const face of faces) {
         for (const [x, y] of face.pts) {
