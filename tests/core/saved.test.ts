@@ -82,6 +82,10 @@ describe('saved — read path', () => {
       { hash: 42, title: 'hash is not a string', savedAt: 2 },
       { hash: '#/z/x?v=1', title: 'bad route letter', savedAt: 3 },
       { hash: HASH_MALFORMED, title: 'malformed percent-escape', savedAt: 4 },
+      { hash: HASH_A, title: 'no savedAt' },
+      // 1e999 parses out of JSON as Infinity — an unguarded record here
+      // would pin itself to the top of every sort forever.
+      { hash: HASH_C, title: 'infinite', savedAt: 1e999 },
       null,
     ] }));
     expect(list().map((i) => i.title)).toEqual(['good']);
@@ -186,16 +190,52 @@ describe('saved — read path', () => {
       store.setItem(SAVED_KEY, JSON.stringify({ sv: 1, items: [{ hash: HASH_P, title: 'kept', savedAt: 1 }] }));
       install({
         ...store,
-        setItem: () => {
-          const e = new Error('quota exceeded');
-          (e as { name?: string }).name = 'QuotaExceededError';
-          throw e;
-        },
+        setItem: () => { throw new DOMException('quota exceeded', 'QuotaExceededError'); },
       } as Storage);
 
       expect(storageState()).toBe('quota');
       expect(isAvailable()).toBe(true);
       expect(list().map((i) => i.title)).toEqual(['kept']);
+    });
+
+    it('treats a throwing probe on an EMPTY store as unavailable, not quota', () => {
+      // Private-mode Safari also throws QuotaExceededError on every write,
+      // but an empty store means no write has ever succeeded here — that's
+      // "no quota at all", not "full", and the feature must not be offered.
+      install({
+        ...makeStubStorage(),
+        setItem: () => { throw new DOMException('quota exceeded', 'QuotaExceededError'); },
+      } as Storage);
+
+      expect(storageState()).toBe('unavailable');
+      expect(isAvailable()).toBe(false);
+    });
+
+    it('treats a throwing probe on a NON-EMPTY store as quota, not unavailable', () => {
+      store.setItem(SAVED_KEY, JSON.stringify({ sv: 1, items: [{ hash: HASH_P, title: 'kept', savedAt: 1 }] }));
+      install({
+        ...store,
+        setItem: () => { throw new DOMException('quota exceeded', 'QuotaExceededError'); },
+      } as Storage);
+
+      expect(storageState()).toBe('quota');
+    });
+
+    it('re-probes after quota and clears once space frees up (quota is never cached)', () => {
+      store.setItem(SAVED_KEY, JSON.stringify({ sv: 1, items: [{ hash: HASH_P, title: 'kept', savedAt: 1 }] }));
+      let full = true;
+      const tracked: Storage = {
+        ...store,
+        setItem: (k: string, v: string) => {
+          if (full) throw new DOMException('quota exceeded', 'QuotaExceededError');
+          store.setItem(k, v);
+        },
+      } as Storage;
+      install(tracked);
+
+      expect(storageState()).toBe('quota');
+      full = false; // the visitor deleted enough favourites to make room
+      expect(storageState()).toBe('ok');
     });
 
     it('memoizes the probe: two isAvailable() calls make exactly one setItem/removeItem pair', () => {

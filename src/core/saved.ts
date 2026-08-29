@@ -13,10 +13,13 @@
  * (core/persist.ts) can be.
  */
 
-import { routeOf } from './url-state';
+import { routeOf, type View } from './url-state';
 
-/** Which view a hash belongs to: design · animation · poster. */
-export type Kind = 'p' | 'a' | 'c';
+/** Which view a hash belongs to: design · animation · poster. Same set as
+ *  url-state's `View` — kept as its own name because a later task indexes a
+ *  `Record<Kind, string>` lookup by it and "Kind" reads better there than
+ *  "View" would. */
+export type Kind = View;
 
 /** Delegates to url-state's `routeOf`, the single source of truth for "is
  *  this a renderable creation URL" — kept as `kindOf` because that's what
@@ -69,35 +72,38 @@ function raw(): Storage | null {
 }
 
 function isQuotaError(e: unknown): boolean {
-  if (typeof DOMException !== 'undefined' && e instanceof DOMException) {
-    return e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.code === 22;
-  }
-  // Tests (and some environments) stub with a plain Error carrying the name.
-  return (e as { name?: string } | null)?.name === 'QuotaExceededError';
+  return e instanceof DOMException
+    && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.code === 22);
 }
 
 let probedFor: Storage | null = null;
 let probedState: 'ok' | 'unavailable' | 'quota' = 'unavailable';
 
-/** Whether writing can actually work here, distinguishing "no storage at
- *  all" (Safari private mode, sandboxed contexts — reads fail too) from
- *  "storage is full" (reads still work fine; the visitor needs the saved
- *  list open to delete something, not have the feature switched off under
- *  them). Memoized per Storage instance: this probe write exists to catch
- *  private-mode Safari once per session, not to watch for ordinary quota
- *  exhaustion during real use — that's reported at write time by Task 2's
- *  `write()`. */
+/** Whether writing can actually work here, distinguishing "no quota at all"
+ *  (sandboxed contexts; also private-mode Safari, where reads work fine but
+ *  every write throws QuotaExceededError) from "storage is full" (reads
+ *  still work fine; the visitor needs the saved list open to delete
+ *  something, not have the feature switched off under them). Memoized per
+ *  Storage instance — except 'quota', which is re-probed every time so a
+ *  visitor who frees space mid-session sees it clear. This probe write
+ *  exists to catch private-mode Safari once per session, not to watch for
+ *  ordinary quota exhaustion during real use — that's reported at write
+ *  time by Task 2's `write()`. */
 export function storageState(): 'ok' | 'unavailable' | 'quota' {
   const s = raw();
   if (!s) return 'unavailable';
-  if (s === probedFor) return probedState;
+  if (s === probedFor && probedState !== 'quota') return probedState;
   probedFor = s;
   try {
     s.setItem(PROBE_KEY, '1');
     s.removeItem(PROBE_KEY);
     probedState = 'ok';
   } catch (e) {
-    probedState = isQuotaError(e) ? 'quota' : 'unavailable';
+    // A throwing probe means either "full" or "no quota at all" — private-
+    // mode Safari also throws QuotaExceededError. The store tells them
+    // apart: if anything is already in it, writes worked once, so this one
+    // means full.
+    probedState = isQuotaError(e) && s.length > 0 ? 'quota' : 'unavailable';
   }
   return probedState;
 }
@@ -121,7 +127,8 @@ function isItem(v: unknown): v is SavedItem {
 }
 
 /** Collapses records that share a hash — the documented identity — keeping
- *  the one with the highest savedAt. Nothing upstream enforces uniqueness,
+ *  the one with the highest savedAt, and the first of equals (a rapid
+ *  re-save via Date.now() can tie). Nothing upstream enforces uniqueness,
  *  and a later task's file import is the obvious way to produce a dup. */
 function dedupeByHash(items: SavedItem[]): SavedItem[] {
   const byHash = new Map<string, SavedItem>();
@@ -177,9 +184,10 @@ export function readState(): 'ok' | Reason {
   return r.ok ? 'ok' : r.reason;
 }
 
-/** Goes around list()'s sort — membership doesn't care about order, and the
- *  sort was measured at 0.041ms against a 200-item store (well under 1% of a
- *  frame), so there's nothing here worth caching. */
+/** Goes around list()'s sort — membership doesn't care about order. Even the
+ *  full list() (filter + sort) was measured at 0.236ms against a 200-item
+ *  store — 1.4% of a frame budget, still noise beside the SVG regeneration
+ *  the same hash change triggers — so there's nothing worth caching here. */
 export function isSaved(hash: string): boolean {
   const r = read();
   return r.ok && r.store.items.some((i) => i.hash === hash);
