@@ -20,6 +20,12 @@ import '../../src/patterns';
  */
 const MAX_SWING: Record<string, number> = {
   'timestable.multiplier': 1.5,
+  // apollonian's detail floor in screen px, range 1..30. Not chaotic the way
+  // `multiplier` is — lowering it grows circles into gaps that already exist
+  // — but the range is wide enough that a conventional depth would sweep the
+  // figure from ~189 circles down to ~30 and back on every envelope. Two px
+  // of travel is a texture that thickens; ten is a texture that flickers.
+  'apollonian.minRadius': 2,
 };
 
 describe('preset route swing', () => {

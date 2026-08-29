@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import '../../src/patterns/index';
 import { getPattern, listPatterns, defaultParams, generateSafe } from '../../src/patterns/registry';
 import { serialize, type Palette, type SvgNode } from '../../src/core/svg';
+import { ellipticAbout, mapDisc, FLOW_CENTRE, type Disc } from '../../src/patterns/apollonian';
 
 const PAL: Palette = { paper: '#ffffff', ink: '#000000', accent: '#e3261a' };
 const SIZE = { w: 600, h: 840 };
@@ -23,7 +24,20 @@ const SECOND_WAVE = ['timestable', 'maurer', 'moire', 'chirp', 'roselattice', 'b
  * axis instead, built to vanish identically at phase 0.
  */
 const THIRD_WAVE = ['tumbling', 'voxel', 'nested', 'flowfield', 'fabric'];
-const LOOPERS = [...SECOND_WAVE, ...THIRD_WAVE];
+/**
+ * The fourth pass, one pattern. apollonian was skipped twice as
+ * "structurally discrete", which was wrong: an Apollonian gasket is a Möbius
+ * object, and a continuously varying Möbius transformation slides every
+ * circle through the packing while preserving every tangency exactly, so the
+ * figure is a genuine Apollonian gasket at every instant. The subgroup is
+ * elliptic — a hyperbolic-metric rotation about an interior point — which is
+ * the only kind that is both bounded (it is a disc automorphism, so the
+ * gasket's outer circle maps to itself exactly and the figure can never
+ * leave its frame) and exactly periodic (2π, so one engine cycle closes it).
+ * See the derivation in src/patterns/apollonian.ts.
+ */
+const FOURTH_WAVE = ['apollonian'];
+const LOOPERS = [...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE];
 const ADOPTERS = [...FIRST_WAVE, ...LOOPERS];
 
 function at(id: string, phase?: number): string {
@@ -133,6 +147,169 @@ describe('voxel dissolves in swells, not in static', () => {
   });
   it('no cell strobes', () => {
     expect(Math.max(...presence)).toBeLessThanOrEqual(4);
+  });
+});
+
+/**
+ * The Möbius machinery itself, tested as maths rather than through a render.
+ *
+ * The whole justification for moving an Apollonian gasket this way is that
+ * `z → (αz + β)/(γz + δ)` maps circles to circles and preserves tangency
+ * *exactly*. If the closed form for the image circle were wrong — even
+ * slightly — the packing would come apart at the seams: tangent circles
+ * would overlap or separate, and the figure would stop being a gasket. So
+ * the closed form is checked directly, against known-tangent pairs, at a
+ * tolerance far tighter than a pixel.
+ */
+describe('the Möbius circle-image closed form', () => {
+  // Three mutually tangent circles of the seed configuration plus the outer
+  // boundary, in the pattern's own normalised coordinates (see apollonian.ts):
+  // the unit disc, two half-radius circles filling it left and right, and the
+  // r = 1/3 circle Descartes' theorem puts in the gap below them.
+  const OUTER: Disc = { z: { re: 0, im: 0 }, r: 1 };
+  const LEFT: Disc = { z: { re: -0.5, im: 0 }, r: 0.5 };
+  const RIGHT: Disc = { z: { re: 0.5, im: 0 }, r: 0.5 };
+  const LOWER: Disc = { z: { re: 0, im: 2 / 3 }, r: 1 / 3 };
+
+  /** Signed tangency defect: 0 exactly when the two circles touch at one
+   *  point, whether externally (|Δ| = r₁ + r₂) or internally (|Δ| = |r₁ − r₂|,
+   *  which is how every circle inside the gasket touches the boundary). */
+  function defect(a: Disc, b: Disc): number {
+    const d = Math.hypot(a.z.re - b.z.re, a.z.im - b.z.im);
+    return Math.min(Math.abs(d - (a.r + b.r)), Math.abs(d - Math.abs(a.r - b.r)));
+  }
+
+  const PAIRS: [string, Disc, Disc][] = [
+    ['outer/left', OUTER, LEFT],
+    ['outer/right', OUTER, RIGHT],
+    ['outer/lower', OUTER, LOWER],
+    ['left/right', LEFT, RIGHT],
+    ['left/lower', LEFT, LOWER],
+    ['right/lower', RIGHT, LOWER],
+  ];
+
+  it('the reference pairs really are tangent to begin with', () => {
+    for (const [name, a, b] of PAIRS) expect(defect(a, b), name).toBeLessThan(1e-12);
+  });
+
+  it('preserves every tangency, at every phase, to 1e-12', () => {
+    let worst = 0;
+    for (let i = 1; i < 240; i++) {
+      const M = ellipticAbout(FLOW_CENTRE, 2 * Math.PI * (i / 240));
+      for (const [name, a, b] of PAIRS) {
+        const ia = mapDisc(M, a.z, a.r)!;
+        const ib = mapDisc(M, b.z, b.r)!;
+        expect(ia, name).not.toBeNull();
+        expect(ib, name).not.toBeNull();
+        worst = Math.max(worst, defect(ia, ib));
+      }
+    }
+    // Normalised units: the outer circle has radius 1, so this is ~5e-10 px
+    // on a 1920-wide stage. Tangency survives the transform exactly, up to
+    // double-precision rounding.
+    expect(worst).toBeLessThan(1e-12);
+  });
+
+  it('fixes the outer circle exactly — the figure can never leave its frame', () => {
+    // This is the containment argument, and it is not approximate: an
+    // elliptic element of SU(1,1) is a disc automorphism, so the unit disc
+    // maps onto itself. Everything the gasket contains is inside that disc,
+    // so nothing can be pumped out of frame the way a hyperbolic subgroup
+    // would do.
+    for (let i = 0; i < 240; i++) {
+      const M = ellipticAbout(FLOW_CENTRE, 2 * Math.PI * (i / 240));
+      const im = mapDisc(M, OUTER.z, OUTER.r)!;
+      expect(Math.hypot(im.z.re, im.z.im)).toBeLessThan(1e-12);
+      expect(Math.abs(im.r - 1)).toBeLessThan(1e-12);
+    }
+  });
+
+  it('every circle stays strictly inside the outer circle at every phase', () => {
+    for (let i = 0; i < 120; i++) {
+      const M = ellipticAbout(FLOW_CENTRE, 2 * Math.PI * (i / 120));
+      for (const [name, d] of [['left', LEFT], ['right', RIGHT], ['lower', LOWER]] as [string, Disc][]) {
+        const im = mapDisc(M, d.z, d.r)!;
+        expect(Math.hypot(im.z.re, im.z.im) + im.r, `${name} @ ${i}`).toBeLessThanOrEqual(1 + 1e-12);
+      }
+    }
+  });
+
+  it('is the identity at phase 0 and again at phase 1', () => {
+    for (const theta of [0, 2 * Math.PI]) {
+      const M = ellipticAbout(FLOW_CENTRE, theta);
+      const im = mapDisc(M, LOWER.z, LOWER.r)!;
+      expect(im.z.re).toBeCloseTo(LOWER.z.re, 12);
+      expect(im.z.im).toBeCloseTo(LOWER.z.im, 12);
+      expect(im.r).toBeCloseTo(LOWER.r, 12);
+    }
+  });
+
+  it('is not a Euclidean rotation: circles genuinely grow and shrink', () => {
+    // The failure this guards is FLOW_CENTRE drifting to 0, which degenerates
+    // the elliptic subgroup into a rigid spin of the whole figure — the
+    // weakest motion on the stage and the thing this pattern was rebuilt to
+    // avoid. Off-centre, radii are not preserved.
+    let ratio = 1;
+    for (let i = 0; i < 120; i++) {
+      const M = ellipticAbout(FLOW_CENTRE, 2 * Math.PI * (i / 120));
+      for (const d of [LEFT, RIGHT, LOWER]) {
+        const im = mapDisc(M, d.z, d.r)!;
+        ratio = Math.max(ratio, im.r / d.r, d.r / im.r);
+      }
+    }
+    expect(ratio).toBeGreaterThan(1.5);
+  });
+
+  it('each circle grows and shrinks once per cycle — no chattering at the detail floor', () => {
+    // apollonian culls on the *image* radius, so the visible detail floor is
+    // a fixed number of screen pixels at every phase and circles bloom in and
+    // out at it. That is a continuous quantity feeding a hard cutoff, which
+    // is exactly where strobing comes from — unless the quantity is unimodal
+    // over the cycle, which it is: the image radius has one maximum and one
+    // minimum per revolution, so a circle sitting on the cutoff can cross it
+    // at most twice. This measures that directly, on the real map.
+    const SAMPLES = 360;
+    for (const d of [LEFT, RIGHT, LOWER, { z: { re: 0.167, im: 0 }, r: 0.167 }]) {
+      const rs: number[] = [];
+      for (let i = 0; i < SAMPLES; i++) {
+        rs.push(mapDisc(ellipticAbout(FLOW_CENTRE, 2 * Math.PI * (i / SAMPLES)), d.z, d.r)!.r);
+      }
+      let turns = 0;
+      for (let i = 0; i < SAMPLES; i++) {
+        const prev = rs[(i - 1 + SAMPLES) % SAMPLES]!, cur = rs[i]!, next = rs[(i + 1) % SAMPLES]!;
+        if ((cur - prev) * (next - cur) < 0) turns++;
+      }
+      expect(turns).toBeLessThanOrEqual(2);
+    }
+  });
+});
+
+/**
+ * And the same claim end to end, through the render: the number of circles
+ * on screen must drift, not jump. A cull that fizzed would show up here as a
+ * large frame-to-frame swing in the population.
+ */
+describe('apollonian blooms smoothly', () => {
+  const def = getPattern('apollonian')!;
+  const SAMPLES = 150;
+  const counts: number[] = [];
+  for (let i = 0; i < SAMPLES; i++) {
+    const svg = serialize(generateSafe(def, { ...defaultParams(def), phase: i / SAMPLES }, 7, SIZE), PAL);
+    counts.push((svg.match(/<circle/g) ?? []).length);
+  }
+
+  it('the population really does change over a cycle', () => {
+    expect(Math.max(...counts) - Math.min(...counts)).toBeGreaterThan(5);
+  });
+
+  it('never jumps: consecutive frames differ by a handful of circles at most', () => {
+    let jump = 0;
+    for (let i = 0; i < SAMPLES; i++) jump = Math.max(jump, Math.abs(counts[(i + 1) % SAMPLES]! - counts[i]!));
+    expect(jump).toBeLessThanOrEqual(6);
+  });
+
+  it('the figure never empties out', () => {
+    expect(Math.min(...counts)).toBeGreaterThanOrEqual(counts[0]! * 0.9);
   });
 });
 

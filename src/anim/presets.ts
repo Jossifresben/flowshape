@@ -255,13 +255,36 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     ] },
   ],
   apollonian: [
+    // `minRadius` is the gasket's detail floor in screen pixels and the one
+    // structural axis audio can honestly reach: the Möbius flow that moves
+    // the packing is phase-driven and engine-owned, and `maxDepth` is an int
+    // whose every step multiplies the figure. Lowering the floor grows new
+    // circles inside the curvilinear gaps that are already there, so it
+    // blooms rather than reconfigures — smooth, not chaotic.
+    //
+    // Its range is 1..30, though, and depth is a fraction of the WHOLE range
+    // (see mapping.ts), so the conventional 0.2-0.5 depths would swing it by
+    // 6-15 px and strip the figure from 189 circles to about 30 at
+    // 1920x1080. Both routes below are held to a swing under 2 px:
+    // -0.055 x 29 = 1.60 px (3.0 -> 1.40, ~189 -> ~410 circles) and
+    // -0.065 x 29 = 1.89 px (3.0 -> 1.12). Negative, so the texture thickens
+    // into the loud passages. Budgeted in tests/anim/route-swing.test.ts.
     { id: 'gasket', label: { en: 'Gasket', es: 'Empaque' }, routes: [
-      { feature: 'bass', param: 'strokeWidth', depth: 0.5 },
+      { feature: 'bass', param: 'minRadius', depth: -0.055 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.5 },
       { feature: 'level', param: 'size', depth: 0.08 },
     ], event: { kind: 'step', param: 'maxDepth', everyBeats: 2, steps: 7 } },
+    // This preset used to *step* minRadius across its full range every beat:
+    // six positions from 1 to 30, which is 512 circles down to 22 and back
+    // once a beat — the same class of strobe as timestable's multiplier, and
+    // the figure all but vanished at the top of the cycle. Replaced by the
+    // continuous route above plus a tonal flip, which is what "Depth" was
+    // reaching for anyway: the detail floor breathes with the music while
+    // the even-depth rings shade in and out on a four-beat cadence.
     { id: 'depth', label: { en: 'Depth', es: 'Fondo' }, routes: [
-      { feature: 'level', param: 'strokeWidth', depth: 0.4 },
-    ], event: { kind: 'step', param: 'minRadius', everyBeats: 1, steps: 6 } },
+      { feature: 'level', param: 'minRadius', depth: -0.065 },
+      { feature: 'bright', param: 'strokeWidth', depth: 0.4 },
+    ], event: { kind: 'flip', param: 'fillAlternate', everyBeats: 4 } },
   ],
   voxel: [
     { id: 'blocks', label: { en: 'Blocks', es: 'Bloques' }, routes: [
