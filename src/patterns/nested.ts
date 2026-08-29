@@ -46,7 +46,10 @@ export const nested = definePattern({
   // so a seed could only ever be a lie. Randomize varies the params instead.
   usesSeed: false,
   params: [
-    { key: 'cell', kind: 'int', min: 14, max: 70, step: 1, default: 30, label: 'nested.cell' },
+    // Defaulted large on purpose: the nesting is the subject, and below ~40 the
+    // rings collapse into each other and the field reads as riveted plate
+    // rather than as shafts receding into the page.
+    { key: 'cell', kind: 'int', min: 14, max: 70, step: 1, default: 46, label: 'nested.cell' },
     { key: 'depth', kind: 'int', min: 1, max: 5, step: 1, default: 3, label: 'nested.depth' },
     { key: 'stepRatio', kind: 'float', min: 0.45, max: 0.88, step: 0.01, default: 0.66, label: 'nested.stepRatio' },
     { key: 'coreSize', kind: 'float', min: 0, max: 0.5, step: 0.01, default: 0.22, label: 'nested.coreSize' },

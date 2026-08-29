@@ -19,3 +19,7 @@ import './chirp';
 import './helix';
 import './voxel';
 import './apollonian';
+import './isoweave';
+import './nested';
+import './tumbling';
+import './interlace';

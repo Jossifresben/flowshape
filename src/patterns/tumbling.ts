@@ -45,12 +45,17 @@ export const tumbling = definePattern({
   //      lines between the three path elements.
   usesSeed: true,
   params: [
-    { key: 'cell', kind: 'int', min: 8, max: 44, step: 1, default: 16, label: 'tumbling.cell' },
+    { key: 'cell', kind: 'int', min: 8, max: 44, step: 1, default: 24, label: 'tumbling.cell' },
     { key: 'flipChance', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.38, label: 'tumbling.flipChance' },
     { key: 'coherence', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.45, label: 'tumbling.coherence' },
     { key: 'voidChance', kind: 'float', min: 0, max: 0.5, step: 0.01, default: 0.07, label: 'tumbling.voidChance' },
-    { key: 'render', kind: 'enum', min: 0, max: 1, step: 1, default: 1, label: 'tumbling.render', options: ['tumbling.tones', 'tumbling.hatch'] },
-    { key: 'hatchDensity', kind: 'float', min: 1, max: 8, step: 0.1, default: 3.4, label: 'tumbling.hatchDensity' },
+    { key: 'render', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'tumbling.render', options: ['tumbling.tones', 'tumbling.hatch'] },
+    // Line count per face is scale-invariant — spacing is S/(density·tone) while
+    // the face itself is ∝ S — so this is literally "lines across the darkest
+    // face", not a length. Below ~6 a face carries one or two strokes and the
+    // hatch reads as broken dashes rather than tone; the range starts high
+    // enough that every sampled value is a legible fill.
+    { key: 'hatchDensity', kind: 'float', min: 4, max: 20, step: 0.1, default: 11, label: 'tumbling.hatchDensity' },
     // Floored at 0.15, not 0, on purpose: randomParams samples every
     // non-cosmetic param across its whole range and *will* pick the minimum.
     // At 0 the three tones collapse to one, the rhombille reads as a flat ink

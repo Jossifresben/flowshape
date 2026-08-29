@@ -26,6 +26,10 @@ export const NAMES: Record<string, string> = {
   helix: 'Helix Ladder',
   voxel: 'Voxel Form',
   apollonian: 'Apollonian Circles',
+  isoweave: 'Iso Weave',
+  nested: 'Nested Shafts',
+  tumbling: 'Tumbling Blocks',
+  interlace: 'Ribbon Interlace',
 };
 
 /** Human label for each pattern family. */
