@@ -65,6 +65,7 @@ export const apollonian = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
+  anim: { continuous: ['strokeWidth', 'size'] },
   params: [
     { key: 'maxDepth', kind: 'int', min: 2, max: 8, step: 1, default: 6, label: 'apollonian.maxDepth' },
     { key: 'minRadius', kind: 'float', min: 1, max: 30, step: 0.5, default: 3, label: 'apollonian.minRadius' },

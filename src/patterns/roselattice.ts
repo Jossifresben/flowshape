@@ -7,6 +7,7 @@ export const roselattice = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
+  anim: { continuous: ['petalDepth', 'innerFraction', 'strokeWidth', 'size'] },
   params: [
     { key: 'petals', kind: 'int', min: 3, max: 12, step: 1, default: 5, label: 'roselattice.petals' },
     { key: 'rings', kind: 'int', min: 4, max: 28, step: 1, default: 16, label: 'roselattice.rings' },

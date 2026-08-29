@@ -9,6 +9,7 @@ export const flowfield = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
+  anim: { continuous: ['curl', 'strokeWidth', 'size'] },
   params: [
     { key: 'freq', kind: 'float', min: 0.004, max: 0.03, step: 0.001, default: 0.011, label: 'flowfield.freq' },
     { key: 'curl', kind: 'float', min: 0.5, max: 3, step: 0.05, default: 1.9, label: 'flowfield.curl' },

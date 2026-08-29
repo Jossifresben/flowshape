@@ -44,6 +44,7 @@ export const tumbling = definePattern({
   //      rhombus between tone buckets, which in hatch mode moves its hatch
   //      lines between the three path elements.
   usesSeed: true,
+  anim: { continuous: ['flipChance', 'coherence', 'voidChance', 'faceShading', 'size'] },
   params: [
     { key: 'cell', kind: 'int', min: 8, max: 44, step: 1, default: 24, label: 'tumbling.cell' },
     { key: 'flipChance', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.38, label: 'tumbling.flipChance' },

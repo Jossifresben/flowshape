@@ -9,6 +9,7 @@ export const voronoiCells = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
+  anim: { continuous: ['inset', 'strokeWidth', 'size'] },
   params: [
     { key: 'sites', kind: 'int', min: 30, max: 300, step: 5, default: 150, label: 'voronoi.sites' },
     { key: 'inset', kind: 'float', min: 0.5, max: 0.98, step: 0.01, default: 0.86, label: 'voronoi.inset' },

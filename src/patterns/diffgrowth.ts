@@ -8,6 +8,7 @@ export const diffgrowth = definePattern({
   phase: 1,
   heavy: true,
   usesSeed: true,
+  anim: {},
   params: [
     { key: 'iterations', kind: 'int', min: 50, max: 600, step: 10, default: 500, label: 'diffgrowth.iterations' },
     { key: 'repulsion', kind: 'float', min: 8, max: 26, step: 0.5, default: 18, label: 'diffgrowth.repulsion' },

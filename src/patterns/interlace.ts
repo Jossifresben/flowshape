@@ -31,6 +31,7 @@ export const interlace = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
+  anim: { continuous: ['strokeWidth', 'size'] },
   params: [
     { key: 'cell', kind: 'int', min: 16, max: 70, step: 1, default: 34, label: 'interlace.cell' },
     { key: 'ribbonWidth', kind: 'float', min: 0.06, max: 0.30, step: 0.01, default: 0.16, label: 'interlace.ribbonWidth' },

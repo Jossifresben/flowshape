@@ -6,6 +6,7 @@ export const timestable = definePattern({
   family: 'curves',
   phase: 1,
   heavy: false,
+  anim: { continuous: ['multiplier', 'opacity', 'strokeWidth', 'size'] },
   params: [
     { key: 'chords', kind: 'int', min: 100, max: 600, step: 10, default: 400, label: 'timestable.chords' },
     { key: 'multiplier', kind: 'float', min: 2, max: 100, step: 0.05, default: 34, label: 'timestable.multiplier' },

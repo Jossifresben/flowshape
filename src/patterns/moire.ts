@@ -40,6 +40,7 @@ export const moire = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
+  anim: { continuous: ['angleB', 'spacingB', 'offset', 'strokeWidth', 'size'] },
   params: [
     { key: 'mode', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'moire.mode', options: ['moire.lines', 'moire.circles'] },
     { key: 'spacingA', kind: 'float', min: 4, max: 40, step: 0.1, default: 9, label: 'moire.spacingA' },

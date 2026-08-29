@@ -6,6 +6,7 @@ export const girih = definePattern({
   family: 'tilings',
   phase: 1,
   heavy: false,
+  anim: { continuous: ['contactAngle', 'ribbonWidth', 'strokeWidth', 'size'] },
   params: [
     { key: 'hexSize', kind: 'int', min: 20, max: 80, step: 2, default: 30, label: 'girih.hexSize' },
     { key: 'contactAngle', kind: 'float', min: 15, max: 80, step: 0.5, default: 60, label: 'girih.contactAngle' },

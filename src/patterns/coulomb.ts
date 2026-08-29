@@ -14,6 +14,7 @@ export const coulomb = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
+  anim: { continuous: ['coreRadius', 'strokeWidth', 'size'] },
   params: [
     { key: 'charges', kind: 'int', min: 2, max: 8, step: 1, default: 4, label: 'coulomb.charges' },
     { key: 'spacing', kind: 'int', min: 6, max: 24, step: 1, default: 10, label: 'coulomb.spacing' },

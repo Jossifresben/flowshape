@@ -45,6 +45,7 @@ export const nested = definePattern({
   // Every cell of the rhombille lattice carries the identical nest of frames,
   // so a seed could only ever be a lie. Randomize varies the params instead.
   usesSeed: false,
+  anim: { continuous: ['faceShading', 'strokeWidth', 'size'] },
   params: [
     // Defaulted large on purpose: the nesting is the subject, and below ~40 the
     // rings collapse into each other and the field reads as riveted plate

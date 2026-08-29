@@ -43,6 +43,7 @@ export const bands = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
+  anim: { continuous: ['sweepAngle', 'growthExponent', 'gap', 'size'] },
   params: [
     { key: 'bandCount', kind: 'int', min: 3, max: 14, step: 1, default: 7, label: 'bands.bandCount' },
     { key: 'minThickness', kind: 'float', min: 2, max: 40, step: 1, default: 6, label: 'bands.minThickness' },

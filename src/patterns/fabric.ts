@@ -9,6 +9,7 @@ export const fabric = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
+  anim: { continuous: ['warpAmount', 'dotSize', 'noiseScale', 'size'] },
   params: [
     { key: 'gridSize', kind: 'int', min: 20, max: 80, step: 1, default: 46, label: 'fabric.gridSize' },
     { key: 'warpAmount', kind: 'float', min: 0, max: 80, step: 1, default: 34, label: 'fabric.warpAmount' },

@@ -10,6 +10,7 @@ export const chirp = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
+  anim: { continuous: ['amplitude', 'freqEnd', 'phaseStep', 'strokeWidth', 'size'] },
   params: [
     { key: 'lineCount', kind: 'int', min: 12, max: 90, step: 1, default: 46, label: 'chirp.lineCount' },
     { key: 'freqStart', kind: 'float', min: 0, max: 20, step: 0.1, default: 1, label: 'chirp.freqStart' },

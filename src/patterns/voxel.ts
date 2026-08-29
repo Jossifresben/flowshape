@@ -43,6 +43,7 @@ export const voxel = definePattern({
   // form and a seed carried in a shared URL (e.g. a curated preset) means
   // what it says.
   usesSeed: true,
+  anim: { continuous: ['gap', 'faceShading', 'depthShading', 'size'] },
   params: [
     { key: 'shape', kind: 'enum', min: 0, max: 2, step: 1, default: 1, label: 'voxel.shape', options: ['voxel.sphere', 'voxel.cube', 'voxel.torus'] },
     { key: 'dimension', kind: 'int', min: 4, max: 18, step: 1, default: 12, label: 'voxel.dimension' },

@@ -8,6 +8,7 @@ export const hitomezashi = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
+  anim: { continuous: ['strokeWidth', 'size'] },
   params: [
     { key: 'cell', kind: 'int', min: 8, max: 30, step: 1, default: 12, label: 'hitomezashi.cell' },
     { key: 'bitChance', kind: 'float', min: 0.2, max: 0.8, step: 0.01, default: 0.5, label: 'hitomezashi.bitChance' },

@@ -8,6 +8,7 @@ export const maurer = definePattern({
   family: 'curves',
   phase: 1,
   heavy: false,
+  anim: { continuous: ['strokeWidth', 'size'] },
   params: [
     { key: 'n', kind: 'int', min: 1, max: 12, step: 1, default: 6, label: 'maurer.n' },
     { key: 'd', kind: 'int', min: 1, max: 359, step: 1, default: 71, label: 'maurer.d' },

@@ -9,6 +9,7 @@ export const stipple = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
+  anim: { continuous: ['dotSize', 'contrast', 'size'] },
   params: [
     { key: 'minGap', kind: 'float', min: 2, max: 8, step: 0.1, default: 2.5, label: 'stipple.minGap' },
     { key: 'maxGap', kind: 'float', min: 8, max: 30, step: 0.5, default: 22, label: 'stipple.maxGap' },
