@@ -8,6 +8,7 @@ import { PRESETS } from '../patterns/presets';
 import { sliderRow, checkboxRow, selectRow, chipRow } from './controls';
 import { NAMES } from './gallery';
 import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
+import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their `label` has no '.' so `sliderRow`'s i18n-key splitting is a no-op
@@ -41,6 +42,11 @@ export function mountPlayground(root: HTMLElement): () => void {
   // heavy patterns, the worker) from scratch.
   let lastNode: SvgNode | null = null;
   let lastKey = '';
+  // Set by render() whenever the export buttons are built while no node is
+  // cached yet (a heavy pattern's first, still in-flight worker request).
+  // Called once that node lands so the buttons re-enable without needing a
+  // full panel rebuild.
+  let onExportReady: (() => void) | null = null;
   function nodeKey(): string {
     return JSON.stringify([state.patternId, state.params, state.seed, renderSize(state)]);
   }
@@ -97,6 +103,8 @@ export function mountPlayground(root: HTMLElement): () => void {
       lastNode = e.data.node;
       lastKey = myKey;
       onNode(e.data.node);
+      onExportReady?.();
+      onExportReady = null;
     };
     worker!.postMessage({ id, patternId: state.patternId, params: state.params, seed: state.seed, size: renderSize(state) });
   }
@@ -310,6 +318,81 @@ export function mountPlayground(root: HTMLElement): () => void {
       resetRow.append(resetBtn);
       panel.append(resetRow);
     }
+
+    const exportHeading = document.createElement('div');
+    exportHeading.className = 'ctl-section-heading';
+    exportHeading.textContent = 'EXPORT';
+    panel.append(exportHeading);
+
+    const exportRow = document.createElement('div');
+    exportRow.className = 'ctl-row';
+
+    const svgBtn = document.createElement('button');
+    svgBtn.className = 'btn';
+    svgBtn.textContent = 'Export SVG';
+
+    const dpiSel = document.createElement('select');
+    dpiSel.className = 'ctl-select';
+    for (const dpi of [150, 300]) {
+      const px = pixelDimensions(phys, dpi);
+      const o = document.createElement('option');
+      o.value = String(dpi);
+      o.textContent = `${dpi} dpi · ${px.w} × ${px.h}`;
+      if (dpi === 300) o.selected = true;
+      dpiSel.append(o);
+    }
+
+    const pngBtn = document.createElement('button');
+    pngBtn.className = 'btn';
+    pngBtn.textContent = 'Export PNG';
+
+    const exportError = document.createElement('div');
+    exportError.className = 'ctl-value export-error';
+    exportError.textContent = '';
+
+    if (!lastNode) {
+      svgBtn.disabled = true;
+      pngBtn.disabled = true;
+      onExportReady = () => {
+        svgBtn.disabled = false;
+        pngBtn.disabled = false;
+      };
+    } else {
+      onExportReady = null;
+    }
+
+    svgBtn.addEventListener('click', () => {
+      if (!lastNode) return;
+      const pal = resolvePalette(state.color);
+      const svg = toSvgString(lastNode, pal, phys);
+      const name = exportFilename(state.patternId, state.seed, state.format ?? DEFAULT_FORMAT, 'svg');
+      downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), name);
+    });
+
+    pngBtn.addEventListener('click', async () => {
+      if (!lastNode) return;
+      const originalText = pngBtn.textContent;
+      pngBtn.disabled = true;
+      pngBtn.textContent = 'Rendering…';
+      exportError.textContent = '';
+      try {
+        const pal = resolvePalette(state.color);
+        const svg = toSvgString(lastNode, pal, phys);
+        const dpi = Number(dpiSel.value);
+        const px = pixelDimensions(phys, dpi);
+        const blob = await toPngBlob(svg, px);
+        const name = exportFilename(state.patternId, state.seed, state.format ?? DEFAULT_FORMAT, 'png');
+        downloadBlob(blob, name);
+      } catch (err) {
+        exportError.textContent = err instanceof Error ? err.message : String(err);
+      } finally {
+        pngBtn.disabled = false;
+        pngBtn.textContent = originalText;
+      }
+    });
+
+    exportRow.append(svgBtn, dpiSel, pngBtn);
+    panel.append(exportRow, exportError);
 
     root.append(stage, panel);
   }

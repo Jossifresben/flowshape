@@ -45,6 +45,7 @@ input[type='range'] { accent-color: var(--ink); }
 }
 input[type='checkbox'] { accent-color: var(--ink); }
 .stage.computing { opacity: 0.55; transition: opacity 0.15s; }
+.export-error { color: var(--accent); min-height: 14px; }
 
 /* --- gallery home page --- */
 
