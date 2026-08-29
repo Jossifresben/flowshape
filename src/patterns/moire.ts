@@ -53,9 +53,9 @@ export const moire = definePattern({
     { key: 'mode', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'moire.mode', options: ['moire.lines', 'moire.circles'] },
     { key: 'spacingA', kind: 'float', min: 4, max: 40, step: 0.1, default: 9, label: 'moire.spacingA' },
     { key: 'spacingB', kind: 'float', min: 4, max: 40, step: 0.1, default: 9.6, label: 'moire.spacingB' },
-    { key: 'angleA', kind: 'float', min: 0, max: 180, step: 1, default: 0, label: 'moire.angleA' },
-    { key: 'angleB', kind: 'float', min: 0, max: 180, step: 1, default: 6, label: 'moire.angleB' },
-    { key: 'offset', kind: 'float', min: 0, max: 200, step: 1, default: 60, label: 'moire.offset' },
+    { key: 'angleA', kind: 'float', min: 0, max: 180, step: 1, default: 0, label: 'moire.angleA', dependsOn: { key: 'mode', values: [0] } },
+    { key: 'angleB', kind: 'float', min: 0, max: 180, step: 1, default: 6, label: 'moire.angleB', dependsOn: { key: 'mode', values: [0] } },
+    { key: 'offset', kind: 'float', min: 0, max: 200, step: 1, default: 60, label: 'moire.offset', dependsOn: { key: 'mode', values: [1] } },
     { key: 'strokeWidth', kind: 'float', min: 0.15, max: 1.5, step: 0.05, default: 0.4, label: 'moire.strokeWidth' },
   ],
   generate(p, _seed, size) {

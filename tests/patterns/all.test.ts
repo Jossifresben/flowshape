@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import '../../src/patterns/index';
-import { listPatterns, generateSafe } from '../../src/patterns/registry';
+import { listPatterns, generateSafe, defaultParams, type ParamDef } from '../../src/patterns/registry';
+import { serialize, type Palette } from '../../src/core/svg';
 import { RESERVED } from '../../src/core/reserved';
 
 const patterns = listPatterns();
@@ -105,4 +106,89 @@ describe('pattern registry as a whole', () => {
     }
     // Same 50-generation cost as the test above; same reason for the budget.
   }, 30_000);
+});
+
+
+const PAL: Palette = { paper: '#ffffff', ink: '#000000', accent: '#e3261a' };
+
+/** Every value a gate can take; three probe points for anything continuous. */
+function probeValues(pd: ParamDef): number[] {
+  if (pd.kind === 'bool' || pd.kind === 'enum') {
+    return Array.from({ length: pd.max - pd.min + 1 }, (_, i) => pd.min + i);
+  }
+  return [pd.min, pd.default, pd.max];
+}
+
+/**
+ * `dependsOn` is a claim the playground acts on — it dims the control and
+ * tells the visitor the param belongs to another mode. An annotation that
+ * drifts away from its generator turns that into a lie the UI tells, so the
+ * claim is measured here rather than trusted.
+ *
+ * This is the check that would have answered the Part 4 audit's question
+ * about interlace's `coreRatio` directly: it renders the param across its
+ * range and compares the *whole serialized SVG*, not element counts or path
+ * data. `coreRatio` only ever moves a `stroke-width`, which is exactly the
+ * kind of effect a geometry-only diff reports as "no effect at all".
+ */
+describe('dependsOn annotations match the generators', () => {
+  it('names a real enum/bool gate of the same pattern', () => {
+    for (const p of patterns) {
+      for (const pd of p.params) {
+        if (!pd.dependsOn) continue;
+        const gate = p.params.find((g) => g.key === pd.dependsOn!.key);
+        expect(gate, `${p.id}.${pd.key} gates on unknown param '${pd.dependsOn.key}'`).toBeDefined();
+        expect(['enum', 'bool'], `${p.id}.${pd.key} gate is not switchable`).toContain(gate!.kind);
+        const all = probeValues(gate!);
+        expect(pd.dependsOn.values.length, `${p.id}.${pd.key} lists no gate values`).toBeGreaterThan(0);
+        expect(
+          pd.dependsOn.values.length,
+          `${p.id}.${pd.key} lists every gate value, so it depends on nothing`,
+        ).toBeLessThan(all.length);
+        for (const v of pd.dependsOn.values) {
+          expect(all, `${p.id}.${pd.key} gate value ${v} out of range`).toContain(v);
+        }
+      }
+    }
+  });
+
+  it('has no effect under any excluded gate value, and a real effect under an included one', () => {
+    for (const p of patterns) {
+      const base = defaultParams(p);
+      const draw = (params: Record<string, number>): string =>
+        serialize(generateSafe(p, params, 7, FRAME), PAL);
+      for (const pd of p.params) {
+        const dep = pd.dependsOn;
+        if (!dep) continue;
+        const gate = p.params.find((g) => g.key === dep.key)!;
+        const sweep = (gv: number): string[] =>
+          probeValues(pd).map((v) => draw({ ...base, [dep.key]: gv, [pd.key]: v }));
+
+        for (const gv of probeValues(gate)) {
+          if (dep.values.includes(gv)) continue;
+          const outs = sweep(gv);
+          for (const out of outs) {
+            expect(
+              out,
+              `${p.id}.${pd.key} still changes the drawing at ${dep.key}=${gv}, ` +
+                'which the playground dims as inert',
+            ).toBe(outs[0]);
+          }
+        }
+
+        // The mirror: an annotation that excluded everything real would pass
+        // the loop above vacuously. At least one allowed value must show it
+        // actually doing something.
+        const live = dep.values.some((gv) => {
+          const outs = sweep(gv);
+          return outs.some((o) => o !== outs[0]);
+        });
+        expect(
+          live,
+          `${p.id}.${pd.key} has no effect at any of its own dependsOn values ` +
+            `(${dep.key}=${dep.values.join(',')}) — it is dead, not gated`,
+        ).toBe(true);
+      }
+    }
+  }, 60_000);
 });

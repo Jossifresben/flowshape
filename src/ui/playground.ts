@@ -5,7 +5,7 @@ import { encodeState, decodeState, type AppState } from '../core/url-state';
 import { resolvePalette, COLOR_DEFAULTS, type ColorState } from '../poster/palettes';
 import { rememberState, forgetState } from '../core/persist';
 import { PRESETS } from '../patterns/presets';
-import { sliderRow, checkboxRow, selectRow, chipRow, sectionRow } from './controls';
+import { sliderRow, checkboxRow, selectRow, chipRow, sectionRow, dimRow } from './controls';
 import { FORMATS, DEFAULT_FORMAT, renderSize, physicalSize, type Unit } from '../poster/formats';
 import { toSvgString, toPngBlob, downloadBlob, exportFilename, pixelDimensions } from '../poster/export';
 import { openModal } from './modal';
@@ -13,9 +13,25 @@ import { composerUrl } from './poster';
 import { loadSource } from '../content/source';
 import { loadExplain } from '../content/explain';
 import { renderMarkdown, renderCitation } from './markdown';
-import { t, patternName, currentLang, type Lang } from '../i18n';
+import { t, patternName, paramLabel, currentLang, type Lang } from '../i18n';
 import { panelNav } from './nav';
 import { buildFooter, REPO_URL } from './footer';
+
+/** "Only in RENDER · Ribbons" — the gate's own label plus the option(s) that
+ *  switch a dimmed control back on. Built entirely from labels the pattern
+ *  already declares, so a new dependency needs no new translation. */
+function dependencyHint(
+  def: PatternDef,
+  dep: { key: string; values: number[] },
+  lang: Lang,
+): string {
+  const gate = def.params.find((g) => g.key === dep.key);
+  const name = gate ? paramLabel(gate.label, lang) : dep.key;
+  const shown = gate?.options
+    ? dep.values.map((v) => paramLabel(gate.options![v] ?? String(v), lang))
+    : dep.values.map((v) => t(v >= 0.5 ? 'pg.on' : 'pg.off', lang));
+  return `${t('pg.onlyIn', lang)} ${name} · ${shown.join(' / ')}`;
+}
 
 /** Synthetic ParamDefs so the four colour controls can reuse `sliderRow`.
  *  Their labels are real i18n keys, like every other control's. */
@@ -389,13 +405,24 @@ export function mountPlayground(root: HTMLElement): () => void {
     for (const pd of orderedParams) {
       if (pd.hidden) continue;
       const v = params[pd.key]!;
+      let row: HTMLElement;
       if (pd.kind === 'bool') {
-        paramRows.push(checkboxRow(pd, v, lang, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
+        row = checkboxRow(pd, v, lang, (nv) => setState({ params: { ...state.params, [pd.key]: nv } }));
       } else if (pd.kind === 'enum') {
-        paramRows.push(selectRow(pd, v, lang, (nv) => setState({ params: { ...state.params, [pd.key]: nv } })));
+        row = selectRow(pd, v, lang, (nv) => setState({ params: { ...state.params, [pd.key]: nv } }));
       } else {
-        paramRows.push(sliderRow(pd, v, lang, (nv) => setParam(pd.key, nv)));
+        row = sliderRow(pd, v, lang, (nv) => setParam(pd.key, nv));
       }
+      // A param that its gate has switched out of the drawing gets dimmed
+      // rather than left looking live. Only enum/bool params can gate, and
+      // both of those commit through `setState` — which re-renders the whole
+      // panel — so the dimming refreshes itself with no extra wiring.
+      const dep = pd.dependsOn;
+      if (dep && !dep.values.includes(params[dep.key]!)) {
+        row.dataset['inactive'] = dep.key;
+        dimRow(row, dependencyHint(def, dep, lang));
+      }
+      paramRows.push(row);
     }
     // A pattern with nothing but hidden params gets no empty disclosure.
     if (paramRows.length > 0) {

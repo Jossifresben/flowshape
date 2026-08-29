@@ -15,8 +15,8 @@ export const fabric = definePattern({
     { key: 'warpAmount', kind: 'float', min: 0, max: 80, step: 1, default: 34, label: 'fabric.warpAmount' },
     { key: 'noiseScale', kind: 'float', min: 1, max: 10, step: 0.1, default: 3.5, label: 'fabric.noiseScale' },
     { key: 'mode', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'fabric.mode', options: ['fabric.dots', 'fabric.mesh'] },
-    { key: 'dotSize', kind: 'float', min: 0.4, max: 4, step: 0.05, default: 1.2, label: 'fabric.dotSize' },
-    { key: 'strokeWidth', kind: 'float', min: 0.15, max: 1.5, step: 0.05, default: 0.4, label: 'fabric.strokeWidth' },
+    { key: 'dotSize', kind: 'float', min: 0.4, max: 4, step: 0.05, default: 1.2, label: 'fabric.dotSize', dependsOn: { key: 'mode', values: [0] } },
+    { key: 'strokeWidth', kind: 'float', min: 0.15, max: 1.5, step: 0.05, default: 0.4, label: 'fabric.strokeWidth', dependsOn: { key: 'mode', values: [1] } },
   ],
   generate(p, seed, size) {
     const noise = fbm2D(deriveSeed(seed, 'fabric'), 2);

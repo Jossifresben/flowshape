@@ -37,6 +37,11 @@ export const UI: Record<string, Pair> = {
   'pg.animateShort': ['ANIMATE', 'ANIMAR'],
   'pg.posterShort': ['POSTER', 'PÓSTER'],
   'pg.parameters': ['PARAMETERS', 'PARÁMETROS'],
+  // Prefix for a dimmed control's tooltip, completed with the gate's own
+  // label and the option(s) that switch it back on: "Only in RENDER · Ribbons".
+  'pg.onlyIn': ['Only in', 'Solo en'],
+  'pg.on': ['on', 'activado'],
+  'pg.off': ['off', 'desactivado'],
   'pg.format': ['FORMAT', 'FORMATO'],
   'pg.custom': ['Custom…', 'A medida…'],
   'pg.colour': ['COLOUR', 'COLOR'],
