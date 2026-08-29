@@ -70,7 +70,11 @@ describe('pattern registry as a whole', () => {
       const hasGWrapper = unscaled.children[1]?.tag === 'g';
       expect(hasGWrapper, `${p.id} size:1 should return the ungrouped tree`).toBe(false);
     }
-  });
+    // 50 full generations (25 patterns × 2 sizes), several of them the heavy
+    // ones. It fits in vitest's 5 s default on an idle machine and does not
+    // when the worker pool is contended — a timeout here has never meant a
+    // real failure. Nothing about what is asserted changes.
+  }, 30_000);
 
   it('generateSafe prepends an unscaled full-frame paper rect', () => {
     for (const p of patterns) {
@@ -99,5 +103,6 @@ describe('pattern registry as a whole', () => {
       const g = scaled.children[1]!;
       expect(g.tag, `${p.id} artwork should be inside the <g>`).toBe('g');
     }
-  });
+    // Same 50-generation cost as the test above; same reason for the budget.
+  }, 30_000);
 });

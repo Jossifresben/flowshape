@@ -2,12 +2,33 @@
   "name": "flowshape",
   "private": true,
   "version": "0.0.1",
+  "description": "Turn mathematics into art: 25 deterministic pattern generators, exported as print-ready vector artwork or driven by audio. Pure SVG, in the browser.",
+  "license": "MIT",
+  "author": "Jose \"Jossi\" Fresco Benaim (https://orcid.org/0009-0000-2026-0836)",
+  "homepage": "https://flowshape.art",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jossifresben/flowshape.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Jossifresben/flowshape/issues"
+  },
+  "keywords": [
+    "generative-art",
+    "svg",
+    "poster",
+    "mathematics",
+    "deterministic",
+    "typescript",
+    "vite"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
     "prebuild": "npm run thumbs",
     "build": "tsc --noEmit && vite build",
     "thumbs": "vite-node scripts/build-thumbs.ts",
+    "og": "vite-node scripts/build-og.ts && node scripts/shoot-og.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

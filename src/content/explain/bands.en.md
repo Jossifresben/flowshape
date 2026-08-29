@@ -1,5 +1,5 @@
 ---
-source: Müller-Brockmann, J. (1955) Tonhalle concert poster ("Beethoven") — concentric-arc design lineage; band-thickness progression per bookofshapes.com competitive research, Part 3 (2026)
+source: Müller-Brockmann, J. (1955) Tonhalle concert poster ("Beethoven") — concentric-arc design lineage; the band-thickness power law is this project's own parameterisation
 url: https://commons.wikimedia.org/wiki/File:Josef_M%C3%BCller-Brockmann._beethoven_poster(1955).jpg
 ---
 

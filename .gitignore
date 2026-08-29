@@ -1,4 +1,11 @@
 node_modules/
+node_modules
 dist/
 .superpowers/
 .DS_Store
+
+# Working design specs and implementation plans — kept local, not published.
+docs/superpowers/
+
+# Intermediate Open Graph pages; the PNGs in public/ are what ship.
+scripts/.og/

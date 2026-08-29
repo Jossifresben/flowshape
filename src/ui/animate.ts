@@ -11,7 +11,8 @@ import { presetsFor, DEFAULT_COLOUR_ROUTE, type AnimPreset } from '../anim/prese
 import { pickMimeType, probeMimeTypes, StageRecorder, downloadBlob } from '../anim/recorder';
 import { AnimWorkerClient } from '../anim/worker-client';
 import { chipRow } from './controls';
-import { NAMES } from './gallery';
+import { t, patternName, currentLang } from '../i18n';
+import { langSwitch } from './nav';
 
 /** Stage geometry: fixed internal pixel resolution per aspect; patterns keep
  *  composing in user units (600 on the short edge), scaled up 1.8× to pixels. */
@@ -25,41 +26,16 @@ const STAGES: Record<'169' | '916' | '11', { cw: number; ch: number }> = {
 /** Hermes's own RHY-2B, first 60 s. Shipped so the stage is never mute. */
 const DEMO_TRACK = '/samples/rhy-2b.mp3';
 
-const STR = {
-  en: {
-    back: '← POSTER', play: 'PLAY', pause: 'PAUSE', record: 'REC', stop: 'STOP',
-    fullscreen: 'FULLSCREEN', mic: 'MIC', demo: 'DEMO', dropHint: 'DROP AUDIO / CLICK TO CHOOSE',
-    privacy: 'Audio is processed in your browser and never uploaded.',
-    intensity: 'INTENSITY', preset: 'PRESET', aspect: 'ASPECT',
-    decodeError: 'Could not decode this audio file.',
-    demoError: 'Could not load the demo track.',
-    micError: 'Microphone unavailable or permission denied.',
-    recError: 'Recording is not supported in this browser.',
-    recNoAudio: 'Load audio first.',
-    recNoMime: 'No compatible recording format found in this browser.',
-    colour: 'COLOUR',
-  },
-  es: {
-    back: '← PÓSTER', play: 'REPRODUCIR', pause: 'PAUSA', record: 'REC', stop: 'PARAR',
-    fullscreen: 'PANTALLA COMPLETA', mic: 'MIC', demo: 'DEMO', dropHint: 'ARRASTRA AUDIO / CLIC PARA ELEGIR',
-    privacy: 'El audio se procesa en tu navegador y nunca se sube.',
-    intensity: 'INTENSIDAD', preset: 'PRESET', aspect: 'ASPECTO',
-    decodeError: 'No se pudo decodificar este archivo de audio.',
-    demoError: 'No se pudo cargar la pista de demostración.',
-    micError: 'Micrófono no disponible o permiso denegado.',
-    recError: 'Este navegador no permite grabar.',
-    recNoAudio: 'Carga audio primero.',
-    recNoMime: 'No se encontró un formato de grabación compatible en este navegador.',
-    colour: 'COLOR',
-  },
-} as const;
-
 export function mountAnimate(root: HTMLElement): () => void {
-  const state: AppState = decodeState(location.hash)!;
+  // Same language rule as the playground and the gallery: an explicit
+  // `?lang=` in the URL wins, then the reader's stored choice, then the
+  // browser's. `decodeState` only ever sees the URL.
+  const state: AppState = { ...decodeState(location.hash)!, lang: currentLang() };
   const def: PatternDef | undefined = getPattern(state.patternId);
   if (!def) { location.hash = '#/'; return () => undefined; }
 
-  const t = STR[state.lang];
+  const lang = state.lang;
+  document.documentElement.lang = lang;
   const presets = presetsFor(def.id);
   let preset: AnimPreset = presets.find((p) => p.id === state.apre) ?? presets[0]!;
   let intensity = state.aint ?? 1;
@@ -104,21 +80,28 @@ export function mountAnimate(root: HTMLElement): () => void {
   const panel = document.createElement('div');
   panel.className = 'anim-panel';
 
+  // Back to the poster, and the EN|ES switch — the stage is a full view, so
+  // the reader must be able to change language without leaving it. Switching
+  // fires LANG_EVENT, the router re-mounts this view, and every label above
+  // is rebuilt from the shared table.
+  const navRow = document.createElement('div');
+  navRow.className = 'panel-nav';
   const back = document.createElement('a');
-  back.textContent = t.back;
+  back.textContent = t('anim.back', lang);
   back.className = 'anim-back';
   back.href = encodeState({
     ...state, view: undefined, stage: undefined, apre: undefined, aint: undefined, acol: undefined,
   });
+  navRow.append(back, langSwitch(lang));
 
   const title = document.createElement('h1');
-  title.textContent = (NAMES[def.id] ?? def.id).toUpperCase();
+  title.textContent = patternName(def.id, lang).toUpperCase();
 
   const status = document.createElement('div');
   status.className = 'anim-status';
 
   // aspect
-  const aspectLabel = label(t.aspect);
+  const aspectLabel = label(t('anim.aspect', lang));
   let aspectChips = chipRow(
     [{ id: '169', label: '16:9' }, { id: '916', label: '9:16' }, { id: '11', label: '1:1' }],
     stageId,
@@ -126,9 +109,9 @@ export function mountAnimate(root: HTMLElement): () => void {
   );
 
   // preset
-  const presetLabel = label(t.preset);
+  const presetLabel = label(t('anim.preset', lang));
   let presetChips = chipRow(
-    presets.map((p) => ({ id: p.id, label: p.label[state.lang].toUpperCase() })),
+    presets.map((p) => ({ id: p.id, label: p.label[lang].toUpperCase() })),
     preset.id,
     (id) => { preset = presets.find((p) => p.id === id) ?? preset; syncUrl(); rebuildChips(); },
   );
@@ -141,7 +124,7 @@ export function mountAnimate(root: HTMLElement): () => void {
     );
     aspectChips.replaceWith(na); aspectChips = na;
     const np = chipRow(
-      presets.map((p) => ({ id: p.id, label: p.label[state.lang].toUpperCase() })),
+      presets.map((p) => ({ id: p.id, label: p.label[lang].toUpperCase() })),
       preset.id,
       (id) => { preset = presets.find((p) => p.id === id) ?? preset; syncUrl(); rebuildChips(); },
     );
@@ -151,7 +134,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   // intensity
   const intensityRow = document.createElement('div');
   intensityRow.className = 'ctl-row';
-  const intensityHead = label(t.intensity);
+  const intensityHead = label(t('anim.intensity', lang));
   const intensityInput = document.createElement('input');
   intensityInput.type = 'range';
   intensityInput.min = '0'; intensityInput.max = '1'; intensityInput.step = '0.01';
@@ -165,7 +148,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   colourRow.className = 'ctl-row ctl-inline';
   const colourLabel = document.createElement('span');
   colourLabel.className = 'ctl-label';
-  colourLabel.textContent = t.colour;
+  colourLabel.textContent = t('pg.colour', lang);
   const colourInput = document.createElement('input');
   colourInput.type = 'checkbox';
   colourInput.checked = colourOn;
@@ -175,7 +158,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   // source
   const drop = document.createElement('button');
   drop.className = 'anim-drop';
-  drop.textContent = t.dropHint;
+  drop.textContent = t('anim.dropHint', lang);
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = 'audio/*';
@@ -191,27 +174,27 @@ export function mountAnimate(root: HTMLElement): () => void {
 
   // A shared animate link opens silent — the viewer has no audio to hand. The
   // demo track makes the stage immediately experienceable in one click.
-  const demoBtn = button(t.demo, async () => {
+  const demoBtn = button(t('anim.demo', lang), async () => {
     try {
       const res = await fetch(DEMO_TRACK);
       if (!res.ok) throw new Error(String(res.status));
       const blob = await res.blob();
       await loadFile(new File([blob], 'rhy-2b.mp3', { type: blob.type || 'audio/mpeg' }));
-    } catch { status.textContent = t.demoError; }
+    } catch { status.textContent = t('anim.demoError', lang); }
   });
 
-  const micBtn = button(t.mic, async () => {
+  const micBtn = button(t('anim.mic', lang), async () => {
     try {
       swapRig(await micRig());
       clock = null; bpm = null; liveBeats = -1;
-      playBtn.textContent = t.pause;
-    } catch { status.textContent = t.micError; }
+      playBtn.textContent = t('anim.pause', lang);
+    } catch { status.textContent = t('anim.micError', lang); }
   });
 
-  const playBtn = button(t.play, () => {
+  const playBtn = button(t('anim.play', lang), () => {
     if (!rig) return;
-    if (rig.playing) { rig.pause(); playBtn.textContent = t.play; }
-    else { rig.play(); playBtn.textContent = t.pause; }
+    if (rig.playing) { rig.pause(); playBtn.textContent = t('anim.play', lang); }
+    else { rig.play(); playBtn.textContent = t('anim.pause', lang); }
   });
 
   // scrub (file mode)
@@ -224,12 +207,12 @@ export function mountAnimate(root: HTMLElement): () => void {
     if (rig?.duration != null) rig.seek((Number(scrub.value) / 1000) * rig.duration);
   });
 
-  const recBtn = button(t.record, async () => {
+  const recBtn = button(t('anim.record', lang), async () => {
     if (recorder) {
       const blob = await recorder.stop();
       recorder = null;
       recBtn.classList.remove('recording');
-      recBtn.textContent = t.record;
+      recBtn.textContent = t('anim.record', lang);
       const mime = recordingMime!;
       recordingMime = null;
       downloadBlob(blob, `flowshape-${def.id}.${mime.ext}`);
@@ -238,8 +221,8 @@ export function mountAnimate(root: HTMLElement): () => void {
     // Three distinct failure causes, three distinct messages — conflating
     // them (as "browser doesn't support recording") told a user who simply
     // hadn't loaded audio yet that their browser was broken.
-    if (!rig) { status.textContent = t.recNoAudio; return; }
-    if (typeof MediaRecorder === 'undefined') { status.textContent = t.recError; return; }
+    if (!rig) { status.textContent = t('anim.recNoAudio', lang); return; }
+    if (typeof MediaRecorder === 'undefined') { status.textContent = t('anim.recError', lang); return; }
     const mime = pickMimeType((m) => MediaRecorder.isTypeSupported(m));
     if (!mime) {
       if (import.meta.env.DEV) {
@@ -248,25 +231,25 @@ export function mountAnimate(root: HTMLElement): () => void {
           probeMimeTypes((m) => MediaRecorder.isTypeSupported(m)),
         );
       }
-      status.textContent = t.recNoMime;
+      status.textContent = t('anim.recNoMime', lang);
       return;
     }
     recordingMime = mime;
     recorder = new StageRecorder(canvas, rig.recordingStream(), mime.mime);
     recorder.start();
     recBtn.classList.add('recording');
-    recBtn.textContent = t.stop;
+    recBtn.textContent = t('anim.stop', lang);
     // Unobtrusive: the recorded container is never a mystery after the fact.
-    status.textContent = `${t.record} · ${mime.ext.toUpperCase()}`;
+    status.textContent = `${t('anim.record', lang)} · ${mime.ext.toUpperCase()}`;
   });
 
-  const fsBtn = button(t.fullscreen, () => void stageEl.requestFullscreen?.());
+  const fsBtn = button(t('anim.fullscreen', lang), () => void stageEl.requestFullscreen?.());
 
   const privacy = document.createElement('p');
   privacy.className = 'anim-privacy';
-  privacy.textContent = t.privacy;
+  privacy.textContent = t('anim.privacy', lang);
 
-  panel.append(back, title, aspectLabel, aspectChips, presetLabel, presetChips, intensityRow, colourRow,
+  panel.append(navRow, title, aspectLabel, aspectChips, presetLabel, presetChips, intensityRow, colourRow,
     drop, fileInput, demoBtn, micBtn, playBtn, scrub, recBtn, fsBtn, status, privacy);
   wrap.append(stageEl, panel);
   root.append(wrap);
@@ -309,9 +292,9 @@ export function mountAnimate(root: HTMLElement): () => void {
       scrub.style.display = '';
       status.textContent = bpm ? `${Math.round(bpm)} BPM` : '';
       rig!.play();
-      playBtn.textContent = t.pause;
+      playBtn.textContent = t('anim.pause', lang);
     } catch {
-      status.textContent = t.decodeError;
+      status.textContent = t('anim.decodeError', lang);
     }
   }
 

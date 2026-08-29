@@ -2,59 +2,36 @@ import { listPatterns, type Family } from '../patterns/registry';
 import { encodeState } from '../core/url-state';
 import { PRESETS } from '../patterns/presets';
 import { recallState } from '../core/persist';
+import { currentLang, patternName, familyLabel, t, withLang, type Lang } from '../i18n';
+import { PATTERN_NAMES, FAMILY_NAMES } from '../i18n/patterns';
+import { buildNav } from './nav';
+import { buildFooter } from './footer';
 
-/** Display name for each pattern id. Falls back to the id when absent. */
-export const NAMES: Record<string, string> = {
-  phyllotaxis: 'Phyllotaxis',
-  maurer: 'Maurer Rose',
-  stipple: 'Stipple Field',
-  delaunay: 'Delaunay Mesh',
-  voronoi: 'Voronoi Cells',
-  harmonograph: 'Harmonograph',
-  timestable: 'Times-Table Chords',
-  flowfield: 'Flow Field',
-  truchet: 'Truchet Arcs',
-  hitomezashi: 'Hitomezashi',
-  girih: 'Girih Stars',
-  diffgrowth: 'Differential Growth',
-  coulomb: 'Coulomb Field',
-  bands: 'Concentric Bands',
-  moire: 'Moiré Weave',
-  fabric: 'Warped Fabric',
-  roselattice: 'Rose Lattice',
-  chirp: 'Converging Chirp',
-  helix: 'Helix Ladder',
-  voxel: 'Voxel Form',
-  apollonian: 'Apollonian Circles',
-  isoweave: 'Iso Weave',
-  nested: 'Nested Shafts',
-  tumbling: 'Tumbling Blocks',
-  interlace: 'Ribbon Interlace',
-};
+/** English display names, kept as a plain map for build scripts and tests.
+ *  The app itself goes through `patternName(id, lang)`. */
+export const NAMES: Record<string, string> = Object.fromEntries(
+  Object.entries(PATTERN_NAMES).map(([id, pair]) => [id, pair[0]]),
+);
 
-/** Human label for each pattern family. */
-export const FAMILY_LABELS: Record<Family, string> = {
-  points: 'Points & Meshes',
-  curves: 'Curves',
-  fields: 'Fields',
-  tilings: 'Tilings',
-  growth: 'Growth',
-  isometric: 'Isometric',
-};
+/** English family labels, same rationale as `NAMES`. */
+export const FAMILY_LABELS: Record<Family, string> = Object.fromEntries(
+  Object.entries(FAMILY_NAMES).map(([f, pair]) => [f, pair[0]]),
+) as Record<Family, string>;
 
 /** Canonical family display order for the filter chips. */
 const FAMILY_ORDER: Family[] = ['points', 'curves', 'fields', 'tilings', 'isometric', 'growth'];
 
 /** The curated gallery-sample state for a pattern (its `PRESETS` entry, or
- *  bare defaults when the pattern has none). */
-function presetHash(id: string): string {
+ *  bare defaults when the pattern has none). Carries the reader's language so
+ *  the playground opens in the language they were just browsing in. */
+function presetHash(id: string, lang: Lang): string {
   const preset = PRESETS[id];
   return encodeState({
     patternId: id,
     seed: preset?.seed ?? 1,
     params: preset?.params ?? {},
     color: preset?.color ?? {},
-    lang: 'en',
+    lang,
   });
 }
 
@@ -62,27 +39,24 @@ function presetHash(id: string): string {
  *  pattern if they have one, otherwise the curated preset. An explicit URL
  *  (e.g. a shared link) is never consulted here — this only decides what a
  *  gallery card points to. */
-function cardHref(id: string): string {
-  return recallState(id) ?? presetHash(id);
+function cardHref(id: string, lang: Lang): string {
+  const remembered = recallState(id);
+  // A remembered state carries whatever language it was saved in; the card
+  // should open in the language the reader is browsing in now.
+  return remembered ? withLang(remembered, lang) : presetHash(id, lang);
 }
 
 export function mountGallery(root: HTMLElement): void {
+  const lang = currentLang();
   const patterns = listPatterns().sort((a, b) => a.id.localeCompare(b.id));
   const families = FAMILY_ORDER.filter((f) => patterns.some((p) => p.family === f));
 
   let activeFamily: Family | 'all' = 'all';
 
   root.innerHTML = '';
+  document.documentElement.lang = lang;
 
-  // --- top bar ---
-  const topbar = document.createElement('div');
-  topbar.className = 'gal-topbar';
-
-  const wordmark = document.createElement('div');
-  wordmark.className = 'gal-wordmark';
-  wordmark.innerHTML = 'flowshape<span class="gal-wordmark-dot">.art</span>';
-
-  topbar.append(wordmark);
+  const topbar = buildNav(lang, 'patterns');
 
   // --- hero ---
   const hero = document.createElement('div');
@@ -93,18 +67,18 @@ export function mountGallery(root: HTMLElement): void {
 
   const headline = document.createElement('h1');
   headline.className = 'gal-headline';
-  headline.innerHTML = 'Shape mathematics<br>into art.';
+  headline.append(t('gal.headlineA', lang), document.createElement('br'), t('gal.headlineB', lang));
 
   const stats = document.createElement('div');
   stats.className = 'gal-stats';
-  stats.textContent = `${patterns.length} PATTERNS · ${families.length} FAMILIES`;
+  stats.textContent =
+    `${patterns.length} ${t('gal.patterns', lang)} · ${families.length} ${t('gal.families', lang)}`;
 
   heroTop.append(headline, stats);
 
   const subtitle = document.createElement('p');
   subtitle.className = 'gal-subtitle';
-  subtitle.textContent =
-    'Play with a pattern, tune every parameter, then export a poster. Open source and free.';
+  subtitle.textContent = t('gal.subtitle', lang);
 
   hero.append(heroTop, subtitle);
 
@@ -128,8 +102,8 @@ export function mountGallery(root: HTMLElement): void {
       });
       chipsRow.append(chip);
     };
-    makeChip('all', 'All');
-    for (const f of families) makeChip(f, FAMILY_LABELS[f]);
+    makeChip('all', t('gal.all', lang));
+    for (const f of families) makeChip(f, familyLabel(f, lang));
   }
 
   function renderGrid(): void {
@@ -138,7 +112,7 @@ export function mountGallery(root: HTMLElement): void {
     for (const def of visible) {
       const card = document.createElement('a');
       card.className = 'gal-card';
-      card.href = cardHref(def.id);
+      card.href = cardHref(def.id, lang);
 
       const thumbBox = document.createElement('div');
       thumbBox.className = 'gal-thumb';
@@ -156,11 +130,11 @@ export function mountGallery(root: HTMLElement): void {
 
       const name = document.createElement('span');
       name.className = 'gal-name';
-      name.textContent = NAMES[def.id] ?? def.id;
+      name.textContent = patternName(def.id, lang);
 
       const family = document.createElement('span');
       family.className = 'gal-family';
-      family.textContent = FAMILY_LABELS[def.family];
+      family.textContent = familyLabel(def.family, lang);
 
       meta.append(name, family);
       card.append(thumbBox, meta);
@@ -171,5 +145,5 @@ export function mountGallery(root: HTMLElement): void {
   renderChips();
   renderGrid();
 
-  root.append(topbar, hero, chipsRow, grid);
+  root.append(topbar, hero, chipsRow, grid, buildFooter(lang));
 }
