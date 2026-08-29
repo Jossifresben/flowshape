@@ -37,7 +37,20 @@ const THIRD_WAVE = ['tumbling', 'voxel', 'nested', 'flowfield', 'fabric'];
  * See the derivation in src/patterns/apollonian.ts.
  */
 const FOURTH_WAVE = ['apollonian'];
-const LOOPERS = [...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE];
+/**
+ * The fifth pass, one pattern. hitomezashi was skipped as "structurally
+ * discrete", and its lattice is: the grid lines are fixed and the bits are
+ * random draws with no period in anything, so translating the figure cannot
+ * return to itself. But the *stitches* are periodic even though the pattern
+ * is not — a line's dash occupancy is `(index + bit) % 2`, which repeats
+ * every two cells regardless of the bit — so sliding the vertical stitches
+ * down their own columns and the horizontal stitches right along their own
+ * rows by a whole number of two-cell periods maps the stitch field exactly
+ * onto itself. The field scrolls diagonally, every stitch stays on its own
+ * grid line, and the loop closes without re-drawing a single bit.
+ */
+const FIFTH_WAVE = ['hitomezashi'];
+const LOOPERS = [...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE];
 const ADOPTERS = [...FIRST_WAVE, ...LOOPERS];
 
 function at(id: string, phase?: number): string {
@@ -281,6 +294,81 @@ describe('the Möbius circle-image closed form', () => {
       }
       expect(turns).toBeLessThanOrEqual(2);
     }
+  });
+});
+
+/**
+ * hitomezashi scrolls as a rigid translation, not as a re-draw.
+ *
+ * The failure mode this guards is the one the pattern was skipped for in the
+ * first place: because a hitomezashi is built from random per-line bits,
+ * anything that re-indexes those bits between frames produces a field that
+ * *re-rolls* rather than moves — locally plausible, globally a fizz, and
+ * indistinguishable from motion in any aggregate measure. So the claim is
+ * checked per stitch: at every phase, every stitch on screen must be a
+ * phase-0 stitch displaced along its own line by exactly the drift (modulo
+ * the two-cell dash period the loop is built on). One stitch that isn't
+ * would mean a bit changed, and the motion would be a lie.
+ *
+ * The population is checked too — a translation that let the field thin out
+ * at the leading edge would satisfy the displacement claim while emptying
+ * the frame.
+ */
+describe('hitomezashi scrolls rather than re-rolls', () => {
+  const def = getPattern('hitomezashi')!;
+  const base = defaultParams(def);
+  const cell = base['cell']!;
+  // Must match LAPS * 2 in src/patterns/hitomezashi.ts.
+  const TRAVEL = 16;
+
+  /** Vertical stitches keyed by (x, y-of-start); horizontal by (y, x-of-start). */
+  function stitches(phase: number): { V: Set<string>; H: Set<string> } {
+    const node = generateSafe(def, { ...base, phase }, 7, SIZE);
+    const d = String(node.children.find((c) => c.tag === 'path')!.attrs['d'] ?? '');
+    const V = new Set<string>(), H = new Set<string>();
+    for (const m of d.matchAll(/M(-?[\d.]+) (-?[\d.]+)V/g)) V.add(`${(+m[1]!).toFixed(2)},${(+m[2]!).toFixed(2)}`);
+    for (const m of d.matchAll(/M(-?[\d.]+) (-?[\d.]+)H/g)) H.add(`${(+m[2]!).toFixed(2)},${(+m[1]!).toFixed(2)}`);
+    return { V, H };
+  }
+
+  const SAMPLES = 24;
+  const zero = stitches(0);
+  const unexplained: number[] = [];
+  const counts: number[] = [];
+  for (let i = 0; i <= SAMPLES; i++) {
+    const phase = i / SAMPLES;
+    const drift = (phase % 1) * TRAVEL * cell;
+    const cur = stitches(phase);
+    counts.push(cur.V.size + cur.H.size);
+    let bad = 0;
+    const check = (set: Set<string>, ref: Set<string>) => {
+      for (const k of set) {
+        const [a, b] = k.split(',').map(Number) as [number, number];
+        let ok = false;
+        for (let s = -TRAVEL - 2; s <= TRAVEL + 2 && !ok; s++) {
+          if (ref.has(`${a.toFixed(2)},${(b - drift + s * cell).toFixed(2)}`)) ok = true;
+        }
+        if (!ok) bad++;
+      }
+    };
+    check(cur.V, zero.V);
+    check(cur.H, zero.H);
+    unexplained.push(bad);
+  }
+
+  it('every stitch at every phase is a phase-0 stitch, slid along its own line', () => {
+    expect(Math.max(...unexplained)).toBe(0);
+  });
+
+  it('the field never thins: the population holds within a few percent', () => {
+    const lo = Math.min(...counts), hi = Math.max(...counts);
+    expect(lo).toBeGreaterThan(hi * 0.97);
+  });
+
+  it('the drift really moves — mid-cycle is a different frame', () => {
+    // A quarter of a lap: the stitches sit half a cell off their phase-0
+    // positions, which is the furthest they ever get from register.
+    expect(at('hitomezashi', 1 / (TRAVEL * 2))).not.toBe(at('hitomezashi', 0));
   });
 });
 
