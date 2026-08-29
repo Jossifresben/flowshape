@@ -19,7 +19,8 @@ authors:
 repository-code: "https://github.com/Jossifresben/flowshape"
 url: "https://flowshape.art"
 license: MIT
-version: "0.0.1"
+version: "1.0.0"
+date-released: "2026-08-29"
 keywords:
   - generative art
   - audio visualization
