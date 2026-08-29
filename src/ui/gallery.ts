@@ -22,6 +22,7 @@ export const NAMES: Record<string, string> = {
   roselattice: 'Rose Lattice',
   chirp: 'Converging Chirp',
   helix: 'Helix Ladder',
+  voxel: 'Voxel Form',
 };
 
 /** Human label for each pattern family. */
@@ -32,10 +33,11 @@ export const FAMILY_LABELS: Record<Family, string> = {
   attractors: 'Attractors',
   tilings: 'Tilings',
   growth: 'Growth',
+  isometric: 'Isometric',
 };
 
 /** Canonical family display order for the filter chips. */
-const FAMILY_ORDER: Family[] = ['points', 'curves', 'fields', 'attractors', 'tilings', 'growth'];
+const FAMILY_ORDER: Family[] = ['points', 'curves', 'fields', 'attractors', 'tilings', 'isometric', 'growth'];
 
 function patternHref(id: string): string {
   return encodeState({

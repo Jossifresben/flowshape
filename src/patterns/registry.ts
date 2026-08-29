@@ -2,7 +2,7 @@ import type { SvgNode } from '../core/svg';
 import { el } from '../core/svg';
 import { RESERVED } from '../core/reserved';
 
-export type Family = 'points' | 'curves' | 'fields' | 'attractors' | 'tilings' | 'growth';
+export type Family = 'points' | 'curves' | 'fields' | 'attractors' | 'tilings' | 'growth' | 'isometric';
 
 export interface ParamDef {
   key: string;
