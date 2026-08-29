@@ -160,6 +160,12 @@ input[type='checkbox'] { accent-color: var(--ink); }
 }
 .show-thumb.computing { opacity: 0.55; transition: opacity 0.15s; }
 
+/* A video card's box holds a real <video> instead of live SVG. Metadata is
+ * unknown until playback is requested (preload="none"), so height:auto alone
+ * would collapse to 0 before then — the 16:9 default matches the animate
+ * stage's own default aspect, the common case for a recording. */
+.show-thumb video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+
 /* --- saved page --- */
 
 .saved-head {

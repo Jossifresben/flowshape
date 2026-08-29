@@ -183,4 +183,7 @@ export const UI: Record<string, Pair> = {
     'Una selección, elegida a mano. Abre cualquiera para desmontarla y hacerla tuya.',
   ],
   'show.empty': ['Nothing here yet.', 'Aún no hay nada aquí.'],
+  'show.tabDesigns': ['Designs', 'Diseños'],
+  'show.tabPosters': ['Posters', 'Pósters'],
+  'show.tabVideos': ['Videos', 'Vídeos'],
 };
