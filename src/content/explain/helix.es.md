@@ -1,6 +1,7 @@
 ---
 source: Hélice, curva paramétrica de doble hélice; cf. Wikipedia, "Hélice"
 url: https://es.wikipedia.org/wiki/H%C3%A9lice_(geometr%C3%ADa)
+construction: original
 ---
 
 ## Fórmula

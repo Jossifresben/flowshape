@@ -132,9 +132,18 @@ export const UI: Record<string, Pair> = {
   // --- references ---------------------------------------------------------
   'refs.title': ['References', 'Referencias'],
   'refs.intro': [
-    'Every generator here came from somewhere, and none of it was invented for this site. Below is the primary source behind each pattern — the same citation the pattern carries in its own explanation, so the two can never disagree.',
-    'Cada generador viene de alguna parte, y nada de esto se inventó para este sitio. Abajo está la fuente original de cada patrón: la misma cita que el patrón lleva en su propia explicación, de modo que ambas no puedan contradecirse.',
+    'Every generator here rests on mathematics that was already there. Below is the primary source behind each pattern — the same citation the pattern carries in its own explanation, so the two can never disagree.',
+    'Todos los generadores se apoyan en matemáticas que ya existían. Abajo está la fuente original de cada patrón: la misma cita que el patrón lleva en su propia explicación, de modo que ambas no puedan contradecirse.',
   ],
+  // The legend for the marker below. Says plainly what it does NOT claim,
+  // because a bibliography that lets a reader infer new mathematics from a
+  // rearrangement has cost more credibility than the note would have saved.
+  // `{n}` is filled with the live count of marked entries.
+  'refs.note': [
+    'The note original construction appears on {n} of the entries below. It marks the composition and the parameterisation as this project’s own — never the mathematics, which is classical in every case and cited alongside.',
+    'La nota construcción propia aparece en {n} de las entradas de abajo. Señala que la composición y la parametrización son propias de este proyecto; nunca las matemáticas, que son clásicas en todos los casos y se citan al lado.',
+  ],
+  'refs.own': ['Original construction', 'Construcción propia'],
   'tip.methods': [
     'Card, PayPal, Apple Pay or Google Pay',
     'Tarjeta, PayPal, Apple Pay o Google Pay',

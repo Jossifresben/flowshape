@@ -3,13 +3,17 @@
 export interface Reference {
   source: string;
   url: string;
+  /** Present and true where the pattern's construction — its composition and
+   *  parameterisation — was worked out for this project. The mathematics it
+   *  rests on is classical either way, and `source` cites it either way. */
+  original?: true;
 }
 
 export const REFERENCES: Record<string, Reference> = {
   "apollonian": { source: "Descartes' Circle Theorem; complex form: Lagarias, J. C., Mallows, C. L. & Wilks, A. (2002), \"Beyond the Descartes Circle Theorem\", American Mathematical Monthly 109(4)", url: "https://en.wikipedia.org/wiki/Descartes%27_theorem" },
-  "bands": { source: "Müller-Brockmann, J. (1955) Tonhalle concert poster (\"Beethoven\") — concentric-arc design lineage; the band-thickness power law is this project's own parameterisation", url: "https://commons.wikimedia.org/wiki/File:Josef_M%C3%BCller-Brockmann._beethoven_poster(1955).jpg" },
+  "bands": { source: "Müller-Brockmann, J. (1955) Tonhalle concert poster (\"Beethoven\") — concentric-arc design lineage; the band-thickness power law is this project's own parameterisation", url: "https://commons.wikimedia.org/wiki/File:Josef_M%C3%BCller-Brockmann._beethoven_poster(1955).jpg", original: true },
   "billiard": { source: "Tabachnikov, S., \"Geometry and Billiards\" (AMS Student Mathematical Library 30, 2005)", url: "https://en.wikipedia.org/wiki/Dynamical_billiards" },
-  "chirp": { source: "Linear (frequency-swept) chirp signal; cf. Wikipedia, \"Chirp\"", url: "https://en.wikipedia.org/wiki/Chirp" },
+  "chirp": { source: "Linear (frequency-swept) chirp signal; cf. Wikipedia, \"Chirp\"", url: "https://en.wikipedia.org/wiki/Chirp", original: true },
   "coulomb": { source: "Jobard, B. & Lefer, W. (1997) \"Creating Evenly-Spaced Streamlines of Arbitrary Density\", Visualization in Scientific Computing '97 (field is the classic 2D electrostatic point-charge field)", url: "https://link.springer.com/chapter/10.1007/978-3-7091-6876-9_5" },
   "curlicue": { source: "Berry, M. V. and Goldberg, J., \"Renormalisation of curlicues\" (Nonlinearity 1, 1988)", url: "https://mathworld.wolfram.com/CurlicueFractal.html" },
   "delaunay": { source: "Delaunay, B. (1934) \"Sur la sphère vide\", Bulletin de l'Académie des Sciences de l'URSS; Bowyer, A. and Watson, D.F. (1981), independent incremental algorithms", url: "https://en.wikipedia.org/wiki/Bowyer%E2%80%93Watson_algorithm" },
@@ -19,17 +23,17 @@ export const REFERENCES: Record<string, Reference> = {
   "girih": { source: "Hankin, E.H. (1925) \"The Drawing of Geometric Patterns in Saracenic Art\", Memoirs of the Archaeological Survey of India; construction formalized by Kaplan, C.S. (2005) \"Islamic Star Patterns from Polygons in Contact\"", url: "https://cs.uwaterloo.ca/~csk/publications/Papers/kaplan_2005.pdf" },
   "guilloche": { source: "Rose engine turning and the guilloché tradition; hypotrochoid ring construction", url: "https://en.wikipedia.org/wiki/Guilloch%C3%A9" },
   "harmonograph": { source: "Bourke, P. \"Harmonograph\"; underlying physics traces to Lissajous, J.A. (1857)", url: "https://paulbourke.net/geometry/harmonograph/" },
-  "helix": { source: "Helix, parametric double-helix curve; cf. Wikipedia, \"Helix\"", url: "https://en.wikipedia.org/wiki/Helix" },
+  "helix": { source: "Helix, parametric double-helix curve; cf. Wikipedia, \"Helix\"", url: "https://en.wikipedia.org/wiki/Helix", original: true },
   "hitomezashi": { source: "Seaton, K.A. (2023) \"Mathematical specification of hitomezashi designs\", Journal of Mathematics and the Arts 17(1-2)", url: "https://arxiv.org/abs/2208.12580" },
   "interlace": { source: "Celtic knotwork construction (Cromwell, P.R., 1993, \"Celtic Knotwork: Mathematical Art\", The Mathematical Intelligencer 15(1), 36–47); the free over/under rests on the honeycomb graph being bipartite — a graph is bipartite iff it contains no odd cycle (Kőnig, D., 1916)", url: "https://doi.org/10.1007/BF03025256" },
-  "isoweave": { source: "Isometric projection; painter's algorithm (Newell, Newell & Sancha, 1972, \"A Solution to the Hidden Surface Problem\"); 3-colouring of the triangular lattice", url: "https://en.wikipedia.org/wiki/Painter%27s_algorithm" },
+  "isoweave": { source: "Isometric projection; painter's algorithm (Newell, Newell & Sancha, 1972, \"A Solution to the Hidden Surface Problem\"); 3-colouring of the triangular lattice", url: "https://en.wikipedia.org/wiki/Painter%27s_algorithm", original: true },
   "loxodrome": { source: "Mumford, D., Series, C., Wright, D., \"Indra's Pearls: The Vision of Felix Klein\" (Cambridge University Press, 2002)", url: "https://en.wikipedia.org/wiki/M%C3%B6bius_transformation" },
   "maurer": { source: "Maurer, P.M. (1987) \"A Rose is a Rose...\", The American Mathematical Monthly 94(7), 631–645", url: "https://en.wikipedia.org/wiki/Maurer_rose" },
   "moire": { source: "Amidror, I. (2000) \"The Theory of the Moiré Phenomenon, Volume I: Periodic Layers\"", url: "https://link.springer.com/book/10.1007/978-1-84882-181-1" },
   "mystery": { source: "Farris, F. A., \"Creating Symmetry: The Artful Mathematics of Wallpaper Patterns\" (Princeton University Press, 2015)", url: "https://press.princeton.edu/books/hardcover/9780691161730/creating-symmetry" },
-  "nested": { source: "Rhombille (\"tumbling blocks\") tiling, the dual of the trihexagonal tiling — Grünbaum, B. & Shephard, G.C. (1987) \"Tilings and Patterns\"; nonzero winding rule, W3C SVG 1.1 §11.3 \"fill-rule\"", url: "https://en.wikipedia.org/wiki/Rhombille_tiling" },
+  "nested": { source: "Rhombille (\"tumbling blocks\") tiling, the dual of the trihexagonal tiling — Grünbaum, B. & Shephard, G.C. (1987) \"Tilings and Patterns\"; nonzero winding rule, W3C SVG 1.1 §11.3 \"fill-rule\"", url: "https://en.wikipedia.org/wiki/Rhombille_tiling", original: true },
   "phyllotaxis": { source: "Vogel, H. (1979) \"A better way to construct the sunflower head\", Mathematical Biosciences 44(3-4)", url: "https://en.wikipedia.org/wiki/Phyllotaxis" },
-  "roselattice": { source: "Weisstein, E. W., \"Rose\", MathWorld", url: "https://mathworld.wolfram.com/Rose.html" },
+  "roselattice": { source: "Weisstein, E. W., \"Rose\", MathWorld", url: "https://mathworld.wolfram.com/Rose.html", original: true },
   "stipple": { source: "Bridson, R. (2007) \"Fast Poisson Disk Sampling in Arbitrary Dimensions\", ACM SIGGRAPH 2007 Sketches", url: "https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf" },
   "timestable": { source: "Plouffe, S. (pattern); Polster, B. and Geracitano, G., \"Times Tables, Mandelbrot and the Heart of Mathematics\" (Mathologer, 2019)", url: "https://www.youtube.com/watch?v=qhbuKbxJsk8" },
   "truchet": { source: "Truchet, S. (1704) \"Mémoire sur les combinaisons\"; arc variant popularized by Smith, C.S. (1987) \"The Tiling Patterns of Sébastien Truchet and the Topology of Structural Hierarchy\", Leonardo 20(4)", url: "https://en.wikipedia.org/wiki/Truchet_tiles" },

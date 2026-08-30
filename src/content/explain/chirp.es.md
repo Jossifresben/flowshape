@@ -1,6 +1,7 @@
 ---
 source: Señal chirp lineal (barrido de frecuencia); cf. Wikipedia, "Chirp"
 url: https://en.wikipedia.org/wiki/Chirp
+construction: original
 ---
 
 ## Fórmula

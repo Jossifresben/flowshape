@@ -1,6 +1,7 @@
 ---
 source: Weisstein, E. W., "Rose", MathWorld
 url: https://mathworld.wolfram.com/Rose.html
+construction: original
 ---
 
 ## Fórmula

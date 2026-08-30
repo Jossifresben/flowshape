@@ -181,6 +181,12 @@ function extLink(href: string, text: string): HTMLAnchorElement {
  * link to the primary source it is built on. Driven by the registry rather
  * than by the citation table, so a pattern that ships without a reference is
  * conspicuously missing one here instead of quietly absent from the list.
+ *
+ * Entries whose `original` flag is set carry one extra line. It annotates the
+ * citation, it never replaces it: the mathematics under those patterns is as
+ * classical as everything else on the page, and only the construction laid on
+ * top of it belongs to this project. The head note says so in as many words,
+ * so the marker cannot be read as a claim of new mathematics.
  */
 function buildReferences(lang: Lang): DocumentFragment {
   const frag = document.createDocumentFragment();
@@ -193,6 +199,7 @@ function buildReferences(lang: Lang): DocumentFragment {
   const byName = listPatterns()
     .map((p) => ({ id: p.id, name: patternName(p.id, lang) }))
     .sort((a, b) => a.name.localeCompare(b.name, lang));
+  let owned = 0;
   for (const { id, name } of byName) {
     const ref = REFERENCES[id];
     if (!ref) continue;
@@ -210,9 +217,21 @@ function buildReferences(lang: Lang): DocumentFragment {
     cite.rel = 'noopener noreferrer';
     cite.textContent = ref.source;
     li.append(title, blurb, cite);
+    if (ref.original) {
+      owned += 1;
+      const own = document.createElement('span');
+      own.className = 'about-ref-own';
+      own.textContent = t('refs.own', lang);
+      li.append(own);
+    }
     list.append(li);
   }
-  frag.append(heading, intro, list);
+  // Counted from what was actually rendered rather than written into the
+  // string, so the note can never name a number the list disagrees with.
+  const note = document.createElement('p');
+  note.className = 'about-refs-note';
+  note.textContent = t('refs.note', lang).replace('{n}', String(owned));
+  frag.append(heading, intro, note, list);
   return frag;
 }
 

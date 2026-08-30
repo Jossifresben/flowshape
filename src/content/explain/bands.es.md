@@ -1,6 +1,7 @@
 ---
 source: Müller-Brockmann, J. (1955) cartel del Tonhalle ("Beethoven") — linaje de diseño de arcos concéntricos; la ley potencial del grosor de bandas es una parametrización propia de este proyecto
 url: https://commons.wikimedia.org/wiki/File:Josef_M%C3%BCller-Brockmann._beethoven_poster(1955).jpg
+construction: original
 ---
 
 ## Fórmula

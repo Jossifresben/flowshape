@@ -1,6 +1,7 @@
 ---
 source: Helix, parametric double-helix curve; cf. Wikipedia, "Helix"
 url: https://en.wikipedia.org/wiki/Helix
+construction: original
 ---
 
 ## Formula
