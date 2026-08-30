@@ -80,6 +80,9 @@ function stateFor(patternId: string): AppState {
 
 export function mountSpike(root: HTMLElement): () => void {
   root.innerHTML = '';
+  // The router's setView is private to main.ts; the animate stage's layout
+  // hangs off this class, so apply it here and drop it on cleanup.
+  root.classList.add('view-animate');
   const bar = document.createElement('div');
   bar.style.cssText =
     'display:flex;gap:8px;align-items:center;padding:8px 16px;font:12px/1.4 monospace;';
@@ -110,5 +113,5 @@ export function mountSpike(root: HTMLElement): () => void {
 
   root.append(bar, stage);
   show(active);
-  return () => cleanup?.();
+  return () => { cleanup?.(); root.classList.remove('view-animate'); };
 }
