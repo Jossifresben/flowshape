@@ -56,6 +56,10 @@ export const UI: Record<string, Pair> = {
   'modal.math': ['Math', 'Matemáticas'],
   'modal.code': ['Code', 'Código'],
   'modal.close': ['Close', 'Cerrar'],
+  'modal.loadError': [
+    'This tab failed to load. The site may have been updated since this page was opened — reload to continue.',
+    'Esta pestaña no se pudo cargar. Puede que el sitio se haya actualizado desde que abriste la página; recarga para continuar.',
+  ],
   'math.missing': [
     'No explanation found for this pattern.',
     'No hay explicación para este patrón.',

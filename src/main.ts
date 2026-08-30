@@ -74,6 +74,24 @@ function route(): void {
   }
 }
 
+// A tab that stays open across a deploy holds a bundle whose dynamic imports
+// name chunk hashes the new build no longer serves; the next lazy load then
+// 404s. Vite surfaces exactly this as `vite:preloadError`. One reload fetches
+// the current index.html and its live hashes. The sessionStorage latch stops
+// a reload loop if the failure is something a reload cannot fix (offline,
+// deploy actually broken) — in that case the modal's own error message takes
+// over. The latch clears on the next successful load.
+window.addEventListener('vite:preloadError', (event) => {
+  const KEY = 'flowshape:reloaded-for-preload-error';
+  try {
+    if (sessionStorage.getItem(KEY)) return; // second failure: give up, let UI errors show
+    sessionStorage.setItem(KEY, '1');
+  } catch { return; }
+  event.preventDefault();
+  location.reload();
+});
+try { sessionStorage.removeItem('flowshape:reloaded-for-preload-error'); } catch { /* fine */ }
+
 window.addEventListener('hashchange', route);
 // Switching language rewrites the URL with replaceState (no hashchange), so
 // the language event is what re-renders the current view.

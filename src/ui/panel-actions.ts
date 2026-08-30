@@ -50,6 +50,7 @@ export function buildActionsRow(
         { id: 'math', label: t('modal.math', lang), render: () => renderMathTab(patternId, lang) },
         { id: 'code', label: t('modal.code', lang), render: () => renderCodeTab(patternId, lang) },
       ],
+      loadError: t('modal.loadError', lang),
     });
   });
 

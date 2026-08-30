@@ -163,6 +163,7 @@ function openVideoModal(entry: ShowcaseVideo, lang: Lang): void {
 
   const title = videoModalTitle(entry, lang) ?? t('show.tabVideos', lang);
   openModal({
+    loadError: t('modal.loadError', lang),
     title,
     tabs: [{ id: 'video', label: title, render }],
     // DOM removal alone is not reliably synchronous for stopping a playing,

@@ -11,6 +11,8 @@ export interface ModalOptions {
    *  more than DOM removal to stop — e.g. a playing `<video>`, where removal
    *  alone is not reliably synchronous across browsers. */
   onClose?: () => void;
+  /** Message shown when a tab's render rejects (i18n'd by the caller). */
+  loadError?: string;
 }
 
 /** The close function of whatever modal is currently open, if any — lets a
@@ -107,6 +109,20 @@ export function openModal(opts: ModalOptions): void {
       if (activeTabId !== tabId) return;
       body.innerHTML = '';
       body.append(el);
+    }).catch(() => {
+      // Without this, a failed render leaves "Loading…" on screen forever.
+      // The realistic failure is a tab that outlived a deploy: its in-memory
+      // bundle imports content chunks by their old hashes, which stop
+      // existing the moment a new build is published, so the dynamic import
+      // 404s. A reload fetches the current index.html and heals it —
+      // main.ts also listens for vite:preloadError and reloads once on its
+      // own; this message is the fallback for whatever that misses.
+      if (activeTabId !== tabId) return;
+      body.innerHTML = '';
+      const err = document.createElement('p');
+      err.className = 'modal-load-error';
+      err.textContent = opts.loadError ?? 'This tab failed to load. The site may have been updated — reload the page.';
+      body.append(err);
     });
   }
 
