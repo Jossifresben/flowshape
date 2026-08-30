@@ -52,7 +52,10 @@ function shuffle<T>(items: readonly T[]): T[] {
  *  generation, so it must NOT go through `core/prng`'s seeded generator,
  *  which exists to make artwork reproducible. The whole point here is that
  *  the order differs per visit. */
-const ORDER: ShowcaseEntry[] = shuffle(SHOWCASE);
+const ORDER: ShowcaseEntry[] = [
+  ...SHOWCASE.filter((e) => e.pinned),
+  ...shuffle(SHOWCASE.filter((e) => !e.pinned)),
+];
 
 /** A card's display name: the curator's own title when set, otherwise the
  *  pattern's plain name — never `autoTitle`, which appends the seed. The

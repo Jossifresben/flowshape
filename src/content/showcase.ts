@@ -20,9 +20,18 @@ export interface ShowcaseEntry {
   /** A `#/p/` design hash. Posters and animations are deliberately excluded. */
   hash: string;
   title?: Pair;
+  /** Kept at the top of the gallery, ahead of the per-visit shuffle. Pinned
+   *  entries keep their order here; everything else still lands differently
+   *  each visit. */
+  pinned?: boolean;
 }
 
 export const SHOWCASE: ShowcaseEntry[] = [
+  // `lang` is deliberately absent from these hashes: it is the visitor's
+  // preference, not part of the artwork, and a hash carrying lang=es would
+  // flip the whole UI for an English reader who clicks the card.
+  { hash: '#/p/mystery?v=1&seed=81718&symmetry=7&harmonics=6&falloff=1.05&bloom=0.35&layers=5&strokeWidth=1.35&opacity=0.65&size=1&phase=0',
+    pinned: true },
   { hash: '#/p/maurer?v=1&seed=1&hue=0&accentShift=130&n=10&d=73&strokeWidth=0.5&envelope=1&size=1.12&phase=0' },
   { hash: '#/p/apollonian?v=1&seed=1&hue=0&accentShift=130&maxDepth=7&minRadius=1&strokeWidth=0.95&fillAlternate=0&size=0.92&phase=0' },
   { hash: '#/p/bands?v=1&seed=1&hue=119&chroma=0.16&paperL=0.08&accentShift=130&bandCount=6&minThickness=28&maxThickness=24&growthExponent=0.85&gap=20&startAngle=168&sweepAngle=271&accentEvery=2&size=1&phase=0' },
