@@ -90,6 +90,13 @@ export interface ShowcaseVideo {
 }
 
 export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
+  // First deliberately: it is the only entry with music, and the one to meet
+  // first. The song title itself is not translated — only the qualifier is,
+  // which is what marks this apart from the silent stage recordings below.
+  // The credit is burned into the video rather than carried here, so it
+  // travels with the file wherever it is shared.
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/conecto.mp4', poster: '/showcase/conecto.jpg',
+    title: ['Conecto con ese lugar — Song', 'Conecto con ese lugar — Canción'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
     title: ['Harmonograph', 'Armonógrafo'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/timestable.mp4', poster: '/showcase/timestable.jpg',
@@ -105,9 +112,4 @@ export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/guilloche.mp4', poster: '/showcase/guilloche.jpg',
     hash: '#/a/guilloche?v=1&seed=1&stage=11&apre=engrave&acol=1&rings=29&lobes=12&depth=0.145&inner=0.33&twist=0.74&strokeWidth=0.4&opacity=0.8&size=1&phase=0',
     title: ['Guilloché Rosette', 'Roseta guilloché'] },
-  // A song title, so it is not translated: the pair carries the same string in
-  // both languages deliberately. The credit is burned into the video itself
-  // rather than carried here, so it travels with the file wherever it is shared.
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/conecto.mp4', poster: '/showcase/conecto.jpg',
-    title: ['Conecto con ese lugar', 'Conecto con ese lugar'] },
 ];
