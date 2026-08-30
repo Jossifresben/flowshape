@@ -35,22 +35,22 @@ export const SHARE: Record<string, Pair> = {
     'flowshape.art — patrones matemáticos en pósters listos para imprimir',
   ],
   'home.docDesc': [
-    'flowshape turns mathematics into art. Play with 25 pattern generators, tune every parameter, and take the result out as a print-ready SVG or PNG — or set it moving to music. Every pattern shows its formula and its code, in English and Spanish. Free, open source, runs entirely in your browser.',
-    'flowshape convierte las matemáticas en arte. Juega con 25 generadores de patrones, ajusta cada parámetro y llévate el resultado como SVG o PNG listo para imprimir, o ponlo a moverse con la música. Cada patrón muestra su fórmula y su código, en inglés y en español. Libre, de código abierto y funciona entero en tu navegador.',
+    'flowshape turns mathematics into art. Play with 30 pattern generators, tune every parameter, and take the result out as a print-ready SVG or PNG — or set it moving to music. Every pattern shows its formula and its code, in English and Spanish. Free, open source, runs entirely in your browser.',
+    'flowshape convierte las matemáticas en arte. Juega con 30 generadores de patrones, ajusta cada parámetro y llévate el resultado como SVG o PNG listo para imprimir, o ponlo a moverse con la música. Cada patrón muestra su fórmula y su código, en inglés y en español. Libre, de código abierto y funciona entero en tu navegador.',
   ],
   'home.cardTitle': [
     'flowshape.art — shape mathematics into art',
     'flowshape.art — convierte las matemáticas en arte',
   ],
   'home.cardDesc': [
-    '25 mathematical pattern generators. Tune every parameter, read the formula behind it, then print it or set it moving to music. Free and open source.',
-    '25 generadores de patrones matemáticos. Ajusta cada parámetro, lee la fórmula que hay detrás, imprímelo o ponlo a moverse con la música. Libre y de código abierto.',
+    '30 mathematical pattern generators. Tune every parameter, read the formula behind it, then print it or set it moving to music. Free and open source.',
+    '30 generadores de patrones matemáticos. Ajusta cada parámetro, lee la fórmula que hay detrás, imprímelo o ponlo a moverse con la música. Libre y de código abierto.',
   ],
   'home.headA': ['Shape mathematics', 'Convierte las matemáticas'],
   'home.headB': ['into art.', 'en arte.'],
   'home.sub': [
-    '25 pattern generators · tune every parameter · print it, or set it moving to music',
-    '25 generadores de patrones · ajusta cada parámetro · imprímelo o ponlo en movimiento',
+    '30 pattern generators · tune every parameter · print it, or set it moving to music',
+    '30 generadores de patrones · ajusta cada parámetro · imprímelo o ponlo en movimiento',
   ],
   'home.tag': ['FREE · OPEN SOURCE · NO ACCOUNT', 'LIBRE · CÓDIGO ABIERTO · SIN CUENTA'],
 
