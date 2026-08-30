@@ -92,11 +92,28 @@ function buildCard(entry: ShowcaseEntry, lang: Lang, observer: IntersectionObser
 /** A video card's display name: the curator's title, or the pattern name
  *  behind its `hash` link when set, or nothing — a video need not name a
  *  pattern the way a design or poster always does. */
-function videoCardName(entry: ShowcaseVideo, lang: Lang): string | null {
+function videoBaseName(entry: ShowcaseVideo, lang: Lang): string | null {
   if (entry.title) return entry.title[lang === 'es' ? 1 : 0];
   if (!entry.hash) return null;
   const state = decodeState(entry.hash);
   return state ? patternName(state.patternId, lang) : null;
+}
+
+/** The grid card's label: the work, qualified as a song where one plays. The
+ *  grid is tight, so it takes the single translated word and leaves the full
+ *  credit to the modal. */
+function videoCardName(entry: ShowcaseVideo, lang: Lang): string | null {
+  const base = videoBaseName(entry, lang);
+  if (!base) return null;
+  return entry.credit ? `${base} — ${t('show.song', lang)}` : base;
+}
+
+/** The modal's title. It has the width the card does not, so a song is
+ *  credited in full here. */
+function videoModalTitle(entry: ShowcaseVideo, lang: Lang): string | null {
+  const base = videoBaseName(entry, lang);
+  if (!base) return null;
+  return entry.credit ? `${base} — ${entry.credit[lang === 'es' ? 1 : 0]}` : base;
 }
 
 /** Builds the video element and — where `entry.hash` names one — the link
@@ -144,7 +161,7 @@ function openVideoModal(entry: ShowcaseVideo, lang: Lang): void {
     return wrap;
   }
 
-  const title = videoCardName(entry, lang) ?? t('show.tabVideos', lang);
+  const title = videoModalTitle(entry, lang) ?? t('show.tabVideos', lang);
   openModal({
     title,
     tabs: [{ id: 'video', label: title, render }],

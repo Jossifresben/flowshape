@@ -215,6 +215,7 @@ export const UI: Record<string, Pair> = {
   'show.empty': ['Nothing here yet.', 'Aún no hay nada aquí.'],
   'show.tabDesigns': ['Designs', 'Diseños'],
   'show.tabPosters': ['Posters', 'Pósters'],
+  'show.song': ['Song', 'Canción'],
   'show.tabVideos': ['Videos', 'Vídeos'],
   'show.play': ['Play', 'Reproducir'],
   'show.openStage': ['Open the live stage', 'Abrir el escenario en vivo'],
