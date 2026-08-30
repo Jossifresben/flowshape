@@ -29,6 +29,7 @@ export const UI: Record<string, Pair> = {
   'pg.animate': ['Animate this pattern', 'Animar este patrón'],
   'pg.poster': ['Compose a poster from this pattern', 'Componer un póster con este patrón'],
   'pg.reset': ['Reset to sample', 'Volver al ejemplo'],
+  'pg.resetDefaults': ['Reset to defaults', 'Restablecer valores'],
   // The action row fits three buttons on one line down to a 320px panel only
   // with mono-width abbreviations; the full wording above stays as each
   // button's accessible name and tooltip, so nothing is lost to the shorthand.

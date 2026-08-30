@@ -353,15 +353,27 @@ export function mountPlayground(root: HTMLElement): () => void {
     onExportReady = lastNode ? null : exportRow.markReady;
     panel.append(exportRow.el);
 
+    // Stays outside every disclosure: resetting touches seed, params AND
+    // colour, so it belongs to none of them.
+    const resetRow = document.createElement('div');
+    resetRow.className = 'ctl-row';
+
+    // Back to the registry defaults — empty params/colour let render() refill
+    // them via clampParams/COLOR_DEFAULTS, and encodeState then omits them,
+    // so the URL comes out as clean as a first visit.
+    const defaultsBtn = document.createElement('button');
+    defaultsBtn.className = 'btn';
+    defaultsBtn.textContent = t('pg.resetDefaults', lang);
+    defaultsBtn.addEventListener('click', () => {
+      setState({ seed: 1, params: {}, color: {} });
+    });
+    resetRow.append(defaultsBtn);
+
     // Once a pattern's state has been remembered (any change), the gallery
     // card for it points at that remembered state instead of the curated
-    // preset — so give a way back for patterns that have one. Stays outside
-    // every disclosure: it resets seed, params AND colour, so it belongs to
-    // none of them.
+    // preset — so give a way back for patterns that have one.
     const preset = PRESETS[state.patternId];
     if (preset) {
-      const resetRow = document.createElement('div');
-      resetRow.className = 'ctl-row';
       const resetBtn = document.createElement('button');
       resetBtn.className = 'btn';
       resetBtn.textContent = t('pg.reset', lang);
@@ -370,8 +382,8 @@ export function mountPlayground(root: HTMLElement): () => void {
         setState({ seed: preset.seed ?? 1, params: preset.params ?? {}, color: preset.color ?? {} });
       });
       resetRow.append(resetBtn);
-      panel.append(resetRow);
     }
+    panel.append(resetRow);
 
     panel.append(buildFooter(lang, { compact: true }));
 
