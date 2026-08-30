@@ -1,6 +1,7 @@
 ---
 source: Bridson, R. (2007) "Fast Poisson Disk Sampling in Arbitrary Dimensions", ACM SIGGRAPH 2007 Sketches
 url: https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf
+doi: 10.1145/1278780.1278807
 ---
 
 ## Formula

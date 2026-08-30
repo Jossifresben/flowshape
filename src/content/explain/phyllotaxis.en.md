@@ -1,6 +1,7 @@
 ---
 source: Vogel, H. (1979) "A better way to construct the sunflower head", Mathematical Biosciences 44(3-4)
 url: https://en.wikipedia.org/wiki/Phyllotaxis
+doi: 10.1016/0025-5564(79)90080-4
 ---
 
 ## Formula

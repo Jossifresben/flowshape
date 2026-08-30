@@ -1,6 +1,7 @@
 ---
 source: Isometric projection; painter's algorithm (Newell, Newell & Sancha, 1972, "A Solution to the Hidden Surface Problem"); 3-colouring of the triangular lattice
 url: https://en.wikipedia.org/wiki/Painter%27s_algorithm
+doi: 10.1145/800193.569954
 construction: original
 ---
 

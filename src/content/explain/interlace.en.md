@@ -1,6 +1,7 @@
 ---
 source: Celtic knotwork construction (Cromwell, P.R., 1993, "Celtic Knotwork: Mathematical Art", The Mathematical Intelligencer 15(1), 36–47); the free over/under rests on the honeycomb graph being bipartite — a graph is bipartite iff it contains no odd cycle (Kőnig, D., 1916)
 url: https://doi.org/10.1007/BF03025256
+doi: 10.1007/BF03025256, 10.1007/BF01456961
 ---
 
 ## Formula

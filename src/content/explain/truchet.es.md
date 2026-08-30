@@ -1,6 +1,7 @@
 ---
 source: Truchet, S. (1704) "Mémoire sur les combinaisons"; la variante de arcos fue popularizada por Smith, C.S. (1987) "The Tiling Patterns of Sébastien Truchet and the Topology of Structural Hierarchy", Leonardo 20(4)
 url: https://en.wikipedia.org/wiki/Truchet_tiles
+doi: 10.2307/1578535
 ---
 
 ## Fórmula

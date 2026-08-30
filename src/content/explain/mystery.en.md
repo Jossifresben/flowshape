@@ -1,6 +1,7 @@
 ---
 source: Farris, F. A., "Creating Symmetry: The Artful Mathematics of Wallpaper Patterns" (Princeton University Press, 2015)
 url: https://press.princeton.edu/books/hardcover/9780691161730/creating-symmetry
+doi: 10.1515/9781400865673
 ---
 
 ## Formula

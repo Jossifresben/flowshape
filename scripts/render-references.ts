@@ -29,18 +29,20 @@ export function renderReferencesModule(): string {
     .sort();
 
   const entries = ids.map((id) => {
-    const { source, url, original } = parseFrontMatter(
+    const { source, url, original, doi } = parseFrontMatter(
       readFileSync(path.join(explainDir, `${id}.en.md`), 'utf-8'),
     );
-    return { id, source, url, original };
+    return { id, source, url, original, doi };
   });
 
-  // `original` is emitted only where it is true, so the table stays a list of
-  // citations carrying a few annotations rather than thirty rows of `false`.
+  // `original` and `doi` are emitted only where they carry something, so the
+  // table stays a list of citations carrying a few annotations rather than
+  // thirty rows of `false` and thirty empty arrays.
   const body = entries
     .map((e) => {
       const own = e.original ? ', original: true' : '';
-      return `  ${JSON.stringify(e.id)}: { source: ${JSON.stringify(e.source)}, url: ${JSON.stringify(e.url)}${own} },`;
+      const doi = e.doi.length > 0 ? `, doi: ${JSON.stringify(e.doi)}` : '';
+      return `  ${JSON.stringify(e.id)}: { source: ${JSON.stringify(e.source)}, url: ${JSON.stringify(e.url)}${doi}${own} },`;
     })
     .join('\n');
 
@@ -49,6 +51,10 @@ export function renderReferencesModule(): string {
 export interface Reference {
   source: string;
   url: string;
+  /** DOIs of the works \`source\` names, in the order it names them. Absent
+   *  where the citation names nothing DOI-registered. Every entry was checked
+   *  to resolve to the exact work cited; none was inferred from a pattern. */
+  doi?: string[];
   /** Present and true where the pattern's construction — its composition and
    *  parameterisation — was worked out for this project. The mathematics it
    *  rests on is classical either way, and \`source\` cites it either way. */

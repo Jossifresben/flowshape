@@ -6,6 +6,13 @@ export interface ExplainDoc {
    *  worked out for this project. Never a claim about the mathematics, which
    *  stays classical and stays cited in `source`. */
   original: boolean;
+  /** DOIs of the works named in `source`, in the order `source` names them.
+   *  Empty wherever the citation names nothing DOI-registered — a 1704 memoir,
+   *  a 1925 archaeological survey, an encyclopedia article, a personal site.
+   *  Never a guess: a DOI is recorded only after it was confirmed to resolve
+   *  to the exact work the citation names, because a fabricated identifier is
+   *  a false scholarly claim that anyone citing this would inherit. */
+  doi: string[];
   body: string;
 }
 
@@ -28,7 +35,16 @@ const FRONT_MATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
 /** The one value `construction:` accepts. A closed vocabulary rather than a free string, so the marker cannot drift into six different spellings across six files. */
 const ORIGINAL = 'original';
 
-/** Parses the `source:`/`url:`/`construction:` front matter block and returns the remaining markdown as `body`. Pure and synchronous so it is unit-testable without touching the filesystem or Vite. */
+/**
+ * A syntactically well-formed DOI: the `10.` prefix, a registrant code, a
+ * slash, and a non-empty suffix. Deliberately shape-only — no checksum exists
+ * for a DOI, so this catches a typo or a bare URL pasted into the field and
+ * nothing more. What proves a DOI *correct* is resolving it against the work
+ * the citation names, which is a human step, not a regular expression.
+ */
+const DOI = /^10\.\d{4,9}\/\S+$/;
+
+/** Parses the `source:`/`url:`/`construction:`/`doi:` front matter block and returns the remaining markdown as `body`. Pure and synchronous so it is unit-testable without touching the filesystem or Vite. */
 export function parseFrontMatter(raw: string): ExplainDoc {
   const match = FRONT_MATTER.exec(raw);
   if (!match) {
@@ -52,7 +68,20 @@ export function parseFrontMatter(raw: string): ExplainDoc {
   if (construction !== undefined && construction !== ORIGINAL) {
     throw new Error(`explain doc front matter has construction: "${construction}" — the only accepted value is "${ORIGINAL}"`);
   }
-  return { source, url, original: construction === ORIGINAL, body: rest.trim() };
+  // Comma-separated, because a citation that names two works should be able to
+  // credit both — `interlace` cites Cromwell and Kőnig, `delaunay` cites Bowyer
+  // and Watson. Order is the order the works appear in `source`, so the list
+  // stays readable against the citation it annotates.
+  const doi = (fields['doi'] ?? '')
+    .split(',')
+    .map((d) => d.trim())
+    .filter((d) => d.length > 0);
+  for (const d of doi) {
+    if (!DOI.test(d)) {
+      throw new Error(`explain doc front matter has doi: "${d}" — expected a bare DOI of the form 10.<registrant>/<suffix>, not a URL`);
+    }
+  }
+  return { source, url, original: construction === ORIGINAL, doi, body: rest.trim() };
 }
 
 /** Pattern ids present in the explain content directory, derived from the glob keys (each id may appear once per language). */

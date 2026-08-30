@@ -1,6 +1,7 @@
 ---
 source: Construcción del entrelazado celta (Cromwell, P.R., 1993, "Celtic Knotwork: Mathematical Art", The Mathematical Intelligencer 15(1), 36–47); el paso por encima/por debajo sale gratis porque el grafo del panal es bipartito — un grafo es bipartito si y solo si no contiene ciclos impares (Kőnig, D., 1916)
 url: https://doi.org/10.1007/BF03025256
+doi: 10.1007/BF03025256, 10.1007/BF01456961
 ---
 
 ## Fórmula

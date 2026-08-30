@@ -117,4 +117,23 @@ describe('renderCitation', () => {
     expect(out).toContain('&lt;b&gt;Evil&lt;/b&gt; &amp; Co.');
     expect(out).toContain('href="https://example.com/?q=&quot;x&quot;"');
   });
+
+  // Most citations carry no DOI — a 1704 memoir and a Wikipedia article have
+  // none — so the absent case is the common one and must render nothing at all
+  // rather than an empty line under every explainer.
+  it('omits the DOI line when the citation carries none', () => {
+    const out = renderCitation('Vogel, H. (1979)', 'https://example.com');
+    expect(out).not.toContain('explain-doi');
+  });
+
+  it('renders one resolvable doi.org link per DOI, in the given order', () => {
+    const out = renderCitation('Cromwell and Konig', 'https://example.com', [
+      '10.1007/BF03025256',
+      '10.1007/BF01456961',
+    ]);
+    expect(out).toContain('<p class="explain-doi">');
+    expect(out).toContain('href="https://doi.org/10.1007/BF03025256"');
+    expect(out).toContain('>doi.org/10.1007/BF03025256</a>');
+    expect(out.indexOf('BF03025256')).toBeLessThan(out.indexOf('BF01456961'));
+  });
 });

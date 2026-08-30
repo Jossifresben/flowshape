@@ -75,6 +75,6 @@ export async function renderMathTab(id: string, lang: Lang): Promise<HTMLElement
     wrap.append(placeholderTab(t('math.missing', lang)));
     return wrap;
   }
-  wrap.innerHTML = renderMarkdown(doc.body) + renderCitation(doc.source, doc.url);
+  wrap.innerHTML = renderMarkdown(doc.body) + renderCitation(doc.source, doc.url, doc.doi);
   return wrap;
 }

@@ -217,6 +217,20 @@ function buildReferences(lang: Lang): DocumentFragment {
     cite.rel = 'noopener noreferrer';
     cite.textContent = ref.source;
     li.append(title, blurb, cite);
+    // One resolvable link per DOI, in the order the citation names the works.
+    // A citation that credits two papers gets two, rather than a silent choice
+    // between them: the identifier is what makes the credit machine-readable,
+    // and the same list is what the Zenodo deposit cites.
+    if (ref.doi && ref.doi.length > 0) {
+      const dois = document.createElement('span');
+      dois.className = 'about-ref-doi';
+      for (const doi of ref.doi) {
+        const a = extLink(`https://doi.org/${doi}`, `doi.org/${doi}`);
+        a.setAttribute('aria-label', `${t('refs.doi', lang)}: ${doi}`);
+        dois.append(a);
+      }
+      li.append(dois);
+    }
     if (ref.original) {
       owned += 1;
       const own = document.createElement('span');

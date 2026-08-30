@@ -1,6 +1,7 @@
 ---
 source: Enlosado rómbico (rhombille; "tumbling blocks", "cubos reversibles"), el enlosado de Laves [3.6.3.6] dual del trihexagonal (Grünbaum, B. y Shephard, G.C., 1987, "Tilings and Patterns", enlosado P4-42); ambigüedad del cubo reversible (Necker, L.A., 1832, "Observations on some remarkable optical phænomena seen in Switzerland; and on an optical phænomenon which occurs on viewing a figure of a crystal or geometrical solid", London and Edinburgh Philosophical Magazine 1(5), 329–337)
 url: https://en.wikipedia.org/wiki/Rhombille_tiling
+doi: 10.1080/14786443208647909
 ---
 
 ## Fórmula

@@ -1,6 +1,7 @@
 ---
 source: Seaton, K.A. (2023) "Mathematical specification of hitomezashi designs", Journal of Mathematics and the Arts 17(1-2)
 url: https://arxiv.org/abs/2208.12580
+doi: 10.1080/17513472.2023.2187999
 ---
 
 ## Fórmula

@@ -1,6 +1,7 @@
 ---
 source: Tabachnikov, S., "Geometry and Billiards" (AMS Student Mathematical Library 30, 2005)
 url: https://es.wikipedia.org/wiki/Billar_din%C3%A1mico
+doi: 10.1090/stml/030
 ---
 
 ## Fórmula

@@ -105,7 +105,18 @@ export function renderMarkdown(markdown: string): string {
 }
 
 /** Renders a source citation as a link in small mono type, e.g. for the
- *  bottom of an explain doc: `<source text>` linking to `url`. */
-export function renderCitation(source: string, url: string): string {
-  return `<p class="explain-citation"><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(source)}</a></p>`;
+ *  bottom of an explain doc: `<source text>` linking to `url`, followed by one
+ *  resolvable `doi.org/…` link per DOI the citation carries, in the order the
+ *  works are named. `doi` is empty for most patterns and the line is then
+ *  omitted entirely rather than rendered blank. */
+export function renderCitation(source: string, url: string, doi: readonly string[] = []): string {
+  const cite = `<p class="explain-citation"><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(source)}</a></p>`;
+  if (doi.length === 0) return cite;
+  const links = doi
+    .map(
+      (d) =>
+        `<a href="https://doi.org/${escapeHtml(d)}" target="_blank" rel="noopener noreferrer">doi.org/${escapeHtml(d)}</a>`,
+    )
+    .join(' ');
+  return `${cite}\n<p class="explain-doi">${links}</p>`;
 }

@@ -1,6 +1,7 @@
 ---
 source: Amidror, I. (2000) "The Theory of the Moiré Phenomenon, Volume I: Periodic Layers"
 url: https://link.springer.com/book/10.1007/978-1-84882-181-1
+doi: 10.1007/978-94-011-4205-2
 ---
 
 ## Fórmula

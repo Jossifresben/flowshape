@@ -1,6 +1,7 @@
 ---
 source: Tabachnikov, S., "Geometry and Billiards" (AMS Student Mathematical Library 30, 2005)
 url: https://en.wikipedia.org/wiki/Dynamical_billiards
+doi: 10.1090/stml/030
 ---
 
 ## Formula

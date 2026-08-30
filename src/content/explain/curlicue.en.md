@@ -1,6 +1,7 @@
 ---
 source: Berry, M. V. and Goldberg, J., "Renormalisation of curlicues" (Nonlinearity 1, 1988)
 url: https://mathworld.wolfram.com/CurlicueFractal.html
+doi: 10.1088/0951-7715/1/1/001
 ---
 
 ## Formula

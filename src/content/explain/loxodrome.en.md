@@ -1,6 +1,7 @@
 ---
 source: Mumford, D., Series, C., Wright, D., "Indra's Pearls: The Vision of Felix Klein" (Cambridge University Press, 2002)
 url: https://en.wikipedia.org/wiki/M%C3%B6bius_transformation
+doi: 10.1017/CBO9781107050051
 ---
 
 ## Formula

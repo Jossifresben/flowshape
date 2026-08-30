@@ -1,6 +1,7 @@
 ---
 source: Teorema del círculo de Descartes; forma compleja: Lagarias, J. C., Mallows, C. L. y Wilks, A. (2002), "Beyond the Descartes Circle Theorem", American Mathematical Monthly 109(4)
 url: https://en.wikipedia.org/wiki/Descartes%27_theorem
+doi: 10.1080/00029890.2002.11920896
 ---
 
 ## Fórmula

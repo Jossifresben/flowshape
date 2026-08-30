@@ -1,6 +1,7 @@
 ---
 source: Delaunay, B. (1934) "Sur la sphère vide", Bulletin de l'Académie des Sciences de l'URSS; Bowyer, A. and Watson, D.F. (1981), independent incremental algorithms
 url: https://en.wikipedia.org/wiki/Bowyer%E2%80%93Watson_algorithm
+doi: 10.1093/comjnl/24.2.162, 10.1093/comjnl/24.2.167
 ---
 
 ## Formula

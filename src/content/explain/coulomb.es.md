@@ -1,6 +1,7 @@
 ---
 source: Jobard, B. y Lefer, W. (1997) "Creating Evenly-Spaced Streamlines of Arbitrary Density", Visualization in Scientific Computing '97 (el campo es el clásico campo electrostático de cargas puntuales en 2D)
 url: https://link.springer.com/chapter/10.1007/978-3-7091-6876-9_5
+doi: 10.1007/978-3-7091-6876-9_5
 ---
 
 ## Fórmula

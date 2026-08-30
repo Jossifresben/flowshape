@@ -3,6 +3,10 @@
 export interface Reference {
   source: string;
   url: string;
+  /** DOIs of the works `source` names, in the order it names them. Absent
+   *  where the citation names nothing DOI-registered. Every entry was checked
+   *  to resolve to the exact work cited; none was inferred from a pattern. */
+  doi?: string[];
   /** Present and true where the pattern's construction — its composition and
    *  parameterisation — was worked out for this project. The mathematics it
    *  rests on is classical either way, and `source` cites it either way. */
@@ -10,34 +14,34 @@ export interface Reference {
 }
 
 export const REFERENCES: Record<string, Reference> = {
-  "apollonian": { source: "Descartes' Circle Theorem; complex form: Lagarias, J. C., Mallows, C. L. & Wilks, A. (2002), \"Beyond the Descartes Circle Theorem\", American Mathematical Monthly 109(4)", url: "https://en.wikipedia.org/wiki/Descartes%27_theorem" },
+  "apollonian": { source: "Descartes' Circle Theorem; complex form: Lagarias, J. C., Mallows, C. L. & Wilks, A. (2002), \"Beyond the Descartes Circle Theorem\", American Mathematical Monthly 109(4)", url: "https://en.wikipedia.org/wiki/Descartes%27_theorem", doi: ["10.1080/00029890.2002.11920896"] },
   "bands": { source: "Müller-Brockmann, J. (1955) Tonhalle concert poster (\"Beethoven\") — concentric-arc design lineage; the band-thickness power law is this project's own parameterisation", url: "https://commons.wikimedia.org/wiki/File:Josef_M%C3%BCller-Brockmann._beethoven_poster(1955).jpg", original: true },
-  "billiard": { source: "Tabachnikov, S., \"Geometry and Billiards\" (AMS Student Mathematical Library 30, 2005)", url: "https://en.wikipedia.org/wiki/Dynamical_billiards" },
+  "billiard": { source: "Tabachnikov, S., \"Geometry and Billiards\" (AMS Student Mathematical Library 30, 2005)", url: "https://en.wikipedia.org/wiki/Dynamical_billiards", doi: ["10.1090/stml/030"] },
   "chirp": { source: "Linear (frequency-swept) chirp signal; cf. Wikipedia, \"Chirp\"", url: "https://en.wikipedia.org/wiki/Chirp", original: true },
-  "coulomb": { source: "Jobard, B. & Lefer, W. (1997) \"Creating Evenly-Spaced Streamlines of Arbitrary Density\", Visualization in Scientific Computing '97 (field is the classic 2D electrostatic point-charge field)", url: "https://link.springer.com/chapter/10.1007/978-3-7091-6876-9_5" },
-  "curlicue": { source: "Berry, M. V. and Goldberg, J., \"Renormalisation of curlicues\" (Nonlinearity 1, 1988)", url: "https://mathworld.wolfram.com/CurlicueFractal.html" },
-  "delaunay": { source: "Delaunay, B. (1934) \"Sur la sphère vide\", Bulletin de l'Académie des Sciences de l'URSS; Bowyer, A. and Watson, D.F. (1981), independent incremental algorithms", url: "https://en.wikipedia.org/wiki/Bowyer%E2%80%93Watson_algorithm" },
+  "coulomb": { source: "Jobard, B. & Lefer, W. (1997) \"Creating Evenly-Spaced Streamlines of Arbitrary Density\", Visualization in Scientific Computing '97 (field is the classic 2D electrostatic point-charge field)", url: "https://link.springer.com/chapter/10.1007/978-3-7091-6876-9_5", doi: ["10.1007/978-3-7091-6876-9_5"] },
+  "curlicue": { source: "Berry, M. V. and Goldberg, J., \"Renormalisation of curlicues\" (Nonlinearity 1, 1988)", url: "https://mathworld.wolfram.com/CurlicueFractal.html", doi: ["10.1088/0951-7715/1/1/001"] },
+  "delaunay": { source: "Delaunay, B. (1934) \"Sur la sphère vide\", Bulletin de l'Académie des Sciences de l'URSS; Bowyer, A. and Watson, D.F. (1981), independent incremental algorithms", url: "https://en.wikipedia.org/wiki/Bowyer%E2%80%93Watson_algorithm", doi: ["10.1093/comjnl/24.2.162","10.1093/comjnl/24.2.167"] },
   "diffgrowth": { source: "Webb, J. \"2D Differential Growth Experiments\" (ongoing since 2018)", url: "https://github.com/jasonwebb/2d-differential-growth-experiments" },
   "fabric": { source: "Quílez, I. (2002), \"Domain Warping\"", url: "https://iquilezles.org/articles/warp/" },
-  "flowfield": { source: "Hobbs, T. (2020) \"Flow Fields\"; streamline separation rule after Jobard, B. and Lefer, W. (1997) \"Creating Evenly-Spaced Streamlines of Arbitrary Density\"", url: "https://www.tylerxhobbs.com/words/flow-fields" },
+  "flowfield": { source: "Hobbs, T. (2020) \"Flow Fields\"; streamline separation rule after Jobard, B. and Lefer, W. (1997) \"Creating Evenly-Spaced Streamlines of Arbitrary Density\"", url: "https://www.tylerxhobbs.com/words/flow-fields", doi: ["10.1007/978-3-7091-6876-9_5"] },
   "girih": { source: "Hankin, E.H. (1925) \"The Drawing of Geometric Patterns in Saracenic Art\", Memoirs of the Archaeological Survey of India; construction formalized by Kaplan, C.S. (2005) \"Islamic Star Patterns from Polygons in Contact\"", url: "https://cs.uwaterloo.ca/~csk/publications/Papers/kaplan_2005.pdf" },
   "guilloche": { source: "Rose engine turning and the guilloché tradition; hypotrochoid ring construction", url: "https://en.wikipedia.org/wiki/Guilloch%C3%A9" },
   "harmonograph": { source: "Bourke, P. \"Harmonograph\"; underlying physics traces to Lissajous, J.A. (1857)", url: "https://paulbourke.net/geometry/harmonograph/" },
   "helix": { source: "Helix, parametric double-helix curve; cf. Wikipedia, \"Helix\"", url: "https://en.wikipedia.org/wiki/Helix", original: true },
-  "hitomezashi": { source: "Seaton, K.A. (2023) \"Mathematical specification of hitomezashi designs\", Journal of Mathematics and the Arts 17(1-2)", url: "https://arxiv.org/abs/2208.12580" },
-  "interlace": { source: "Celtic knotwork construction (Cromwell, P.R., 1993, \"Celtic Knotwork: Mathematical Art\", The Mathematical Intelligencer 15(1), 36–47); the free over/under rests on the honeycomb graph being bipartite — a graph is bipartite iff it contains no odd cycle (Kőnig, D., 1916)", url: "https://doi.org/10.1007/BF03025256" },
-  "isoweave": { source: "Isometric projection; painter's algorithm (Newell, Newell & Sancha, 1972, \"A Solution to the Hidden Surface Problem\"); 3-colouring of the triangular lattice", url: "https://en.wikipedia.org/wiki/Painter%27s_algorithm", original: true },
-  "loxodrome": { source: "Mumford, D., Series, C., Wright, D., \"Indra's Pearls: The Vision of Felix Klein\" (Cambridge University Press, 2002)", url: "https://en.wikipedia.org/wiki/M%C3%B6bius_transformation" },
-  "maurer": { source: "Maurer, P.M. (1987) \"A Rose is a Rose...\", The American Mathematical Monthly 94(7), 631–645", url: "https://en.wikipedia.org/wiki/Maurer_rose" },
-  "moire": { source: "Amidror, I. (2000) \"The Theory of the Moiré Phenomenon, Volume I: Periodic Layers\"", url: "https://link.springer.com/book/10.1007/978-1-84882-181-1" },
-  "mystery": { source: "Farris, F. A., \"Creating Symmetry: The Artful Mathematics of Wallpaper Patterns\" (Princeton University Press, 2015)", url: "https://press.princeton.edu/books/hardcover/9780691161730/creating-symmetry" },
+  "hitomezashi": { source: "Seaton, K.A. (2023) \"Mathematical specification of hitomezashi designs\", Journal of Mathematics and the Arts 17(1-2)", url: "https://arxiv.org/abs/2208.12580", doi: ["10.1080/17513472.2023.2187999"] },
+  "interlace": { source: "Celtic knotwork construction (Cromwell, P.R., 1993, \"Celtic Knotwork: Mathematical Art\", The Mathematical Intelligencer 15(1), 36–47); the free over/under rests on the honeycomb graph being bipartite — a graph is bipartite iff it contains no odd cycle (Kőnig, D., 1916)", url: "https://doi.org/10.1007/BF03025256", doi: ["10.1007/BF03025256","10.1007/BF01456961"] },
+  "isoweave": { source: "Isometric projection; painter's algorithm (Newell, Newell & Sancha, 1972, \"A Solution to the Hidden Surface Problem\"); 3-colouring of the triangular lattice", url: "https://en.wikipedia.org/wiki/Painter%27s_algorithm", doi: ["10.1145/800193.569954"], original: true },
+  "loxodrome": { source: "Mumford, D., Series, C., Wright, D., \"Indra's Pearls: The Vision of Felix Klein\" (Cambridge University Press, 2002)", url: "https://en.wikipedia.org/wiki/M%C3%B6bius_transformation", doi: ["10.1017/CBO9781107050051"] },
+  "maurer": { source: "Maurer, P.M. (1987) \"A Rose is a Rose...\", The American Mathematical Monthly 94(7), 631–645", url: "https://en.wikipedia.org/wiki/Maurer_rose", doi: ["10.1080/00029890.1987.12000695"] },
+  "moire": { source: "Amidror, I. (2000) \"The Theory of the Moiré Phenomenon, Volume I: Periodic Layers\"", url: "https://link.springer.com/book/10.1007/978-1-84882-181-1", doi: ["10.1007/978-94-011-4205-2"] },
+  "mystery": { source: "Farris, F. A., \"Creating Symmetry: The Artful Mathematics of Wallpaper Patterns\" (Princeton University Press, 2015)", url: "https://press.princeton.edu/books/hardcover/9780691161730/creating-symmetry", doi: ["10.1515/9781400865673"] },
   "nested": { source: "Rhombille (\"tumbling blocks\") tiling, the dual of the trihexagonal tiling — Grünbaum, B. & Shephard, G.C. (1987) \"Tilings and Patterns\"; nonzero winding rule, W3C SVG 1.1 §11.3 \"fill-rule\"", url: "https://en.wikipedia.org/wiki/Rhombille_tiling", original: true },
-  "phyllotaxis": { source: "Vogel, H. (1979) \"A better way to construct the sunflower head\", Mathematical Biosciences 44(3-4)", url: "https://en.wikipedia.org/wiki/Phyllotaxis" },
+  "phyllotaxis": { source: "Vogel, H. (1979) \"A better way to construct the sunflower head\", Mathematical Biosciences 44(3-4)", url: "https://en.wikipedia.org/wiki/Phyllotaxis", doi: ["10.1016/0025-5564(79)90080-4"] },
   "roselattice": { source: "Weisstein, E. W., \"Rose\", MathWorld", url: "https://mathworld.wolfram.com/Rose.html", original: true },
-  "stipple": { source: "Bridson, R. (2007) \"Fast Poisson Disk Sampling in Arbitrary Dimensions\", ACM SIGGRAPH 2007 Sketches", url: "https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf" },
+  "stipple": { source: "Bridson, R. (2007) \"Fast Poisson Disk Sampling in Arbitrary Dimensions\", ACM SIGGRAPH 2007 Sketches", url: "https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf", doi: ["10.1145/1278780.1278807"] },
   "timestable": { source: "Plouffe, S. (pattern); Polster, B. and Geracitano, G., \"Times Tables, Mandelbrot and the Heart of Mathematics\" (Mathologer, 2019)", url: "https://www.youtube.com/watch?v=qhbuKbxJsk8" },
-  "truchet": { source: "Truchet, S. (1704) \"Mémoire sur les combinaisons\"; arc variant popularized by Smith, C.S. (1987) \"The Tiling Patterns of Sébastien Truchet and the Topology of Structural Hierarchy\", Leonardo 20(4)", url: "https://en.wikipedia.org/wiki/Truchet_tiles" },
-  "tumbling": { source: "Rhombille tiling (\"tumbling blocks\", \"reversible cubes\"), the Laves tiling [3.6.3.6] dual to the trihexagonal tiling (Grünbaum, B. & Shephard, G.C., 1987, \"Tilings and Patterns\", tiling P4-42); reversible-cube ambiguity (Necker, L.A., 1832, \"Observations on some remarkable optical phænomena seen in Switzerland; and on an optical phænomenon which occurs on viewing a figure of a crystal or geometrical solid\", London and Edinburgh Philosophical Magazine 1(5), 329–337)", url: "https://en.wikipedia.org/wiki/Rhombille_tiling" },
-  "voronoi": { source: "Voronoi, G. (1908) \"Nouvelles applications des paramètres continus à la théorie des formes quadratiques\", Journal für die reine und angewandte Mathematik 133", url: "https://en.wikipedia.org/wiki/Voronoi_diagram" },
-  "voxel": { source: "Isometric projection; painter's algorithm (Newell, Newell & Sancha, 1972, \"A Solution to the Hidden Surface Problem\")", url: "https://en.wikipedia.org/wiki/Painter%27s_algorithm" },
+  "truchet": { source: "Truchet, S. (1704) \"Mémoire sur les combinaisons\"; arc variant popularized by Smith, C.S. (1987) \"The Tiling Patterns of Sébastien Truchet and the Topology of Structural Hierarchy\", Leonardo 20(4)", url: "https://en.wikipedia.org/wiki/Truchet_tiles", doi: ["10.2307/1578535"] },
+  "tumbling": { source: "Rhombille tiling (\"tumbling blocks\", \"reversible cubes\"), the Laves tiling [3.6.3.6] dual to the trihexagonal tiling (Grünbaum, B. & Shephard, G.C., 1987, \"Tilings and Patterns\", tiling P4-42); reversible-cube ambiguity (Necker, L.A., 1832, \"Observations on some remarkable optical phænomena seen in Switzerland; and on an optical phænomenon which occurs on viewing a figure of a crystal or geometrical solid\", London and Edinburgh Philosophical Magazine 1(5), 329–337)", url: "https://en.wikipedia.org/wiki/Rhombille_tiling", doi: ["10.1080/14786443208647909"] },
+  "voronoi": { source: "Voronoi, G. (1908) \"Nouvelles applications des paramètres continus à la théorie des formes quadratiques\", Journal für die reine und angewandte Mathematik 133", url: "https://en.wikipedia.org/wiki/Voronoi_diagram", doi: ["10.1515/crll.1908.133.97"] },
+  "voxel": { source: "Isometric projection; painter's algorithm (Newell, Newell & Sancha, 1972, \"A Solution to the Hidden Surface Problem\")", url: "https://en.wikipedia.org/wiki/Painter%27s_algorithm", doi: ["10.1145/800193.569954"] },
 };

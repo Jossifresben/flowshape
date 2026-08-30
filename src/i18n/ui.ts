@@ -144,6 +144,9 @@ export const UI: Record<string, Pair> = {
     'La nota construcción propia aparece en {n} de las entradas de abajo. Señala que la composición y la parametrización son propias de este proyecto; nunca las matemáticas, que son clásicas en todos los casos y se citan al lado.',
   ],
   'refs.own': ['Original construction', 'Construcción propia'],
+  // Screen-reader label for a DOI link. The visible text is the identifier
+  // itself, which reads the same in either language; this names what it is.
+  'refs.doi': ['Digital Object Identifier', 'Identificador de objeto digital'],
   'tip.methods': [
     'Card, PayPal, Apple Pay or Google Pay',
     'Tarjeta, PayPal, Apple Pay o Google Pay',

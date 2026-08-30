@@ -1,6 +1,7 @@
 ---
 source: Hobbs, T. (2020) "Flow Fields"; streamline separation rule after Jobard, B. and Lefer, W. (1997) "Creating Evenly-Spaced Streamlines of Arbitrary Density"
 url: https://www.tylerxhobbs.com/words/flow-fields
+doi: 10.1007/978-3-7091-6876-9_5
 ---
 
 ## Formula

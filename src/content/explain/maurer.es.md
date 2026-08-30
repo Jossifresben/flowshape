@@ -1,6 +1,7 @@
 ---
 source: Maurer, P.M. (1987) "A Rose is a Rose...", The American Mathematical Monthly 94(7), 631–645
 url: https://en.wikipedia.org/wiki/Maurer_rose
+doi: 10.1080/00029890.1987.12000695
 ---
 
 ## Fórmula

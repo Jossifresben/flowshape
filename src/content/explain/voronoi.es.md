@@ -1,6 +1,7 @@
 ---
 source: Voronoi, G. (1908) "Nouvelles applications des paramètres continus à la théorie des formes quadratiques", Journal für die reine und angewandte Mathematik 133
 url: https://en.wikipedia.org/wiki/Voronoi_diagram
+doi: 10.1515/crll.1908.133.97
 ---
 
 ## Fórmula
