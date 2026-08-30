@@ -1,6 +1,6 @@
 # The pattern catalogue
 
-25 generators, grouped into six families. Every one is a pure function of
+30 generators, grouped into six families. Every one is a pure function of
 `(params, seed, size)` returning an `SvgNode` tree — see
 [architecture.md](architecture.md) for the contract.
 

@@ -8,7 +8,7 @@
 
 **[flowshape.art](https://flowshape.art)** — convierte las matemáticas en arte.
 
-Explora 25 generadores de patrones, lee las matemáticas que dibujan cada uno y llévate el resultado como póster listo para imprimir o como un visual que se mueve con tu música.
+Explora 30 generadores de patrones, lee las matemáticas que dibujan cada uno y llévate el resultado como póster listo para imprimir o como un visual que se mueve con tu música.
 
 Gratuito, de código abierto, sin cuentas y sin backend. Todo ocurre en el navegador.
 
@@ -28,7 +28,7 @@ Ambas cosas descansan sobre la misma idea que todo lo demás: un favorito *es* u
 
 ## Qué es
 
-flowshape convierte las matemáticas en arte. Elige uno de los **25 generadores de patrones deterministas** —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— mueve cada parámetro que tenga y observa cómo responde la forma.
+flowshape convierte las matemáticas en arte. Elige uno de los **30 generadores de patrones deterministas** —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— mueve cada parámetro que tenga y observa cómo responde la forma.
 
 Después, llévatelo a alguna parte:
 
@@ -97,7 +97,7 @@ Cuarenta líneas, sin framework, sin una biblioteca oculta que haga la parte int
 
 **Crecimiento** *(1)* — [Differential Growth](docs/patterns.md#differential-growth)
 
-Los 25, con la fórmula, la explicación, los parámetros y la cita de cada uno, en **[docs/patterns.md](docs/patterns.md)**. Las fuentes van de Vogel y Descartes a Hankin, Truchet, Seaton, Jobard y Lefer, Quílez, Newell y Müller-Brockmann.
+Los 30, con la fórmula, la explicación, los parámetros y la cita de cada uno, en **[docs/patterns.md](docs/patterns.md)**. Las fuentes van de Vogel y Descartes a Hankin, Truchet, Seaton, Jobard y Lefer, Quílez, Newell y Müller-Brockmann.
 
 ## Reglas de diseño
 
@@ -135,7 +135,7 @@ Coge un patrón que hayas ajustado, dale audio —un archivo o el micrófono— 
 
 - **Seis características por fotograma** — `bass`, `mid`, `high`, `level`, `bright` (centroide espectral) y `flux` — con autoganancia por banda, para que una nota de voz module tanto como un tema masterizado, y después suavizadas por un seguidor de envolvente. Los fotogramas crudos de la FFT nunca tocan un parámetro: las envolventes son lo que hace que el movimiento sea musical en vez de nervioso.
 - **Consciente del pulso.** En modo archivo, los ataques y el tempo se precalculan sobre el búfer completo, así que el siguiente fotograma puede construirse *antes* del golpe y cambiarse justo en él. En modo micrófono, la detección es en tiempo real.
-- **Los 25 patrones se animan.** Modulación continua por fotograma donde la geometría lo permite; y un modo de eventos cuantizados al pulso —resembrar, avanzar un parámetro estructural, invertir un booleano— para todo lo demás, incluidos los teselados discretos que no tienen nada continuo que mover.
+- **Los 30 patrones se animan.** Modulación continua por fotograma donde la geometría lo permite; y un modo de eventos cuantizados al pulso —resembrar, avanzar un parámetro estructural, invertir un booleano— para todo lo demás, incluidos los teselados discretos que no tienen nada continuo que mover.
 - **Los mismos generadores, otro renderizador.** Un adaptador dibuja el árbol `SvgNode` existente sobre canvas2d, contrastado con la salida SVG mediante una comparación de píxeles por patrón. La ruta del póster sigue siendo SVG puro.
 - **Descarga el vídeo.** Graba el escenario y guarda un **MP4** con el audio incorporado, a 1920×1080, 1080×1920 o 1080×1080. La captura pasa por `MediaRecorder`, con reserva en WebM para los navegadores que no graben H.264/AAC; un codificador WebCodecs offline y determinista —mismo audio + misma URL ⇒ MP4 idéntico byte a byte, más rápido que en tiempo real— es la fase siguiente.
 - **El audio nunca sale del navegador.** No hay adónde enviarlo.
@@ -168,7 +168,7 @@ Todos los patrones pasan por un banco de pruebas común que comprueba el determi
 ```
 src/
   core/       prng · url-state · constructor SVG · ruido · geometría · oklch · persist · saved
-  patterns/   registro + un módulo por patrón (25) + presets, randomize
+  patterns/   registro + un módulo por patrón (30) + presets, randomize
   poster/     formatos · paletas · exportación (SVG / PNG)
   compose/    compositor de pósters — units · colorways · regions · skeletons · variants · render
   ui/         galería · showcase · playground · póster · animate · saved · acerca de

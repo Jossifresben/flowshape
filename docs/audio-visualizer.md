@@ -81,7 +81,7 @@ There is no modulation-matrix UI. Each pattern ships 2–3 curated, named preset
 
 ### 3. Pattern participation
 
-All 25 patterns animate. `PatternDef` gains an optional block:
+All 30 patterns animate. `PatternDef` gains an optional block:
 
 ```ts
 anim?: {
