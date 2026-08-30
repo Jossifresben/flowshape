@@ -20,7 +20,10 @@ function extLink(href: string, text: string): HTMLAnchorElement {
  *
  * `compact` drops the licence and about links for the playground's control
  * panel, where the credit line sits under the export controls and vertical
- * space is already scarce.
+ * space is already scarce. The privacy control is the one link it keeps:
+ * withdrawing consent has to be as easy as giving it, and the playground is
+ * where a visitor spends most of their time — leaving it out there would put
+ * the choice behind a navigation on the site's main view.
  */
 export function buildFooter(lang: Lang, opts: { compact?: boolean } = {}): HTMLElement {
   const footer = document.createElement('footer');
@@ -40,15 +43,13 @@ export function buildFooter(lang: Lang, opts: { compact?: boolean } = {}): HTMLE
     about.href = '#/about';
     about.textContent = t('footer.about', lang);
     links.append(about, extLink(`${REPO_URL}/blob/main/LICENSE`, t('footer.licence', lang)));
-    // Withdrawing consent must be as easy as giving it, so the control that
-    // opens the choice is on every full-chrome page, not buried in About.
-    const privacy = document.createElement('button');
-    privacy.type = 'button';
-    privacy.className = 'site-footer-privacy';
-    privacy.textContent = t('footer.privacy', lang);
-    privacy.addEventListener('click', openConsentBanner);
-    links.append(privacy);
   }
+  const privacy = document.createElement('button');
+  privacy.type = 'button';
+  privacy.className = 'site-footer-privacy';
+  privacy.textContent = t('footer.privacy', lang);
+  privacy.addEventListener('click', openConsentBanner);
+  links.append(privacy);
   footer.append(links);
 
   return footer;
