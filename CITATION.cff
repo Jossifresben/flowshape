@@ -19,7 +19,7 @@ authors:
 repository-code: "https://github.com/Jossifresben/flowshape"
 url: "https://flowshape.art"
 license: MIT
-version: "1.2.0"
+version: "1.3.0"
 date-released: "2026-08-30"
 identifiers:
   - type: doi
