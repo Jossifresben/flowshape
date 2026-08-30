@@ -1,5 +1,6 @@
 import { RESERVED } from './reserved';
 import { DEFAULT_FORMAT } from '../poster/formats';
+import { TUNING_DEFAULTS } from '../audio/features';
 
 export interface ColorState {
   hue?: number;
@@ -49,6 +50,14 @@ export interface AppState {
    *  apre/aint do. Never read outside view === 'a' — the poster path has no
    *  concept of it. */
   acol?: boolean;
+  /** Stage-only audio tuning, mirroring `AudioTuning` — envelope attack (ms),
+   *  release (ms), and the three band gains. Omitted at the defaults so every
+   *  animate URL shared before these existed decodes to identical motion. */
+  aatk?: number;
+  arel?: number;
+  abass?: number;
+  amid?: number;
+  ahigh?: number;
   /** Composer only: the browsed layout variant id. */
   layout?: string;
   /** Composer only: the stepped colorway index. */
@@ -81,6 +90,11 @@ export function encodeState(s: AppState): string {
     if (s.apre !== undefined) q.set('apre', s.apre);
     if (s.aint !== undefined && s.aint !== 1) q.set('aint', String(Math.round(s.aint * 100) / 100));
     if (s.acol) q.set('acol', '1');
+    if (s.aatk !== undefined && s.aatk !== TUNING_DEFAULTS.attackMs) q.set('aatk', String(Math.round(s.aatk)));
+    if (s.arel !== undefined && s.arel !== TUNING_DEFAULTS.releaseMs) q.set('arel', String(Math.round(s.arel)));
+    if (s.abass !== undefined && s.abass !== TUNING_DEFAULTS.bassGain) q.set('abass', String(Math.round(s.abass * 100) / 100));
+    if (s.amid !== undefined && s.amid !== TUNING_DEFAULTS.midGain) q.set('amid', String(Math.round(s.amid * 100) / 100));
+    if (s.ahigh !== undefined && s.ahigh !== TUNING_DEFAULTS.highGain) q.set('ahigh', String(Math.round(s.ahigh * 100) / 100));
   }
   if (s.view === 'c') {
     if (s.layout !== undefined) q.set('layout', s.layout);
@@ -144,6 +158,19 @@ export function decodeState(hash: string): AppState | null {
       state.aint = Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 1;
     }
     if (q.get('acol') === '1') state.acol = true;
+    // Tuning values clamp to the sliders' ranges; a non-numeric value is
+    // dropped so the view falls back to the default, same as aint.
+    const numIn = (key: string, lo: number, hi: number): number | undefined => {
+      const raw = q.get(key);
+      if (raw === null) return undefined;
+      const n = Number(raw);
+      return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : undefined;
+    };
+    const aatk = numIn('aatk', 5, 200); if (aatk !== undefined) state.aatk = aatk;
+    const arel = numIn('arel', 50, 1500); if (arel !== undefined) state.arel = arel;
+    const abass = numIn('abass', 0, 2); if (abass !== undefined) state.abass = abass;
+    const amid = numIn('amid', 0, 2); if (amid !== undefined) state.amid = amid;
+    const ahigh = numIn('ahigh', 0, 2); if (ahigh !== undefined) state.ahigh = ahigh;
   }
   if (m[1] === 'c') {
     state.view = 'c';

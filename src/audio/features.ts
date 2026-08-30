@@ -9,6 +9,25 @@ export type FeatureFrame = Record<FeatureKey, number>;
 
 export const ZERO_FRAME: FeatureFrame = { bass: 0, mid: 0, high: 0, level: 0, bright: 0, flux: 0 };
 
+/** The listener-tunable half of the pipeline: how fast features respond and
+ *  how much each band counts. Everything else (AGC, band edges) stays fixed —
+ *  those are calibration, not interpretation. */
+export interface AudioTuning {
+  /** Envelope attack in ms — how fast motion rises to meet the music. */
+  attackMs: number;
+  /** Envelope release in ms — how slowly motion falls back after a hit. */
+  releaseMs: number;
+  /** Post-AGC band multipliers; the product is clamped to 1, so >1 makes a
+   *  band saturate sooner rather than exceed its range. */
+  bassGain: number;
+  midGain: number;
+  highGain: number;
+}
+
+export const TUNING_DEFAULTS: AudioTuning = {
+  attackMs: 50, releaseMs: 400, bassGain: 1, midGain: 1, highGain: 1,
+};
+
 /** Time-domain window (2048 samples) → smoothed feature frame in [0,1] each.
  *  Band normalization is per-band with a shared floor — spike-verified both
  *  ways: ONE shared gain starves mid/high in real music (bass dominates, so
@@ -30,10 +49,20 @@ export class FeaturePipeline {
   private levelAgc = new AutoGain(5);
   private fluxAgc = new AutoGain(5);
   private env: Record<FeatureKey, EnvelopeFollower>;
+  private tuning: AudioTuning;
 
-  constructor(private sampleRate: number) {
+  constructor(private sampleRate: number, tuning: AudioTuning = TUNING_DEFAULTS) {
+    this.tuning = { ...tuning };
     this.env = {} as Record<FeatureKey, EnvelopeFollower>;
-    for (const k of FEATURE_KEYS) this.env[k] = new EnvelopeFollower(50, 400);
+    for (const k of FEATURE_KEYS) {
+      this.env[k] = new EnvelopeFollower(this.tuning.attackMs, this.tuning.releaseMs);
+    }
+  }
+
+  /** Retune live; envelope state carries over so nothing jumps. */
+  setTuning(tuning: AudioTuning): void {
+    this.tuning = { ...tuning };
+    for (const k of FEATURE_KEYS) this.env[k]!.setTimes(tuning.attackMs, tuning.releaseMs);
   }
 
   process(timeDomain: Float32Array, dtMs: number): FeatureFrame {
@@ -52,9 +81,9 @@ export class FeaturePipeline {
     this.highAgc.observe(raw.high, dtMs);
     const floor = 0.1 * Math.max(this.bassAgc.peak, this.midAgc.peak, this.highAgc.peak);
     const gained: FeatureFrame = {
-      bass: this.bassAgc.norm(raw.bass, floor),
-      mid: this.midAgc.norm(raw.mid, floor),
-      high: this.highAgc.norm(raw.high, floor),
+      bass: Math.min(1, this.bassAgc.norm(raw.bass, floor) * this.tuning.bassGain),
+      mid: Math.min(1, this.midAgc.norm(raw.mid, floor) * this.tuning.midGain),
+      high: Math.min(1, this.highAgc.norm(raw.high, floor) * this.tuning.highGain),
       level: this.levelAgc.process(raw.level, dtMs),
       bright: raw.bright,
       flux: this.fluxAgc.process(raw.flux, dtMs),

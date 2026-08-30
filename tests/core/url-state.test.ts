@@ -111,6 +111,33 @@ describe('animate view state', () => {
     expect(s.stage).toBeUndefined();
     expect(s.aint).toBe(1);
   });
+  // The tuning keys are a later addition to animate URLs already in the wild,
+  // so like hueSpread they must vanish at their defaults: an old link decodes
+  // to the same motion, and touching no slider adds nothing to the hash.
+  it('omits tuning keys at their defaults and round-trips them otherwise', () => {
+    const plain = encodeState({
+      patternId: 'moire', seed: 2, params: {}, color: {}, lang: 'en',
+      view: 'a', aatk: 50, arel: 400, abass: 1, amid: 1, ahigh: 1,
+    });
+    for (const k of ['aatk', 'arel', 'abass', 'amid', 'ahigh']) expect(plain).not.toContain(k);
+
+    const s = decodeState(encodeState({
+      patternId: 'moire', seed: 2, params: {}, color: {}, lang: 'en',
+      view: 'a', aatk: 20, arel: 800, abass: 1.5, amid: 0.5, ahigh: 0,
+    }))!;
+    expect(s.aatk).toBe(20);
+    expect(s.arel).toBe(800);
+    expect(s.abass).toBeCloseTo(1.5);
+    expect(s.amid).toBeCloseTo(0.5);
+    expect(s.ahigh).toBe(0);
+  });
+  it('clamps out-of-range tuning values and drops garbage ones', () => {
+    const s = decodeState('#/a/moire?v=1&seed=1&aatk=9999&arel=1&abass=-3&amid=junk')!;
+    expect(s.aatk).toBe(200);
+    expect(s.arel).toBe(50);
+    expect(s.abass).toBe(0);
+    expect(s.amid).toBeUndefined();
+  });
   it('round-trips the colour toggle and omits it when off', () => {
     const on = decodeState(encodeState({
       patternId: 'harmonograph', seed: 9, params: {}, color: {}, lang: 'en',
