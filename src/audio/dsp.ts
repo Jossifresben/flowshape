@@ -90,6 +90,11 @@ export function spectralFlux(mag: Float32Array, prev: Float32Array | null): numb
 export class EnvelopeFollower {
   private y = 0;
   constructor(private attackMs: number, private releaseMs: number) {}
+  /** Retune live without resetting the envelope state. */
+  setTimes(attackMs: number, releaseMs: number): void {
+    this.attackMs = attackMs;
+    this.releaseMs = releaseMs;
+  }
   process(x: number, dtMs: number): number {
     const tau = x > this.y ? this.attackMs : this.releaseMs;
     this.y += (x - this.y) * (1 - Math.exp(-dtMs / tau));

@@ -163,23 +163,24 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
   ],
   maurer: [
     // maurer has no smooth structural axis at all: `n` and `d` both
-    // reconfigure the rose completely from one integer to the next, so its
-    // structure can only be reached by a beat-locked event, never by a route.
-    // Both events were also visiting degenerate values. Stepping `d` across
-    // its full 1..359 every single beat put d = 1 and d = 359 on the stage
-    // twice a cycle, where the walk collapses to a thin ring (ink 4.8k
-    // against a 47k median), and every rose appeared twice because d and
-    // 360 - d draw the same figure. The sub-range 15..165 in six positions
-    // steps between the multiples of 30, which are exactly where the walk
-    // degenerates, and every landed value renders above the median.
+    // reconfigure the rose completely from one integer to the next — the
+    // figure IS (n, d). Earlier presets stepped one of them on the beat,
+    // which replaced the visitor's rose with a catalogue of other roses for
+    // most of every cycle; a viewer who had designed a specific figure saw
+    // it vanish on the first beat. Structure is therefore never touched.
+    // Motion comes from the phase precession every maurer render already
+    // carries (the whole figure turns once per phase cycle), the routes
+    // breathe stroke and size with the music, and Star's beat event flips
+    // the envelope — decoration around the walk, never the walk itself.
     { id: 'star', label: { en: 'Star', es: 'Estrella' }, routes: [
-      { feature: 'bass', param: 'strokeWidth', depth: 0.2 },
+      { feature: 'bass', param: 'strokeWidth', depth: 0.25 },
       { feature: 'level', param: 'size', depth: 0.12 },
-    ], event: { kind: 'step', param: 'd', everyBeats: 2, steps: 6, from: 15, to: 165 } },
+    ], event: { kind: 'flip', param: 'envelope', everyBeats: 4 } },
     { id: 'web', label: { en: 'Web', es: 'Telaraña' }, routes: [
       { feature: 'mid', param: 'strokeWidth', depth: 0.18 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.1 },
       { feature: 'level', param: 'size', depth: 0.1 },
-    ], event: { kind: 'step', param: 'n', everyBeats: 4, steps: 6, from: 3, to: 12 } },
+    ] },
   ],
   chirp: [
     // `amplitude` at depth 0.65 swung 37.7 px on a 16 px default, so at 46

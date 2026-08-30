@@ -516,6 +516,10 @@ a.gal-wordmark { text-decoration: none; }
   display: flex; flex-direction: column; gap: 12px;
   border-left: 1px solid var(--line);
   font-family: var(--font-mono);
+  /* Scroll anchoring fights this panel: the scrub bar and BPM status appear
+     when audio loads, the browser re-anchors to keep lower content still,
+     and the nav row silently scrolls out of reach above. */
+  overflow-anchor: none;
 }
 .anim-panel h1 { font-size: 14px; letter-spacing: 0.08em; margin: 0; color: var(--ink); }
 .anim-back { font-size: 11px; text-decoration: none; color: var(--gray); }
@@ -528,6 +532,22 @@ a.gal-wordmark { text-decoration: none; }
 }
 .anim-drop { border-style: dashed; border-color: var(--line); }
 .anim-btn.recording { color: var(--accent); border-color: var(--accent); }
+/* mic / play / rec / fullscreen as one icon row — the labels live on in
+   title + aria-label, so the compactness costs no accessibility. */
+.anim-transport { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.anim-icon-btn { display: flex; align-items: center; justify-content: center; padding: 7px 0; position: relative; }
+.anim-icon-btn svg { display: block; }
+/* Instant tooltip from data-tip — native `title` waits over a second and
+   never shows on touch, so an icon-only control needs its own. Shown on
+   keyboard focus too, since the label is otherwise invisible. */
+.anim-icon-btn::after {
+  content: attr(data-tip);
+  position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  font-size: 9px; letter-spacing: 0.08em; white-space: nowrap;
+  padding: 3px 6px; border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  opacity: 0; pointer-events: none; transition: opacity 0.12s 0.15s; z-index: 2;
+}
+.anim-icon-btn:hover::after, .anim-icon-btn:focus-visible::after { opacity: 1; }
 .anim-scrub { width: 100%; }
 .anim-privacy { font-size: 10px; opacity: 0.6; margin: 4px 0 0; color: var(--gray); }
 .anim-status { font-size: 11px; min-height: 14px; color: var(--gray); }

@@ -21,4 +21,5 @@ export const RESERVED = new Set([
   // either. The collision guard for `phase` lives next to SIZE_PARAM's, in
   // definePattern's validation loop (src/patterns/registry.ts).
   'stage', 'apre', 'aint', 'acol',
+  'aatk', 'arel', 'abass', 'amid', 'ahigh',
 ]);

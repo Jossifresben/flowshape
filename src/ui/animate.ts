@@ -2,7 +2,9 @@ import { getPattern, defaultParams, clampParams, generateSafe, type PatternDef }
 import { decodeState, encodeState, type AppState } from '../core/url-state';
 import { resolvePalette } from '../poster/palettes';
 import type { SvgNode, Palette } from '../core/svg';
-import { FeaturePipeline, ZERO_FRAME, type FeatureFrame } from '../audio/features';
+import {
+  FeaturePipeline, ZERO_FRAME, TUNING_DEFAULTS, type FeatureFrame, type AudioTuning,
+} from '../audio/features';
 import { detectOnsets, estimateTempo, beatGrid, LiveOnsetDetector } from '../audio/onsets';
 import { fileRig, micRig, type AudioRig } from '../audio/sources';
 import { BeatClock, phaseAt, frameParams } from '../anim/engine';
@@ -10,7 +12,7 @@ import { drawTree } from '../anim/canvas-render';
 import { presetsFor, DEFAULT_COLOUR_ROUTE, type AnimPreset } from '../anim/presets';
 import { pickMimeType, probeMimeTypes, StageRecorder, downloadBlob } from '../anim/recorder';
 import { AnimWorkerClient } from '../anim/worker-client';
-import { chipRow } from './controls';
+import { chipRow, sectionRow } from './controls';
 import { t, patternName, currentLang } from '../i18n';
 import { langSwitch } from './nav';
 import { shareButton } from './share';
@@ -56,6 +58,15 @@ export function mountAnimate(root: HTMLElement): () => void {
   // never a freshly-resolved one — so output is byte-identical to before
   // colour existed.
   let colourOn = state.acol ?? false;
+  // Music-interpretation tuning: URL wins, then the pipeline's defaults —
+  // an old shared link (no tuning keys) reproduces the pre-tuning motion.
+  const tuning: AudioTuning = {
+    attackMs: state.aatk ?? TUNING_DEFAULTS.attackMs,
+    releaseMs: state.arel ?? TUNING_DEFAULTS.releaseMs,
+    bassGain: state.abass ?? TUNING_DEFAULTS.bassGain,
+    midGain: state.amid ?? TUNING_DEFAULTS.midGain,
+    highGain: state.ahigh ?? TUNING_DEFAULTS.highGain,
+  };
   const baseParams = clampParams(def, { ...defaultParams(def), ...state.params });
   const pal = resolvePalette(state.color);
 
@@ -180,6 +191,59 @@ export function mountAnimate(root: HTMLElement): () => void {
   colourInput.addEventListener('change', () => { colourOn = colourInput.checked; syncUrl(); });
   colourRow.append(colourLabel, colourInput);
 
+  // music interpretation — the tunable half of the feature pipeline. Sliders
+  // start at the pipeline's own defaults; every move retunes the live
+  // pipeline (envelope state carries over, nothing jumps) and lands in the
+  // URL so a shared or favourited animation keeps its response character.
+  const tuningRepaints: Array<() => void> = [];
+  function tuningRow(
+    key: Parameters<typeof t>[0], min: number, max: number, step: number,
+    get: () => number, set: (v: number) => void, fmt: (v: number) => string,
+  ): HTMLElement {
+    const row = document.createElement('div');
+    row.className = 'ctl-row';
+    const head = document.createElement('div');
+    head.className = 'ctl-head';
+    const lab = document.createElement('span');
+    lab.className = 'ctl-label';
+    lab.textContent = t(key, lang);
+    const val = document.createElement('span');
+    val.className = 'ctl-value';
+    head.append(lab, val);
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = String(min); input.max = String(max); input.step = String(step);
+    const repaint = (): void => { input.value = String(get()); val.textContent = fmt(get()); };
+    tuningRepaints.push(repaint);
+    repaint();
+    input.addEventListener('input', () => {
+      set(Number(input.value));
+      val.textContent = fmt(get());
+      pipeline?.setTuning(tuning);
+      syncUrl();
+    });
+    row.append(head, input);
+    return row;
+  }
+  const ms = (v: number): string => `${Math.round(v)} MS`;
+  const times = (v: number): string => `×${v.toFixed(2)}`;
+  const attackRow = tuningRow('anim.attack', 5, 200, 1,
+    () => tuning.attackMs, (v) => { tuning.attackMs = v; }, ms);
+  const releaseRow = tuningRow('anim.release', 50, 1500, 10,
+    () => tuning.releaseMs, (v) => { tuning.releaseMs = v; }, ms);
+  const bassRow = tuningRow('anim.bass', 0, 2, 0.05,
+    () => tuning.bassGain, (v) => { tuning.bassGain = v; }, times);
+  const midRow = tuningRow('anim.mid', 0, 2, 0.05,
+    () => tuning.midGain, (v) => { tuning.midGain = v; }, times);
+  const highRow = tuningRow('anim.high', 0, 2, 0.05,
+    () => tuning.highGain, (v) => { tuning.highGain = v; }, times);
+  const tuningReset = button(t('anim.tuningReset', lang), () => {
+    Object.assign(tuning, TUNING_DEFAULTS);
+    for (const repaint of tuningRepaints) repaint();
+    pipeline?.setTuning(tuning);
+    syncUrl();
+  });
+
   // source
   const drop = document.createElement('button');
   drop.className = 'anim-drop';
@@ -224,19 +288,49 @@ export function mountAnimate(root: HTMLElement): () => void {
   const demoLabel = label(t('anim.demos', lang));
   let demoChips = demoChipRow();
 
-  const micBtn = button(t('anim.mic', lang), async () => {
+  // Transport as icons — the four text buttons stacked to ~200px of panel;
+  // as a row of glyphs they take one. Every label survives as title +
+  // aria-label, and the toggling pairs (play/pause, rec/stop) swap glyph
+  // and label together so the accessible name always says what a press
+  // will do next.
+  const ICONS = {
+    mic: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="1.75" width="4" height="7.5" rx="2"/><path d="M3.5 8a4.5 4.5 0 0 0 9 0"/><line x1="8" y1="12.5" x2="8" y2="14.25"/></svg>',
+    play: '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M5 3.25v9.5L13 8z" fill="currentColor"/></svg>',
+    pause: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="4.25" y="3.25" width="2.75" height="9.5"/><rect x="9" y="3.25" width="2.75" height="9.5"/></svg>',
+    rec: '<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5" fill="currentColor"/></svg>',
+    stop: '<svg width="16" height="16" viewBox="0 0 16 16"><rect x="4.25" y="4.25" width="7.5" height="7.5" fill="currentColor"/></svg>',
+    fullscreen: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5H2.5V6M10 2.5h3.5V6M6 13.5H2.5V10M10 13.5h3.5V10"/></svg>',
+  } as const;
+  // data-tip feeds the CSS tooltip (instant, styled); no `title` alongside
+  // it, or the browser's own delayed tooltip doubles up over ours.
+  function setIcon(b: HTMLButtonElement, icon: keyof typeof ICONS, labelText: string): void {
+    b.innerHTML = ICONS[icon];
+    b.dataset['tip'] = labelText;
+    b.setAttribute('aria-label', labelText);
+  }
+  function iconButton(icon: keyof typeof ICONS, labelText: string, onClick: () => void | Promise<void>): HTMLButtonElement {
+    const b = document.createElement('button');
+    b.className = 'anim-btn anim-icon-btn';
+    setIcon(b, icon, labelText);
+    b.addEventListener('click', () => void onClick());
+    return b;
+  }
+  const paintPlay = (playing: boolean): void =>
+    setIcon(playBtn, playing ? 'pause' : 'play', t(playing ? 'anim.pause' : 'anim.play', lang));
+
+  const micBtn = iconButton('mic', t('anim.mic', lang), async () => {
     try {
       swapRig(await micRig());
       activeDemo = null; rebuildChips();
       clock = null; bpm = null; liveBeats = -1;
-      playBtn.textContent = t('anim.pause', lang);
+      paintPlay(true);
     } catch { status.textContent = t('anim.micError', lang); }
   });
 
-  const playBtn = button(t('anim.play', lang), () => {
+  const playBtn = iconButton('play', t('anim.play', lang), () => {
     if (!rig) return;
-    if (rig.playing) { rig.pause(); playBtn.textContent = t('anim.play', lang); }
-    else { rig.play(); playBtn.textContent = t('anim.pause', lang); }
+    if (rig.playing) { rig.pause(); paintPlay(false); }
+    else { rig.play(); paintPlay(true); }
   });
 
   // scrub (file mode)
@@ -249,12 +343,12 @@ export function mountAnimate(root: HTMLElement): () => void {
     if (rig?.duration != null) rig.seek((Number(scrub.value) / 1000) * rig.duration);
   });
 
-  const recBtn = button(t('anim.record', lang), async () => {
+  const recBtn = iconButton('rec', t('anim.record', lang), async () => {
     if (recorder) {
       const blob = await recorder.stop();
       recorder = null;
       recBtn.classList.remove('recording');
-      recBtn.textContent = t('anim.record', lang);
+      setIcon(recBtn, 'rec', t('anim.record', lang));
       const mime = recordingMime!;
       recordingMime = null;
       downloadBlob(blob, `flowshape-${def.id}.${mime.ext}`);
@@ -280,19 +374,30 @@ export function mountAnimate(root: HTMLElement): () => void {
     recorder = new StageRecorder(canvas, rig.recordingStream(), mime.mime);
     recorder.start();
     recBtn.classList.add('recording');
-    recBtn.textContent = t('anim.stop', lang);
+    setIcon(recBtn, 'stop', t('anim.stop', lang));
     // Unobtrusive: the recorded container is never a mystery after the fact.
     status.textContent = `${t('anim.record', lang)} · ${mime.ext.toUpperCase()}`;
   });
 
-  const fsBtn = button(t('anim.fullscreen', lang), () => void stageEl.requestFullscreen?.());
+  const fsBtn = iconButton('fullscreen', t('anim.fullscreen', lang), () => void stageEl.requestFullscreen?.());
+  const transport = document.createElement('div');
+  transport.className = 'anim-transport';
+  transport.append(micBtn, playBtn, recBtn, fsBtn);
 
   const privacy = document.createElement('p');
   privacy.className = 'anim-privacy';
   privacy.textContent = t('anim.privacy', lang);
 
-  panel.append(navRow, title, aspectLabel, aspectChips, presetLabel, presetChips, intensityRow, colourRow,
-    drop, fileInput, demoLabel, demoChips, micBtn, playBtn, scrub, recBtn, fsBtn, status, privacy);
+  // Three collapsible groups, all open by default (sectionRow remembers the
+  // visitor's own toggles per section). Source + transport sit right after
+  // the stage/look controls; the tuning sliders come last.
+  const stageSec = sectionRow('anim-stage', t('anim.stageSec', lang), true);
+  stageSec.body.append(aspectLabel, aspectChips, presetLabel, presetChips, intensityRow, colourRow);
+  const audioSec = sectionRow('anim-audio', t('anim.audioSec', lang), true);
+  audioSec.body.append(drop, fileInput, demoLabel, demoChips, scrub, transport);
+  const tuningSec = sectionRow('anim-tuning', t('anim.tuning', lang), true);
+  tuningSec.body.append(attackRow, releaseRow, bassRow, midRow, highRow, tuningReset);
+  panel.append(navRow, title, stageSec.el, audioSec.el, tuningSec.el, status, privacy);
   wrap.append(stageEl, panel);
   root.append(wrap);
 
@@ -313,6 +418,8 @@ export function mountAnimate(root: HTMLElement): () => void {
   function syncUrl(): void {
     history.replaceState(null, '', encodeState({
       ...state, view: 'a', stage: stageId, apre: preset.id, aint: intensity, acol: colourOn,
+      aatk: tuning.attackMs, arel: tuning.releaseMs,
+      abass: tuning.bassGain, amid: tuning.midGain, ahigh: tuning.highGain,
     }));
     // replaceState fires no hashchange, so the star has to be told.
     favourite?.sync();
@@ -321,7 +428,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   function swapRig(next: AudioRig): void {
     rig?.dispose();
     rig = next;
-    pipeline = new FeaturePipeline(next.sampleRate);
+    pipeline = new FeaturePipeline(next.sampleRate, tuning);
   }
 
   async function loadFile(file: File): Promise<void> {
@@ -336,7 +443,7 @@ export function mountAnimate(root: HTMLElement): () => void {
       scrub.style.display = '';
       status.textContent = bpm ? `${Math.round(bpm)} BPM` : '';
       rig!.play();
-      playBtn.textContent = t('anim.pause', lang);
+      paintPlay(true);
     } catch {
       status.textContent = t('anim.decodeError', lang);
     }
