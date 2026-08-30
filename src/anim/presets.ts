@@ -672,15 +672,19 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // never touches it. `swell` is the amplitude of the travelling wave the
     // intrinsic motion already rides, so bass deepens the same surge the
     // phase flow produces; `curls` grows and shrinks the walk's tail.
+    // First entry = the stage's default. `curls` at 0.07 swings the walk's
+    // tail by ~8 curls on a swell — the figure visibly grows new spirals as
+    // the music lifts — and bass deepens the ripple/rock/pulse compound at
+    // the same time.
+    { id: 'unfurl', label: { en: 'Unfurl', es: 'Despliega' }, routes: [
+      { feature: 'level', param: 'curls', depth: 0.07 },
+      { feature: 'bass', param: 'swell', depth: 0.35 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+    ] },
     { id: 'surge', label: { en: 'Surge', es: 'Oleada' }, routes: [
       { feature: 'bass', param: 'swell', depth: 0.35 },
       { feature: 'level', param: 'opacity', depth: 0.35 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
-    ] },
-    { id: 'unfurl', label: { en: 'Unfurl', es: 'Despliega' }, routes: [
-      { feature: 'level', param: 'curls', depth: 0.02 },
-      { feature: 'mid', param: 'swell', depth: 0.25 },
-      { feature: 'bass', param: 'opacity', depth: 0.4 },
     ] },
   ],
   guilloche: [

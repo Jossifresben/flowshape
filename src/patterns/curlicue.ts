@@ -62,11 +62,34 @@ export const curlicue = definePattern({
       if (x < minX) minX = x; else if (x > maxX) maxX = x;
       if (y < minY) minY = y; else if (y > maxY) maxY = y;
     }
-    const spanX = Math.max(maxX - minX, 1e-9);
-    const spanY = Math.max(maxY - minY, 1e-9);
-    const scale = Math.min((size.w * 0.86) / spanX, (size.h * 0.86) / spanY);
-    const ox = size.w / 2 - ((minX + maxX) / 2) * scale;
-    const oy = size.h / 2 - ((minY + maxY) / 2) * scale;
+    // The figure rocks: a pendulum sway of up to ~0.8·swell radians, once
+    // per cycle (sin(2π·ph) — zero at the wrap, so the loop closes and the
+    // still render is unrotated). It is a rock, not a full turn, because a
+    // turning bounding box under a per-frame refit is exactly the
+    // rotate-and-zoom this pattern already shipped and retired.
+    const rockMax = 0.8 * swell;
+    const rock = rockMax * Math.sin(TWO_PI * ph);
+    const mx = (minX + maxX) / 2, my = (minY + maxY) / 2;
+    // Fit ONCE to the union of the bounding boxes across the whole rocking
+    // range — phase-independent by construction, so the scale never pumps.
+    // At swell = 0 the union is the plain box and posters keep full size.
+    // Half-extents about the rotation centre, because that centre is pinned
+    // to the frame centre when drawing.
+    let uHalfX = 0, uHalfY = 0;
+    for (let s = 0; s <= 4; s++) {
+      const a = -rockMax + (rockMax * 2 * s) / 4;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      for (let n = 0; n <= N; n++) {
+        const dx = xs[n]! - mx, dy = ys[n]! - my;
+        uHalfX = Math.max(uHalfX, Math.abs(dx * ca - dy * sa));
+        uHalfY = Math.max(uHalfY, Math.abs(dx * sa + dy * ca));
+      }
+    }
+    const scale = Math.min(
+      (size.w * 0.43) / Math.max(uHalfX, 1e-9),
+      (size.h * 0.43) / Math.max(uHalfY, 1e-9),
+    );
+    const cr = Math.cos(rock), sr = Math.sin(rock);
     // A radial ripple travels outward through the figure: each point is
     // displaced along its own radius from the frame centre by a few pixels
     // of travelling sine. Unlike any modulation of the walk's steps (which
@@ -78,8 +101,8 @@ export const curlicue = definePattern({
     const amp = 18 * swell;
     const lam = 0.4 * Math.min(size.w, size.h);
     const pt = (n: number): string => {
-      const px = ox + xs[n]! * scale, py = oy + ys[n]! * scale;
-      const dx = px - cxF, dy = py - cyF;
+      const bx = xs[n]! - mx, by = ys[n]! - my;
+      const dx = (bx * cr - by * sr) * scale, dy = (bx * sr + by * cr) * scale;
       const r = Math.hypot(dx, dy);
       const rip = amp * Math.sin(TWO_PI * (r / lam - ph));
       const f = r > 1e-9 ? 1 + rip / r : 1;
