@@ -14,7 +14,7 @@ export const guilloche = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
-  anim: { continuous: ['depth', 'inner', 'twist', 'strokeWidth', 'size'], usesPhase: true },
+  anim: { continuous: ['rings', 'depth', 'inner', 'twist', 'strokeWidth', 'size'], usesPhase: true },
   params: [
     { key: 'rings', kind: 'int', min: 4, max: 48, step: 1, default: 40, label: 'guilloche.rings' },
     { key: 'lobes', kind: 'int', min: 6, max: 90, step: 1, default: 12, label: 'guilloche.lobes' },

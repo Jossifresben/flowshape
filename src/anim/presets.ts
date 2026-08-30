@@ -691,9 +691,18 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // `inner` is the rosette's central well: bass drives it, so the well
     // opens on every low swell and closes back to the resting figure as it
     // fades — the whole ring band breathing with the music's low end.
+    // `rings` rides the overall level, not a fast band: changing it
+    // re-spaces the whole band slightly, so it wants the slow envelope —
+    // four or five extra grooves weave in as the track builds and retire
+    // as it quiets. `depth` (lobe amplitude) rides the mids.
+    // `twist` rides brightness at a deliberately small depth: it compounds
+    // ring over ring, so 0.06 of travel already sweeps the outermost arm
+    // by a radian — timbre re-curves the pinwheel.
     { id: 'engrave', label: { en: 'Engrave', es: 'Graba' }, routes: [
       { feature: 'bass', param: 'inner', depth: 0.35 },
-      { feature: 'mid', param: 'depth', depth: 0.12 },
+      { feature: 'mid', param: 'depth', depth: 0.18 },
+      { feature: 'level', param: 'rings', depth: 0.11 },
+      { feature: 'bright', param: 'twist', depth: 0.06 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
     ] },
     { id: 'shimmer', label: { en: 'Shimmer', es: 'Reluce' }, routes: [
