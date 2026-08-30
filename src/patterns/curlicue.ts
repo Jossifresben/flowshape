@@ -19,8 +19,8 @@ export const curlicue = definePattern({
   params: [
     { key: 'alpha', kind: 'float', min: 0.001, max: 0.06, step: 0.0005, default: 0.007, label: 'curlicue.alpha' },
     { key: 'curls', kind: 'int', min: 10, max: 120, step: 1, default: 42, label: 'curlicue.curls' },
-    { key: 'swell', kind: 'float', min: 0, max: 0.6, step: 0.02, default: 0.3, label: 'curlicue.swell' },
-    { key: 'waves', kind: 'int', min: 1, max: 6, step: 1, default: 3, label: 'curlicue.waves' },
+    { key: 'swell', kind: 'float', min: 0, max: 0.6, step: 0.02, default: 0.4, label: 'curlicue.swell' },
+    { key: 'waves', kind: 'int', min: 1, max: 6, step: 1, default: 4, label: 'curlicue.waves' },
     { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 0.55, label: 'curlicue.strokeWidth' },
     { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.85, label: 'curlicue.opacity' },
   ],
@@ -64,10 +64,27 @@ export const curlicue = definePattern({
     }
     const spanX = Math.max(maxX - minX, 1e-9);
     const spanY = Math.max(maxY - minY, 1e-9);
-    const scale = Math.min((size.w * 0.88) / spanX, (size.h * 0.88) / spanY);
+    const scale = Math.min((size.w * 0.86) / spanX, (size.h * 0.86) / spanY);
     const ox = size.w / 2 - ((minX + maxX) / 2) * scale;
     const oy = size.h / 2 - ((minY + maxY) / 2) * scale;
-    const pt = (n: number): string => `${(ox + xs[n]! * scale).toFixed(2)} ${(oy + ys[n]! * scale).toFixed(2)}`;
+    // A radial ripple travels outward through the figure: each point is
+    // displaced along its own radius from the frame centre by a few pixels
+    // of travelling sine. Unlike any modulation of the walk's steps (which
+    // couples into the global drift and pumps the whole figure), this
+    // displacement is bounded by `amp` everywhere, so the figure holds its
+    // place while a visible wave washes through the curls. amp scales with
+    // swell, so swell = 0 is perfectly still.
+    const cxF = size.w / 2, cyF = size.h / 2;
+    const amp = 18 * swell;
+    const lam = 0.4 * Math.min(size.w, size.h);
+    const pt = (n: number): string => {
+      const px = ox + xs[n]! * scale, py = oy + ys[n]! * scale;
+      const dx = px - cxF, dy = py - cyF;
+      const r = Math.hypot(dx, dy);
+      const rip = amp * Math.sin(TWO_PI * (r / lam - ph));
+      const f = r > 1e-9 ? 1 + rip / r : 1;
+      return `${(cxF + dx * f).toFixed(2)} ${(cyF + dy * f).toFixed(2)}`;
+    };
     const chunks = Math.min(120, Math.max(1, Math.floor(N / 4)));
     const children = [];
     for (let c = 0; c < chunks; c++) {
@@ -79,8 +96,8 @@ export const curlicue = definePattern({
       // so the eye reads beads of energy travelling, not a global blink.
       const v = (c + 0.5) / chunks;
       const crest = (0.5 * (1 + Math.cos(TWO_PI * (waves * v - ph)))) ** 3;
-      const w = p['strokeWidth']! * (1 + 4.5 * swell * crest);
-      const op = p['opacity']! * (1 - 0.7 * swell * (1 - crest));
+      const w = p['strokeWidth']! * (1 + 6 * swell * crest);
+      const op = p['opacity']! * (1 - 0.9 * swell * (1 - crest));
       children.push(el('path', {
         d, fill: 'none', stroke: 'ink',
         'stroke-width': Math.round(w * 1000) / 1000,
