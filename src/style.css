@@ -353,6 +353,8 @@ a.gal-wordmark { text-decoration: none; }
 .about li { font-size: 15px; line-height: 1.7; margin-bottom: 6px; }
 .about a { color: var(--accent); text-decoration: none; }
 .about a:hover { text-decoration: underline; }
+.about-video { margin: 6px 0 20px; }
+.about-video video { display: block; width: 100%; border: 1px solid var(--line); background: var(--fog); }
 .about-orcid { font-family: var(--font-mono); font-size: 12px; color: var(--gray); }
 .about-orcid a { color: var(--gray); }
 

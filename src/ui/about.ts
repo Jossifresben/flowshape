@@ -6,7 +6,8 @@ import { buildFooter, AUTHOR_NAME, AUTHOR_URL, ORCID_URL, REPO_URL } from './foo
 type Block =
   | { kind: 'h2'; text: Pair }
   | { kind: 'p'; text: Pair }
-  | { kind: 'ul'; items: Pair[] };
+  | { kind: 'ul'; items: Pair[] }
+  | { kind: 'video'; src: string; poster: string; label: Pair };
 
 /** `{n}` and `{f}` are filled with the live pattern and family counts, so the
  *  page can never claim a number the registry disagrees with. */
@@ -17,6 +18,12 @@ const BLOCKS: Block[] = [
       'flowshape turns mathematics into art. Pick one of {n} pattern generators across {f} families — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — and move every parameter it has until the shape is yours.',
       'flowshape convierte las matemáticas en arte. Elige uno de sus {n} generadores de patrones, repartidos en {f} familias —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— y mueve cada parámetro que tenga hasta que la forma sea tuya.',
     ],
+  },
+  {
+    kind: 'video',
+    src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/flowshape-promo.mp4',
+    poster: '/showcase/promo.jpg',
+    label: ['flowshape in 50 seconds', 'flowshape en 50 segundos'],
   },
   {
     kind: 'p',
@@ -158,6 +165,18 @@ export function mountAbout(root: HTMLElement): void {
       const p = document.createElement('p');
       p.textContent = fill(at(block.text, lang));
       article.append(p);
+    } else if (block.kind === 'video') {
+      const figure = document.createElement('figure');
+      figure.className = 'about-video';
+      const video = document.createElement('video');
+      video.src = block.src;
+      video.poster = block.poster;
+      video.controls = true;
+      video.preload = 'none';
+      video.playsInline = true;
+      video.setAttribute('aria-label', at(block.label, lang));
+      figure.append(video);
+      article.append(figure);
     } else {
       const ul = document.createElement('ul');
       for (const item of block.items) {
