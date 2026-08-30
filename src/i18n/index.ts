@@ -49,7 +49,12 @@ export function hasParamLabel(key: string): boolean {
 
 // --- the reader's chosen language ----------------------------------------
 
-const STORAGE_KEY = 'flowshape:lang';
+/** Where the reader's chosen language is kept. Exported because the
+ *  pre-rendered `/es/…` share shells write it before handing over to the app —
+ *  see `scripts/share-pages.ts` — and a second copy of the literal there could
+ *  drift away from this one silently. */
+export const LANG_STORAGE_KEY = 'flowshape:lang';
+const STORAGE_KEY = LANG_STORAGE_KEY;
 /** Fired on `window` after the language changes. The router listens and
  *  re-mounts the current view; nothing re-renders itself. */
 export const LANG_EVENT = 'flowshape:langchange';

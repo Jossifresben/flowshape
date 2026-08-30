@@ -6,3 +6,12 @@
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
+
+# No _redirects and no SPA catch-all, on purpose.
+#
+# The eight share paths (`/`, `/gallery/`, `/gallery/posters/`,
+# `/gallery/videos/` and their `/es/` twins) are emitted by the build as real
+# `<dir>/index.html` files — see `scripts/share-pages.ts`. Netlify's Pretty
+# URLs, on by default, serves each at its trailing-slash path and forwards the
+# slashless form to it, which is the form `rel=canonical` and `og:url` name.
+# Everything else in the app is a hash route and never reaches the server.

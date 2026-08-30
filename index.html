@@ -4,12 +4,44 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Per-page share metadata: title, description, canonical, hreflang, Open
+         Graph and Twitter. Every route in this app is a hash, which never
+         reaches the server and which no social scraper executes, so each of
+         the eight share paths is a real document — this one, plus the seven
+         `scripts/share-pages.ts` derives from it by swapping just the block
+         below and adding a hand-off into the SPA.
+
+         The block is generated. Edit the wording in `src/i18n/share.ts`, never
+         here: `tests/ui/share-pages.test.ts` asserts this region is byte-
+         identical to what the build writes, so a hand edit fails CI instead of
+         quietly making `npm run dev` disagree with production. -->
+    <!-- share:meta:start -->
     <title>flowshape.art — mathematical patterns into print-ready posters</title>
-    <meta
-      name="description"
-      content="flowshape turns mathematics into art. Play with 25 pattern generators, tune every parameter, and take the result out as a print-ready SVG or PNG — or set it moving to music. Every pattern shows its formula and its code, in English and Spanish. Free, open source, runs entirely in your browser."
-    />
+    <meta name="description" content="flowshape turns mathematics into art. Play with 25 pattern generators, tune every parameter, and take the result out as a print-ready SVG or PNG — or set it moving to music. Every pattern shows its formula and its code, in English and Spanish. Free, open source, runs entirely in your browser." />
     <link rel="canonical" href="https://flowshape.art/" />
+    <link rel="alternate" hreflang="en" href="https://flowshape.art/" />
+    <link rel="alternate" hreflang="es" href="https://flowshape.art/es/" />
+    <link rel="alternate" hreflang="x-default" href="https://flowshape.art/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="flowshape.art" />
+    <meta property="og:url" content="https://flowshape.art/" />
+    <meta property="og:title" content="flowshape.art — shape mathematics into art" />
+    <meta property="og:description" content="25 mathematical pattern generators. Tune every parameter, read the formula behind it, then print it or set it moving to music. Free and open source." />
+    <meta property="og:image" content="https://flowshape.art/og-home-en-v3.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="flowshape.art — shape mathematics into art" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="flowshape.art — shape mathematics into art" />
+    <meta name="twitter:description" content="25 mathematical pattern generators. Tune every parameter, read the formula behind it, then print it or set it moving to music. Free and open source." />
+    <meta name="twitter:image" content="https://flowshape.art/og-home-en-v3.png" />
+    <meta name="twitter:image:alt" content="flowshape.art — shape mathematics into art" />
+    <!-- share:meta:end -->
+
     <meta name="theme-color" content="#17171a" />
     <meta name="color-scheme" content="dark" />
     <meta name="author" content="Jossi Fresco Benaim" />
@@ -18,34 +50,6 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-
-    <!-- Open Graph. Routing is hash-based, so a crawler only ever sees this
-         one document: the English card is the default and the Spanish one is
-         offered as the alternate locale's image. -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="flowshape.art" />
-    <meta property="og:url" content="https://flowshape.art/" />
-    <meta property="og:title" content="flowshape.art — shape mathematics into art" />
-    <meta
-      property="og:description"
-      content="25 mathematical pattern generators. Tune every parameter, read the formula behind it, then print it or set it moving to music. Free and open source."
-    />
-    <meta property="og:image" content="https://flowshape.art/og-en-v2.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="flowshape.art — shape mathematics into art" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:locale:alternate" content="es_ES" />
-    <meta property="og:image" content="https://flowshape.art/og-es-v2.png" />
-    <meta property="og:image:alt" content="flowshape.art — convierte las matemáticas en arte" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="flowshape.art — shape mathematics into art" />
-    <meta
-      name="twitter:description"
-      content="25 mathematical pattern generators. Tune every parameter, read the formula behind it, then print it or set it moving to music. Free and open source."
-    />
-    <meta name="twitter:image" content="https://flowshape.art/og-en-v2.png" />
 
     <script type="application/ld+json">
       {
