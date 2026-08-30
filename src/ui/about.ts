@@ -8,7 +8,11 @@ type Block =
   | { kind: 'h2'; text: Pair }
   | { kind: 'p'; text: Pair }
   | { kind: 'ul'; items: Pair[] }
-  | { kind: 'video'; src: string; poster: string; label: Pair };
+  | { kind: 'video'; src: string; poster: string; label: Pair }
+  /** The tip jar's heading, blurb and button. A block rather than a trailing
+   *  section so its position in the page is chosen here, with the rest of the
+   *  order, instead of being fixed to the end. */
+  | { kind: 'support' };
 
 /** `{n}` and `{f}` are filled with the live pattern and family counts, so the
  *  page can never claim a number the registry disagrees with. */
@@ -20,6 +24,7 @@ const BLOCKS: Block[] = [
       'flowshape convierte las matemáticas en arte. Elige uno de sus {n} generadores de patrones, repartidos en {f} familias —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— y mueve cada parámetro que tenga hasta que la forma sea tuya.',
     ],
   },
+  { kind: 'support' },
   {
     kind: 'video',
     src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/flowshape-promo.mp4',
@@ -193,6 +198,17 @@ export function mountAbout(root: HTMLElement): void {
       video.setAttribute('aria-label', at(block.label, lang));
       figure.append(video);
       article.append(figure);
+    } else if (block.kind === 'support') {
+      const heading = document.createElement('h2');
+      heading.textContent = t('tip.support', lang);
+      const text = document.createElement('p');
+      text.textContent = t('tip.blurb', lang);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn about-tip-btn';
+      btn.textContent = t('footer.tip', lang);
+      btn.addEventListener('click', () => openTipJar(lang));
+      article.append(heading, text, btn);
     } else {
       const ul = document.createElement('ul');
       for (const item of block.items) {
@@ -221,19 +237,6 @@ export function mountAbout(root: HTMLElement): void {
   const repo = document.createElement('p');
   repo.append(extLink(REPO_URL, 'github.com/Jossifresben/flowshape'));
   article.append(licenceHeading, licence, repo);
-
-  // The ask sits at the end, after everything the project gives away — a
-  // reader who has got this far is the one it is addressed to.
-  const supportHeading = document.createElement('h2');
-  supportHeading.textContent = t('tip.support', lang);
-  const supportText = document.createElement('p');
-  supportText.textContent = t('tip.blurb', lang);
-  const supportBtn = document.createElement('button');
-  supportBtn.type = 'button';
-  supportBtn.className = 'btn about-tip-btn';
-  supportBtn.textContent = t('footer.tip', lang);
-  supportBtn.addEventListener('click', () => openTipJar(lang));
-  article.append(supportHeading, supportText, supportBtn);
 
   root.append(buildNav(lang, 'about'), article, buildFooter(lang));
 }
