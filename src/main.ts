@@ -9,6 +9,8 @@ import { mountSaved } from './ui/saved';
 import { mountShowcase } from './ui/showcase';
 import { decodeState } from './core/url-state';
 import { LANG_EVENT } from './i18n';
+import { initConsent, trackPageView } from './core/consent';
+import { mountConsentBanner } from './ui/consent-banner';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -77,3 +79,10 @@ window.addEventListener('hashchange', route);
 // the language event is what re-renders the current view.
 window.addEventListener(LANG_EVENT, route);
 route();
+
+// Analytics, if and only if the visitor has already said yes; the banner asks
+// the ones who have not. Routing is hash-based, so views are reported here
+// rather than by gtag's own pageview, which would only ever see the first one.
+initConsent();
+mountConsentBanner();
+window.addEventListener('hashchange', trackPageView);

@@ -117,6 +117,21 @@ export const UI: Record<string, Pair> = {
   'footer.source': ['Source on GitHub', 'Código en GitHub'],
   'footer.licence': ['MIT licence', 'Licencia MIT'],
   'footer.about': ['About this project', 'Acerca del proyecto'],
+  'footer.privacy': ['Privacy choice', 'Privacidad'],
+
+  // --- analytics consent --------------------------------------------------
+  // Deliberately plain about what is being asked. The two buttons carry equal
+  // visual weight in the stylesheet: refusing has to be exactly as easy as
+  // agreeing, which is a legal requirement and not a design preference.
+  'consent.body': [
+    'May we count your visit with Google Analytics? It tells us which patterns people actually use. Nothing is loaded or stored unless you say yes, and you can change your mind from any page.',
+    '¿Podemos contar tu visita con Google Analytics? Nos dice qué patrones se usan de verdad. No se carga ni se guarda nada a menos que aceptes, y puedes cambiar de opinión desde cualquier página.',
+  ],
+  'consent.accept': ['Accept', 'Aceptar'],
+  'consent.decline': ['Decline', 'Rechazar'],
+  'consent.label': ['Analytics consent', 'Consentimiento de analítica'],
+  'consent.current.granted': ['Analytics: on', 'Analítica: activada'],
+  'consent.current.denied': ['Analytics: off', 'Analítica: desactivada'],
 
   // --- share --------------------------------------------------------------
   'share.action': ['Share', 'Compartir'],

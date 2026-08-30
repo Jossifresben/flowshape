@@ -1,4 +1,5 @@
 import { t, type Lang } from '../i18n';
+import { openConsentBanner } from './consent-banner';
 
 export const REPO_URL = 'https://github.com/Jossifresben/flowshape';
 export const AUTHOR_NAME = 'Jossi Fresco Benaim';
@@ -39,6 +40,14 @@ export function buildFooter(lang: Lang, opts: { compact?: boolean } = {}): HTMLE
     about.href = '#/about';
     about.textContent = t('footer.about', lang);
     links.append(about, extLink(`${REPO_URL}/blob/main/LICENSE`, t('footer.licence', lang)));
+    // Withdrawing consent must be as easy as giving it, so the control that
+    // opens the choice is on every full-chrome page, not buried in About.
+    const privacy = document.createElement('button');
+    privacy.type = 'button';
+    privacy.className = 'site-footer-privacy';
+    privacy.textContent = t('footer.privacy', lang);
+    privacy.addEventListener('click', openConsentBanner);
+    links.append(privacy);
   }
   footer.append(links);
 

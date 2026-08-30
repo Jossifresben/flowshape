@@ -35,8 +35,8 @@ const BLOCKS: Block[] = [
   {
     kind: 'p',
     text: [
-      'It is free and open source. There are no accounts, no tracking and no server: everything is computed in your browser.',
-      'Es libre y de código abierto. No hay cuentas, ni rastreo, ni servidor: todo se calcula en tu navegador.',
+      'It is free and open source. There are no accounts and no back end: every pattern is computed in your browser, and your work never reaches anyone else’s machine.',
+      'Es libre y de código abierto. No hay cuentas ni servidor propio: cada patrón se calcula en tu navegador, y tu trabajo nunca llega a la máquina de nadie más.',
     ],
   },
   { kind: 'h2', text: ['The link is the artwork', 'El enlace es la obra'] },
@@ -104,6 +104,21 @@ const BLOCKS: Block[] = [
         'Bilingual throughout, English and Spanish, with nothing available in one language and missing in the other.',
         'Bilingüe de principio a fin, en inglés y español, sin nada que exista en un idioma y falte en el otro.',
       ],
+    ],
+  },
+  { kind: 'h2', text: ['Privacy', 'Privacidad'] },
+  {
+    kind: 'p',
+    text: [
+      'Analytics is the one thing here that reaches a third party, and only if you agree to it. Accept the banner and Google Analytics counts which pages are opened, from which country, and on what kind of device. Decline and none of it loads — no script, no cookie, nothing stored. Your patterns, your parameters and your audio stay out of it either way, because they are never sent anywhere at all.',
+      'La analítica es lo único aquí que llega a un tercero, y solo si lo aceptas. Si aceptas el aviso, Google Analytics cuenta qué páginas se abren, desde qué país y en qué tipo de dispositivo. Si lo rechazas, no se carga nada: ni script, ni cookie, ni dato guardado. Tus patrones, tus parámetros y tu audio quedan fuera en cualquier caso, porque no se envían a ninguna parte.',
+    ],
+  },
+  {
+    kind: 'p',
+    text: [
+      'You can change your mind whenever you like. The “Privacy choice” link in the footer of any page reopens the question, and withdrawing consent also deletes the cookies analytics had already set.',
+      'Puedes cambiar de opinión cuando quieras. El enlace «Privacidad» del pie de cualquier página vuelve a abrir la pregunta, y al retirar el consentimiento se borran también las cookies que la analítica hubiera dejado.',
     ],
   },
   { kind: 'h2', text: ['Inspiration', 'Inspiración'] },

@@ -335,6 +335,37 @@ a.gal-wordmark { text-decoration: none; }
 .site-footer a { color: var(--gray); text-decoration: none; border-bottom: 1px solid currentColor; }
 .site-footer a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .site-footer-links { display: flex; flex-wrap: wrap; gap: 18px; }
+/* Reads as one of the footer links; it is a button only because it opens the
+   consent bar rather than navigating. */
+.site-footer-privacy {
+  font: inherit; color: var(--gray); background: none; padding: 0; cursor: pointer;
+  border: 0; border-bottom: 1px solid currentColor;
+}
+.site-footer-privacy:hover { color: var(--ink); }
+
+/* --- analytics consent bar --- */
+.consent {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 16px 24px; padding: 16px 32px;
+  background: var(--fog); border-top: 1px solid var(--line);
+}
+.consent-body {
+  margin: 0; max-width: 68ch; flex: 1 1 320px;
+  font-family: var(--font-mono); font-size: 11px; line-height: 1.6; color: var(--gray);
+}
+.consent-actions { display: flex; gap: 10px; }
+/* Both buttons are the same size, weight and colour on purpose: refusing has
+   to be exactly as easy as accepting, which the law treats as a property of
+   the styling, not only of the wording. */
+.consent-btn {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
+  min-width: 104px; padding: 9px 16px; cursor: pointer;
+  border: 1px solid var(--ink); background: transparent; color: var(--ink);
+}
+.consent-btn:hover { background: var(--ink); color: var(--paper); }
+.consent-btn[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
+.consent-btn[aria-pressed='true']:hover { background: var(--accent); color: var(--paper); }
 .site-footer.compact {
   padding: 16px 0 0; margin-top: 4px; font-size: 10px;
   flex-direction: column; gap: 6px; align-items: flex-start;
@@ -367,6 +398,10 @@ a.gal-wordmark { text-decoration: none; }
   .about { padding: 28px 20px 8px; }
   .about-title { font-size: 30px; }
   .site-footer { padding: 20px 20px 28px; }
+  .consent { padding: 14px 20px; gap: 12px; }
+  /* Full-width buttons rather than a cramped row — still equal to each other. */
+  .consent-actions { width: 100%; }
+  .consent-btn { flex: 1; min-width: 0; }
   #app.view-playground { flex-direction: column; height: auto; min-height: 100vh; }
   .stage {
     flex: none;
