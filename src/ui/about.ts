@@ -1,5 +1,6 @@
 import { listPatterns } from '../patterns/registry';
-import { currentLang, type Lang, type Pair } from '../i18n';
+import { currentLang, t, type Lang, type Pair } from '../i18n';
+import { openTipJar } from './tip';
 import { buildNav } from './nav';
 import { buildFooter, AUTHOR_NAME, AUTHOR_URL, ORCID_URL, REPO_URL } from './footer';
 
@@ -110,8 +111,8 @@ const BLOCKS: Block[] = [
   {
     kind: 'p',
     text: [
-      'Analytics is the one thing here that reaches a third party, and only if you agree to it. Accept the banner and Google Analytics counts which pages are opened, from which country, and on what kind of device. Decline and none of it loads — no script, no cookie, nothing stored. Your patterns, your parameters and your audio stay out of it either way, because they are never sent anywhere at all.',
-      'La analítica es lo único aquí que llega a un tercero, y solo si lo aceptas. Si aceptas el aviso, Google Analytics cuenta qué páginas se abren, desde qué país y en qué tipo de dispositivo. Si lo rechazas, no se carga nada: ni script, ni cookie, ni dato guardado. Tus patrones, tus parámetros y tu audio quedan fuera en cualquier caso, porque no se envían a ninguna parte.',
+      'Only two things here can reach a third party, and both are yours to start. One is analytics: accept the banner and Google Analytics counts which pages are opened, from which country, and on what kind of device; decline and none of it loads — no script, no cookie, nothing stored. The other is the tip jar, which fetches its payment widget at the moment you open it and not before. Your patterns, your parameters and your audio stay out of both, because they are never sent anywhere at all.',
+      'Aquí solo dos cosas pueden llegar a un tercero, y ambas las inicias tú. Una es la analítica: si aceptas el aviso, Google Analytics cuenta qué páginas se abren, desde qué país y en qué tipo de dispositivo; si lo rechazas, no se carga nada, ni script, ni cookie, ni dato guardado. La otra es el bote de propinas, que descarga su widget de pago en el momento en que lo abres y no antes. Tus patrones, tus parámetros y tu audio quedan fuera de las dos, porque no se envían a ninguna parte.',
     ],
   },
   {
@@ -220,6 +221,19 @@ export function mountAbout(root: HTMLElement): void {
   const repo = document.createElement('p');
   repo.append(extLink(REPO_URL, 'github.com/Jossifresben/flowshape'));
   article.append(licenceHeading, licence, repo);
+
+  // The ask sits at the end, after everything the project gives away — a
+  // reader who has got this far is the one it is addressed to.
+  const supportHeading = document.createElement('h2');
+  supportHeading.textContent = t('tip.support', lang);
+  const supportText = document.createElement('p');
+  supportText.textContent = t('tip.blurb', lang);
+  const supportBtn = document.createElement('button');
+  supportBtn.type = 'button';
+  supportBtn.className = 'btn about-tip-btn';
+  supportBtn.textContent = t('footer.tip', lang);
+  supportBtn.addEventListener('click', () => openTipJar(lang));
+  article.append(supportHeading, supportText, supportBtn);
 
   root.append(buildNav(lang, 'about'), article, buildFooter(lang));
 }

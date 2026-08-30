@@ -1,5 +1,6 @@
 import { t, type Lang } from '../i18n';
 import { openConsentBanner } from './consent-banner';
+import { openTipJar } from './tip';
 
 export const REPO_URL = 'https://github.com/Jossifresben/flowshape';
 export const AUTHOR_NAME = 'Jossi Fresco Benaim';
@@ -49,7 +50,14 @@ export function buildFooter(lang: Lang, opts: { compact?: boolean } = {}): HTMLE
   privacy.className = 'site-footer-privacy';
   privacy.textContent = t('footer.privacy', lang);
   privacy.addEventListener('click', openConsentBanner);
-  links.append(privacy);
+  // Brighter than its neighbours because it is the one link here that asks for
+  // something, rather than pointing at more reading.
+  const tip = document.createElement('button');
+  tip.type = 'button';
+  tip.className = 'site-footer-privacy site-footer-tip';
+  tip.textContent = t('footer.tip', lang);
+  tip.addEventListener('click', () => openTipJar(lang));
+  links.append(privacy, tip);
   footer.append(links);
 
   return footer;
