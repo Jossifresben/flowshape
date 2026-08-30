@@ -102,4 +102,7 @@ export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
     title: ['Harmonograph, wide', 'Armonógrafo, panorámico'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/mystery.mp4', poster: '/showcase/mystery.jpg',
     title: ['Mystery Curve', 'Curva misteriosa'] },
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/guilloche.mp4', poster: '/showcase/guilloche.jpg',
+    hash: '#/a/guilloche?v=1&seed=1&stage=11&apre=engrave&acol=1&rings=29&lobes=12&depth=0.145&inner=0.33&twist=0.74&strokeWidth=0.4&opacity=0.8&size=1&phase=0',
+    title: ['Guilloché Rosette', 'Roseta guilloché'] },
 ];
