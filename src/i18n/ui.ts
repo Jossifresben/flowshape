@@ -118,16 +118,21 @@ export const UI: Record<string, Pair> = {
   'footer.licence': ['MIT licence', 'Licencia MIT'],
   'footer.about': ['About this project', 'Acerca del proyecto'],
   'footer.privacy': ['Privacy choice', 'Privacidad'],
-  'footer.tip': ['Buy me a coffee', 'Invítame un café'],
-
   // --- tip jar ------------------------------------------------------------
-  'tip.title': ['Buy me a coffee', 'Invítame un café'],
+  // One string for the footer link, the About heading and the modal title:
+  // they name the same thing, and three copies would only drift apart.
+  'tip.support': ['Support this project', 'Apoya el proyecto'],
   'tip.blurb': [
-    'flowshape is free, open source, and carries no ads or accounts. If it has been useful to you, a coffee helps keep it that way.',
-    'flowshape es gratuito, de código abierto y no lleva anuncios ni cuentas. Si te ha resultado útil, un café ayuda a que siga así.',
+    'flowshape is free, open source, and carries no ads or accounts. If it has been useful to you, a tip helps keep it that way.',
+    'flowshape es gratuito, de código abierto y no lleva anuncios ni cuentas. Si te ha resultado útil, una propina ayuda a que siga así.',
   ],
   'tip.direct': ['Open the tip page in a new tab', 'Abrir la página de propinas en otra pestaña'],
-  'tip.support': ['Support this project', 'Apoya el proyecto'],
+  'tip.cta': ['Send a tip', 'Enviar una propina'],
+  'tip.methods': [
+    'Card, PayPal, Apple Pay or Google Pay',
+    'Tarjeta, PayPal, Apple Pay o Google Pay',
+  ],
+  'tip.hosted': ['Payments are handled by TipTopJar.', 'Los pagos los gestiona TipTopJar.'],
 
   // --- analytics consent --------------------------------------------------
   // Deliberately plain about what is being asked. The two buttons carry equal

@@ -2,22 +2,41 @@ import { openModal } from './modal';
 import { t, type Lang } from '../i18n';
 
 /**
- * The tip jar: a TipTopJar inline widget in a modal.
+ * The tip jar.
  *
- * The widget script is fetched at the moment the reader opens the jar, never
- * on page load. That is the same reason the analytics banner exists — a third
- * party's script and cookies should arrive because someone asked for them, not
- * because they visited. Here the click *is* the request, so it needs no
- * separate consent, and someone who never opens the jar never meets TipTopJar
- * at all.
+ * This deliberately does NOT embed TipTopJar's widget. That embed is a
+ * cross-origin iframe, which means three things this site cannot accept: its
+ * palette is fixed and unreachable by our CSS, it renders only in English (no
+ * language attribute, `?lang=` ignored) against a site that is bilingual
+ * everywhere else, and it injects a Google font we do not use into our own
+ * document head. Its height also arrives by postMessage and was observed not
+ * arriving at all.
  *
- * The plain link below the widget is not decoration: it is the fallback for
- * every case where the embed does not arrive — a blocked third-party script,
- * an extension, a dead CDN. Without it a failed widget would leave a reader
- * who wanted to give something with nowhere to go.
+ * So the card below is ours: on-brand, bilingual, and no third-party code on
+ * the page at any point. The reader lands on the payment page already knowing
+ * what it is and what it takes — which is the part the embed was doing.
  */
 const TIP_USER = 'jossif';
 export const TIP_URL = `https://tiptopjar.com/${TIP_USER}`;
+
+/** A stroke-based arrow, matching the icon style used elsewhere. */
+function arrowIcon(): SVGSVGElement {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 20 20');
+  svg.setAttribute('width', '14');
+  svg.setAttribute('height', '14');
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS(ns, 'path');
+  path.setAttribute('d', 'M4 10h11M11 5.5L15.5 10 11 14.5');
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '1.5');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+  svg.append(path);
+  return svg;
+}
 
 function buildBody(lang: Lang): HTMLElement {
   const wrap = document.createElement('div');
@@ -27,37 +46,26 @@ function buildBody(lang: Lang): HTMLElement {
   blurb.className = 'tip-blurb';
   blurb.textContent = t('tip.blurb', lang);
 
-  const mount = document.createElement('div');
-  mount.className = 'tip-mount';
+  const cta = document.createElement('a');
+  cta.className = 'tip-cta';
+  cta.href = TIP_URL;
+  cta.target = '_blank';
+  cta.rel = 'noopener noreferrer';
+  cta.append(t('tip.cta', lang), arrowIcon());
 
-  const fallback = document.createElement('p');
-  fallback.className = 'tip-fallback';
-  const link = document.createElement('a');
-  link.href = TIP_URL;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  link.textContent = t('tip.direct', lang);
-  fallback.append(link);
+  const methods = document.createElement('p');
+  methods.className = 'tip-methods';
+  methods.textContent = t('tip.methods', lang);
 
-  wrap.append(blurb, mount, fallback);
+  const hosted = document.createElement('p');
+  hosted.className = 'tip-hosted';
+  hosted.textContent = t('tip.hosted', lang);
 
-  // Inserted on the next tick so the mount is in the document: a <script>
-  // only runs once its subtree is connected, and the modal appends this
-  // element after render() has returned.
-  setTimeout(() => {
-    if (!mount.isConnected) return;
-    const s = document.createElement('script');
-    s.src = 'https://tiptopjar.com/widget.js';
-    s.async = true;
-    s.setAttribute('data-username', TIP_USER);
-    s.setAttribute('data-mode', 'inline');
-    mount.append(s);
-  }, 0);
-
+  wrap.append(blurb, cta, methods, hosted);
   return wrap;
 }
 
 export function openTipJar(lang: Lang): void {
-  const title = t('tip.title', lang);
+  const title = t('tip.support', lang);
   openModal({ title, tabs: [{ id: 'tip', label: title, render: () => buildBody(lang) }] });
 }

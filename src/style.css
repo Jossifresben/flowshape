@@ -347,18 +347,27 @@ a.gal-wordmark { text-decoration: none; }
 
 /* --- tip jar --- */
 .about-tip-btn { margin: 4px 0 8px; }
-.tip-body { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.tip-blurb { margin: 0; max-width: 44ch; font-size: 14px; line-height: 1.65; text-align: center; }
-.tip-mount { display: flex; justify-content: center; width: 100%; min-height: 520px; }
-/* The embed reports its height to the parent and sets an inline `height` from
-   the reply — a handshake that was observed arriving late, and sometimes not
-   at all, leaving a 0px-tall iframe and an apparently empty jar. `min-height`
-   outranks that inline height in the box model, so the widget is usable from
-   the moment it paints whether or not the message ever lands. */
-.tip-mount iframe { min-height: 520px; }
-.tip-fallback { margin: 0; font-family: var(--font-mono); font-size: 11px; }
-.tip-fallback a { color: var(--gray); }
-.tip-fallback a:hover { color: var(--ink); }
+.tip-body { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 8px 0 4px; }
+.tip-blurb { margin: 0; max-width: 46ch; font-size: 14px; line-height: 1.65; text-align: center; }
+/* The one accent-coloured call to action on the site. It earns the colour by
+   being the only thing here that asks for something. */
+.tip-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.12em;
+  padding: 15px 28px; text-decoration: none;
+  border: 1px solid var(--accent); color: var(--accent); background: transparent;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.tip-cta:hover { background: var(--accent); color: var(--paper); }
+.tip-cta:focus-visible { outline: 1px solid var(--ink); outline-offset: 3px; }
+.tip-methods {
+  margin: 0; font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; color: var(--gray);
+}
+.tip-hosted {
+  margin: 0; max-width: 40ch; text-align: center;
+  font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: var(--gray);
+}
 
 /* --- analytics consent bar --- */
 .consent {

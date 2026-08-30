@@ -116,8 +116,8 @@ const BLOCKS: Block[] = [
   {
     kind: 'p',
     text: [
-      'Only two things here can reach a third party, and both are yours to start. One is analytics: accept the banner and Google Analytics counts which pages are opened, from which country, and on what kind of device; decline and none of it loads — no script, no cookie, nothing stored. The other is the tip jar, which fetches its payment widget at the moment you open it and not before. Your patterns, your parameters and your audio stay out of both, because they are never sent anywhere at all.',
-      'Aquí solo dos cosas pueden llegar a un tercero, y ambas las inicias tú. Una es la analítica: si aceptas el aviso, Google Analytics cuenta qué páginas se abren, desde qué país y en qué tipo de dispositivo; si lo rechazas, no se carga nada, ni script, ni cookie, ni dato guardado. La otra es el bote de propinas, que descarga su widget de pago en el momento en que lo abres y no antes. Tus patrones, tus parámetros y tu audio quedan fuera de las dos, porque no se envían a ninguna parte.',
+      'Analytics is the only thing here that reaches a third party, and only if you agree to it. Accept the banner and Google Analytics counts which pages are opened, from which country, and on what kind of device. Decline and none of it loads — no script, no cookie, nothing stored. The tip jar is a plain link: nothing belonging to the payment host runs on this site. Your patterns, your parameters and your audio stay out of all of it, because they are never sent anywhere at all.',
+      'La analítica es lo único aquí que llega a un tercero, y solo si lo aceptas. Si aceptas el aviso, Google Analytics cuenta qué páginas se abren, desde qué país y en qué tipo de dispositivo. Si lo rechazas, no se carga nada: ni script, ni cookie, ni dato guardado. El bote de propinas es un simple enlace: nada de la pasarela de pago se ejecuta en este sitio. Tus patrones, tus parámetros y tu audio quedan fuera de todo, porque no se envían a ninguna parte.',
     ],
   },
   {
@@ -206,7 +206,7 @@ export function mountAbout(root: HTMLElement): void {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'btn about-tip-btn';
-      btn.textContent = t('footer.tip', lang);
+      btn.textContent = t('tip.support', lang);
       btn.addEventListener('click', () => openTipJar(lang));
       article.append(heading, text, btn);
     } else {

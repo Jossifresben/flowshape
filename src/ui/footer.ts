@@ -55,7 +55,7 @@ export function buildFooter(lang: Lang, opts: { compact?: boolean } = {}): HTMLE
   const tip = document.createElement('button');
   tip.type = 'button';
   tip.className = 'site-footer-privacy site-footer-tip';
-  tip.textContent = t('footer.tip', lang);
+  tip.textContent = t('tip.support', lang);
   tip.addEventListener('click', () => openTipJar(lang));
   links.append(privacy, tip);
   footer.append(links);
