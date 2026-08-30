@@ -87,9 +87,21 @@ export interface ShowcaseVideo {
   /** Optional `#/a/` hash, so the card can link through to the live stage. */
   hash?: string;
   title?: Pair;
+  /** Attribution for an entry that carries music. Setting it marks the entry
+   *  as a song in both places it is named: the card is qualified with the
+   *  translated word for "song", and the modal — which has room — carries this
+   *  full credit. One field, so the two can never drift apart. */
+  credit?: Pair;
 }
 
 export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
+  // First deliberately: it is the only entry with music, and the one to meet
+  // first. The song title itself is not translated; `credit` is what marks it
+  // apart from the silent stage recordings below. The credit is also burned
+  // into the video itself, so it travels with the file wherever it is shared.
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/conecto.mp4', poster: '/showcase/conecto.jpg',
+    title: ['Conecto con ese lugar', 'Conecto con ese lugar'],
+    credit: ['Song by Jossi Fresco', 'Canción de Jossi Fresco'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
     title: ['Harmonograph', 'Armonógrafo'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/timestable.mp4', poster: '/showcase/timestable.jpg',

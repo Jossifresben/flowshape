@@ -106,9 +106,22 @@ export function mountGallery(root: HTMLElement): void {
     for (const f of families) makeChip(f, familyLabel(f, lang));
   }
 
+  // Cards arrive rather than appear. The reveal is tied to the thumbnail
+  // actually decoding — not to a timer — because the decode is what causes the
+  // pop; animating on a guess just moves the abruptness somewhere else.
+  //
+  // The hidden state is applied by script and always removed by `reveal`, which
+  // fires on load, on error, and on a timeout. A card can therefore never be
+  // left invisible by a thumbnail that never arrives.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   function renderGrid(): void {
     grid.innerHTML = '';
     const visible = patterns.filter((p) => activeFamily === 'all' || p.family === activeFamily);
+    // Counts reveals in the order they complete, so the wave follows the order
+    // thumbnails actually land. Capped so a card scrolled to much later does
+    // not inherit a long delay from everything that preceded it.
+    let revealed = 0;
     for (const def of visible) {
       const card = document.createElement('a');
       card.className = 'gal-card';
@@ -138,6 +151,36 @@ export function mountGallery(root: HTMLElement): void {
 
       meta.append(name, family);
       card.append(thumbBox, meta);
+
+      if (!reduceMotion) {
+        card.classList.add('gal-card-pending');
+        const reveal = (): void => {
+          if (!card.classList.contains('gal-card-pending')) return;
+          card.style.transitionDelay = `${Math.min(revealed++, 8) * 45}ms`;
+          card.classList.remove('gal-card-pending');
+        };
+        if (img.complete) {
+          // Already cached — which is the normal case when switching family
+          // filters, since the grid is rebuilt from thumbnails the browser
+          // already holds. Revealing here and now would set the hidden class
+          // and clear it inside one tick, before the card is even in the DOM,
+          // so no transition would run and the filtered grid would snap in
+          // exactly as it used to. Two frames: one to get the pending state
+          // appended and painted, the next to transition out of it.
+          //
+          // The timeout is the same safety net the load path has, and it is
+          // needed for a reason that is easy to miss: a background tab starves
+          // requestAnimationFrame, so filtering with the tab hidden would leave
+          // every card at opacity 0 until it were focused again.
+          requestAnimationFrame(() => requestAnimationFrame(reveal));
+          window.setTimeout(reveal, 2000);
+        } else {
+          img.addEventListener('load', reveal, { once: true });
+          img.addEventListener('error', reveal, { once: true });
+          window.setTimeout(reveal, 2000);
+        }
+      }
+
       grid.append(card);
     }
   }
