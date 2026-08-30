@@ -100,4 +100,6 @@ export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
     title: ['Warped Fabric', 'Tejido deformado'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph-wide.mp4', poster: '/showcase/harmonograph-wide.jpg',
     title: ['Harmonograph, wide', 'Armonógrafo, panorámico'] },
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/mystery.mp4', poster: '/showcase/mystery.jpg',
+    title: ['Mystery Curve', 'Curva misteriosa'] },
 ];
