@@ -19,9 +19,15 @@ function actionButton(short: string, full: string): HTMLButtonElement {
 
 /** Builds the three things a visitor reaches for constantly — Randomize,
  *  Explain, Animate, Poster — side by side above the fold instead of four
- *  stacked full-width buttons. */
+ *  stacked full-width buttons.
+ *
+ *  Takes a `getState` accessor, not a state snapshot: slider drags commit
+ *  through the playground's fast path, which updates state and the URL
+ *  without rebuilding this panel, so a captured snapshot goes stale the
+ *  moment a slider moves — Animate and Poster would silently discard the
+ *  visitor's edits and ship the values from the last full rebuild. */
 export function buildActionsRow(
-  def: PatternDef, state: AppState, lang: Lang, setState: (next: Partial<AppState>) => void,
+  def: PatternDef, getState: () => AppState, lang: Lang, setState: (next: Partial<AppState>) => void,
 ): HTMLElement {
   const actions = document.createElement('div');
   actions.className = 'panel-actions';
@@ -31,24 +37,25 @@ export function buildActionsRow(
     if (def.usesSeed) {
       setState({ seed: 1 + Math.floor(Math.random() * 99999) });
     } else {
-      setState({ params: randomParams(def, Math.random, state.params) });
+      setState({ params: randomParams(def, Math.random, getState().params) });
     }
   });
 
   const explainBtn = actionButton(t('pg.explainShort', lang), t('pg.explain', lang));
   explainBtn.addEventListener('click', () => {
+    const { patternId } = getState();
     openModal({
-      title: patternName(state.patternId, lang),
+      title: patternName(patternId, lang),
       tabs: [
-        { id: 'math', label: t('modal.math', lang), render: () => renderMathTab(state.patternId, lang) },
-        { id: 'code', label: t('modal.code', lang), render: () => renderCodeTab(state.patternId, lang) },
+        { id: 'math', label: t('modal.math', lang), render: () => renderMathTab(patternId, lang) },
+        { id: 'code', label: t('modal.code', lang), render: () => renderCodeTab(patternId, lang) },
       ],
     });
   });
 
   const animateBtn = actionButton(t('pg.animateShort', lang), t('pg.animate', lang));
   animateBtn.addEventListener('click', () => {
-    location.hash = encodeState({ ...state, view: 'a' });
+    location.hash = encodeState({ ...getState(), view: 'a' });
   });
 
   const posterBtn = actionButton(t('pg.posterShort', lang), t('pg.poster', lang));
@@ -56,7 +63,7 @@ export function buildActionsRow(
     // Its own window, per the brief: the composer is a separate surface and
     // the playground keeps its state and its scroll position.
     window.open(
-      `${location.pathname}${location.search}${composerUrl(state)}`,
+      `${location.pathname}${location.search}${composerUrl(getState())}`,
       '_blank',
       'noopener',
     );

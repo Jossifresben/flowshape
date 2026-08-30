@@ -243,7 +243,7 @@ export function mountPlayground(root: HTMLElement): () => void {
 
     // The three things a visitor reaches for constantly, side by side above
     // the fold instead of three stacked full-width buttons.
-    panel.append(buildActionsRow(def, state, lang, setState));
+    panel.append(buildActionsRow(def, () => state, lang, setState));
 
     if (def.usesSeed) {
       const seedVal = document.createElement('div');
