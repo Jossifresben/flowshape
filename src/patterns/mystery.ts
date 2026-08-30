@@ -16,11 +16,12 @@ export const mystery = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: true,
-  anim: { continuous: ['falloff', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
+  anim: { continuous: ['falloff', 'bloom', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
   params: [
     { key: 'symmetry', kind: 'int', min: 3, max: 12, step: 1, default: 7, label: 'mystery.symmetry' },
     { key: 'harmonics', kind: 'int', min: 2, max: 8, step: 1, default: 6, label: 'mystery.harmonics' },
     { key: 'falloff', kind: 'float', min: 0.6, max: 2.5, step: 0.05, default: 1.05, label: 'mystery.falloff' },
+    { key: 'bloom', kind: 'float', min: 0, max: 0.6, step: 0.02, default: 0.35, label: 'mystery.bloom' },
     { key: 'layers', kind: 'int', min: 1, max: 6, step: 1, default: 5, label: 'mystery.layers' },
     { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 0.5, label: 'mystery.strokeWidth' },
     { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.65, label: 'mystery.opacity' },
@@ -40,29 +41,47 @@ export const mystery = definePattern({
     const kMax = Math.max(...freqs.map((k) => Math.abs(k)));
     const N = Math.max(1024, 128 * kMax);
     const ph = (p['phase'] ?? 0) % 1;
+    const bloom = p['bloom']!;
     const cx = size.w / 2, cy = size.h / 2;
 
+    // Three exactly 1-periodic motions ride the phase together, and all
+    // three vanish identically at ph = 0 (`% 1` above makes phase 1 the
+    // literal phase-0 expression, closing the loop byte-for-byte):
+    //  - spin: each harmonic's phase turns by 2π·s per cycle — whole turns,
+    //    so the identity at the wrap; the curve morphs through its family.
+    //  - bloom: each harmonic's amplitude swells by sin(2π·|s|·tw) — again
+    //    integer rates, zero at the wrap; loops blossom and collapse at
+    //    different beats instead of everything swirling in lockstep.
+    //  - fan (below): the trail layers spread apart mid-cycle and close.
+    // None of it touches the frequencies, so the m-fold symmetry survives
+    // every frame — that is the Farris theorem doing the work.
     const point = (t: number, tw: number): [number, number] => {
       let x = 0, y = 0;
       for (let h = 0; h < svals.length; h++) {
-        // Phase spins each harmonic in proportion to its s-index: at
-        // phase 1 every term has turned by a whole 2π·s, i.e. the
-        // identity, so the loop closes exactly (`% 1` above makes phase 1
-        // the literal phase-0 expression). Rotating phases never touches
-        // the frequencies, so the m-fold symmetry survives every frame.
+        const rate = Math.max(1, Math.abs(svals[h]!));
+        const amp = amps[h]! * (1 + bloom * Math.sin(2 * Math.PI * rate * tw));
         const a = freqs[h]! * t + phis[h]! + 2 * Math.PI * svals[h]! * tw;
-        x += amps[h]! * Math.cos(a);
-        y += amps[h]! * Math.sin(a);
+        x += amp * Math.cos(a);
+        y += amp * Math.sin(a);
       }
       return [x, y];
     };
 
-    // Normalize by the true extremal radius of the base curve so every
-    // seed fills the frame equally.
+    // The trail spacing: tight at the loop's anchor frame, fanning open to
+    // more than double mid-cycle. (1 − cos) is zero at ph = 0, so the
+    // still render and the wrap frame keep the resting spacing.
+    const fan = 0.022 + 0.028 * ((1 - Math.cos(2 * Math.PI * ph)) / 2);
+
+    // Normalize by the extremal radius across every layer, so neither the
+    // bloom nor a fanned-out trail ever pushes the figure past the frame;
+    // the scale is a continuous function of phase, so it breathes rather
+    // than jumps.
     let maxR = 0;
-    for (let i = 0; i < N; i++) {
-      const [x, y] = point((2 * Math.PI * i) / N, ph);
-      maxR = Math.max(maxR, Math.hypot(x, y));
+    for (let L = 0; L < layers; L++) {
+      for (let i = 0; i < N; i++) {
+        const [x, y] = point((2 * Math.PI * i) / N, ph + L * fan);
+        maxR = Math.max(maxR, Math.hypot(x, y));
+      }
     }
     const R = (Math.min(size.w, size.h) * 0.44) / (maxR || 1);
 
@@ -70,7 +89,7 @@ export const mystery = definePattern({
     for (let L = layers - 1; L >= 0; L--) {
       // Each layer is the same curve a little further along the phase
       // flow — an engraved motion-trail of the morph itself.
-      const tw = ph + L * 0.035;
+      const tw = ph + L * fan;
       let d = '';
       for (let i = 0; i <= N; i++) {
         const [x, y] = point((2 * Math.PI * i) / N, tw);

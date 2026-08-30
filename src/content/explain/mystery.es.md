@@ -19,4 +19,4 @@ Esa libertad es el motor del patrón. La semilla sortea fases nuevas; el exponen
 
 ## Parámetros
 
-**Simetría** es m, el orden rotacional impuesto. **Armónicos** cuenta los círculos de la cadena; **caída**, qué tan rápido se apagan los altos. **Capas** superpone la misma curva un poco más avanzada en su metamorfosis, una estela grabada. La semilla sortea fases nuevas: otra floritura, el mismo teorema.
+**Simetría** es m, el orden rotacional impuesto. **Armónicos** cuenta los círculos de la cadena; **caída**, qué tan rápido se apagan los altos. **Floración** deja que la amplitud de cada armónico crezca y se desplome a su propio ritmo entero mientras la curva se mueve: lazos floreciendo a compases distintos. **Capas** superpone la misma curva un poco más avanzada en su metamorfosis, una estela grabada que se abre en abanico a mitad de ciclo. La semilla sortea fases nuevas: otra floritura, el mismo teorema.

@@ -652,25 +652,35 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     ] },
   ],
   mystery: [
+    // `bloom` is the amplitude-swell axis the intrinsic motion already
+    // rides, so driving it with bass makes the music push the same
+    // blossoming the phase flow produces — the two motions compose
+    // instead of fighting.
     { id: 'flourish', label: { en: 'Flourish', es: 'Floritura' }, routes: [
-      { feature: 'bright', param: 'falloff', depth: 0.15 },
-      { feature: 'bass', param: 'size', depth: 0.1 },
+      { feature: 'bass', param: 'bloom', depth: 0.35 },
+      { feature: 'bright', param: 'falloff', depth: 0.12 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
     ] },
     { id: 'breathe', label: { en: 'Breathe', es: 'Respira' }, routes: [
-      { feature: 'level', param: 'opacity', depth: 0.5 },
-      { feature: 'mid', param: 'falloff', depth: 0.1 },
+      { feature: 'level', param: 'bloom', depth: 0.4 },
+      { feature: 'mid', param: 'opacity', depth: 0.4 },
     ] },
   ],
   curlicue: [
     // `alpha` is the whole figure — even a 0.0005 nudge reconfigures every
     // curl, the same class of chaos as timestable's multiplier — so audio
-    // never touches it. `curls` only grows and shrinks the walk's tail
-    // (with a slow whole-figure refit), which reads as breathing.
+    // never touches it. `swell` is the amplitude of the travelling wave the
+    // intrinsic motion already rides, so bass deepens the same surge the
+    // phase flow produces; `curls` grows and shrinks the walk's tail.
+    { id: 'surge', label: { en: 'Surge', es: 'Oleada' }, routes: [
+      { feature: 'bass', param: 'swell', depth: 0.35 },
+      { feature: 'level', param: 'opacity', depth: 0.35 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+    ] },
     { id: 'unfurl', label: { en: 'Unfurl', es: 'Despliega' }, routes: [
       { feature: 'level', param: 'curls', depth: 0.02 },
+      { feature: 'mid', param: 'swell', depth: 0.25 },
       { feature: 'bass', param: 'opacity', depth: 0.4 },
-      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
     ] },
   ],
   guilloche: [

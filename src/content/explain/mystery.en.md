@@ -19,4 +19,4 @@ That freedom is the pattern's engine. The seed draws new phases; the falloff exp
 
 ## Parameters
 
-**Symmetry** is m, the enforced rotational order. **Harmonics** counts the circles in the chain, **falloff** how quickly the higher ones fade. **Layers** overlays the same curve a little further along its morph, an engraved motion-trail. The seed rolls new phases — a new flourish, the same theorem.
+**Symmetry** is m, the enforced rotational order. **Harmonics** counts the circles in the chain, **falloff** how quickly the higher ones fade. **Bloom** lets each harmonic's amplitude swell and collapse at its own integer rate as the curve moves — loops blossoming on different beats. **Layers** overlays the same curve a little further along its morph, an engraved motion-trail that fans open mid-cycle. The seed rolls new phases — a new flourish, the same theorem.

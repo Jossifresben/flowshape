@@ -15,10 +15,12 @@ export const curlicue = definePattern({
   phase: 1,
   heavy: false,
   usesSeed: false,
-  anim: { continuous: ['curls', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
+  anim: { continuous: ['curls', 'swell', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
   params: [
     { key: 'alpha', kind: 'float', min: 0.001, max: 0.06, step: 0.0005, default: 0.007, label: 'curlicue.alpha' },
     { key: 'curls', kind: 'int', min: 10, max: 120, step: 1, default: 42, label: 'curlicue.curls' },
+    { key: 'swell', kind: 'float', min: 0, max: 0.6, step: 0.02, default: 0.3, label: 'curlicue.swell' },
+    { key: 'waves', kind: 'int', min: 1, max: 6, step: 1, default: 3, label: 'curlicue.waves' },
     { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 0.55, label: 'curlicue.strokeWidth' },
     { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.85, label: 'curlicue.opacity' },
   ],
@@ -36,6 +38,18 @@ export const curlicue = definePattern({
     // per-step wrap: computing sin(π·α·n²) directly loses float precision
     // once n² is large, but α·n stays exact to ~1e-12 over this range and
     // the wrap keeps the accumulator small.
+    // The geometry NEVER moves. Early motion designs modulated the walk
+    // itself (precession, step-length waves) and every one of them read as
+    // the whole figure turning, pumping or drifting, because any change to
+    // the steps couples into the walk's large-scale drift and moves its
+    // extent. What travels instead is light: the chain is drawn in chunks,
+    // and a pulse of stroke width and ink density runs down it, each curl
+    // glowing up as a crest passes through. The pulse is 1-periodic in the
+    // walk coordinate and slides by exactly one period per cycle, so with
+    // `% 1` folding phase the loop closes byte-for-byte.
+    const ph = (p['phase'] ?? 0) % 1;
+    const swell = p['swell']!;
+    const waves = p['waves']!;
     const xs = new Float64Array(N + 1);
     const ys = new Float64Array(N + 1);
     let ang = 0, x = 0, y = 0;
@@ -48,35 +62,32 @@ export const curlicue = definePattern({
       if (x < minX) minX = x; else if (x > maxX) maxX = x;
       if (y < minY) minY = y; else if (y > maxY) maxY = y;
     }
-    // Precession, as in maurer: the figure turns once per phase cycle, and
-    // `% 1` closes the loop on the identity exactly. Rotate first, THEN
-    // fit — the walk's extent is data-dependent and often anisotropic, so
-    // fitting the rotated bounding box is what keeps every frame inside
-    // the frame.
-    const rot = ((p['phase'] ?? 0) % 1) * TWO_PI;
-    const cr = Math.cos(rot), sr = Math.sin(rot);
-    const mx = (minX + maxX) / 2, my = (minY + maxY) / 2;
-    let rMinX = Infinity, rMaxX = -Infinity, rMinY = Infinity, rMaxY = -Infinity;
-    const rxs = new Float64Array(N + 1);
-    const rys = new Float64Array(N + 1);
-    for (let n = 0; n <= N; n++) {
-      const dx = xs[n]! - mx, dy = ys[n]! - my;
-      const rx = dx * cr - dy * sr, ry = dx * sr + dy * cr;
-      rxs[n] = rx; rys[n] = ry;
-      if (rx < rMinX) rMinX = rx; if (rx > rMaxX) rMaxX = rx;
-      if (ry < rMinY) rMinY = ry; if (ry > rMaxY) rMaxY = ry;
-    }
-    const spanX = Math.max(rMaxX - rMinX, 1e-9);
-    const spanY = Math.max(rMaxY - rMinY, 1e-9);
+    const spanX = Math.max(maxX - minX, 1e-9);
+    const spanY = Math.max(maxY - minY, 1e-9);
     const scale = Math.min((size.w * 0.88) / spanX, (size.h * 0.88) / spanY);
-    const ox = size.w / 2 - ((rMinX + rMaxX) / 2) * scale;
-    const oy = size.h / 2 - ((rMinY + rMaxY) / 2) * scale;
-    let d = '';
-    for (let n = 0; n <= N; n++) {
-      d += `${n ? 'L' : 'M'}${(ox + rxs[n]! * scale).toFixed(2)} ${(oy + rys[n]! * scale).toFixed(2)}`;
+    const ox = size.w / 2 - ((minX + maxX) / 2) * scale;
+    const oy = size.h / 2 - ((minY + maxY) / 2) * scale;
+    const pt = (n: number): string => `${(ox + xs[n]! * scale).toFixed(2)} ${(oy + ys[n]! * scale).toFixed(2)}`;
+    const chunks = Math.min(120, Math.max(1, Math.floor(N / 4)));
+    const children = [];
+    for (let c = 0; c < chunks; c++) {
+      const a = Math.floor((c * N) / chunks);
+      const b = Math.floor(((c + 1) * N) / chunks);
+      let d = `M${pt(a)}`;
+      for (let n = a + 1; n <= b; n++) d += `L${pt(n)}`;
+      // Cubed cosine crest: narrow bright pulses with long quiet troughs,
+      // so the eye reads beads of energy travelling, not a global blink.
+      const v = (c + 0.5) / chunks;
+      const crest = (0.5 * (1 + Math.cos(TWO_PI * (waves * v - ph)))) ** 3;
+      const w = p['strokeWidth']! * (1 + 4.5 * swell * crest);
+      const op = p['opacity']! * (1 - 0.7 * swell * (1 - crest));
+      children.push(el('path', {
+        d, fill: 'none', stroke: 'ink',
+        'stroke-width': Math.round(w * 1000) / 1000,
+        opacity: Math.round(op * 1000) / 1000,
+        'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+      }));
     }
-    return el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }, [
-      el('path', { d, fill: 'none', stroke: 'ink', 'stroke-width': p['strokeWidth']!, opacity: p['opacity']!, 'stroke-linejoin': 'round' }),
-    ]);
+    return el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }, children);
   },
 });
