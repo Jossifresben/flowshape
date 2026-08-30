@@ -23,11 +23,11 @@ version: "1.3.0"
 date-released: "2026-08-30"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.22164865"
+    value: "10.5281/zenodo.22180722"
     description: "Concept DOI — always resolves to the latest version"
   - type: doi
-    value: "10.5281/zenodo.22164866"
-    description: "Zenodo archive of the v1.0.0 release"
+    value: "10.5281/zenodo.22180723"
+    description: "Zenodo archive of the v1.3.0 release"
 keywords:
   - generative art
   - audio visualization
