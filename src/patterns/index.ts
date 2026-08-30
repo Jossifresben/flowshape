@@ -23,3 +23,8 @@ import './isoweave';
 import './nested';
 import './tumbling';
 import './interlace';
+import './billiard';
+import './loxodrome';
+import './mystery';
+import './curlicue';
+import './guilloche';

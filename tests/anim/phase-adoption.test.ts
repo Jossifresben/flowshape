@@ -50,7 +50,18 @@ const FOURTH_WAVE = ['apollonian'];
  * grid line, and the loop closes without re-drawing a single bit.
  */
 const FIFTH_WAVE = ['hitomezashi'];
-const LOOPERS = [...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE];
+/**
+ * The sixth pass: the five patterns of the 2026-08-30 expansion, all built
+ * phase-first. billiard slides its launch point once around the rim (the
+ * chords flow, the caustic stands still); loxodrome slides every circle one
+ * step along its own Möbius orbit, wrapping the index set so the invariant
+ * family lands on itself; mystery spins each harmonic by 2π·s — the
+ * identity at phase 1 — morphing the curve inside its own symmetry class;
+ * curlicue and guilloche precess. Every one folds phase through `% 1`, so
+ * the loop closes byte-for-byte.
+ */
+const SIXTH_WAVE = ['billiard', 'loxodrome', 'mystery', 'curlicue', 'guilloche'];
+const LOOPERS = [...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE, ...SIXTH_WAVE];
 const ADOPTERS = [...FIRST_WAVE, ...LOOPERS];
 
 function at(id: string, phase?: number): string {

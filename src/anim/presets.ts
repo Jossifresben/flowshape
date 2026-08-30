@@ -626,6 +626,64 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     { id: 'coral', label: { en: 'Coral', es: 'Coral' }, routes: [], event: { kind: 'reseed', everyBeats: 4 } },
     { id: 'grow', label: { en: 'Grow', es: 'Crece' }, routes: [], event: { kind: 'reseed', everyBeats: 8 } },
   ],
+  billiard: [
+    // `launch` reconfigures the chord web smoothly but fast — a few degrees
+    // of travel already reads as the web flowing along the caustic, so the
+    // depth is held to ~3° of the 172° range.
+    { id: 'orbit', label: { en: 'Orbit', es: 'Orbita' }, routes: [
+      { feature: 'mid', param: 'launch', depth: 0.02 },
+      { feature: 'bass', param: 'opacity', depth: 0.4 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+    ] },
+    { id: 'caustic', label: { en: 'Caustic', es: 'Cáustica' }, routes: [
+      { feature: 'bright', param: 'ecc', depth: 0.04 },
+      { feature: 'level', param: 'opacity', depth: 0.5 },
+    ] },
+  ],
+  loxodrome: [
+    { id: 'vortex', label: { en: 'Vortex', es: 'Vórtice' }, routes: [
+      { feature: 'bass', param: 'twist', depth: 0.05 },
+      { feature: 'mid', param: 'shrink', depth: 0.03 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+    ] },
+    { id: 'bloom', label: { en: 'Bloom', es: 'Florece' }, routes: [
+      { feature: 'level', param: 'spread', depth: 0.15 },
+      { feature: 'bright', param: 'seedRadius', depth: 0.2 },
+    ] },
+  ],
+  mystery: [
+    { id: 'flourish', label: { en: 'Flourish', es: 'Floritura' }, routes: [
+      { feature: 'bright', param: 'falloff', depth: 0.15 },
+      { feature: 'bass', param: 'size', depth: 0.1 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+    ] },
+    { id: 'breathe', label: { en: 'Breathe', es: 'Respira' }, routes: [
+      { feature: 'level', param: 'opacity', depth: 0.5 },
+      { feature: 'mid', param: 'falloff', depth: 0.1 },
+    ] },
+  ],
+  curlicue: [
+    // `alpha` is the whole figure — even a 0.0005 nudge reconfigures every
+    // curl, the same class of chaos as timestable's multiplier — so audio
+    // never touches it. `curls` only grows and shrinks the walk's tail
+    // (with a slow whole-figure refit), which reads as breathing.
+    { id: 'unfurl', label: { en: 'Unfurl', es: 'Despliega' }, routes: [
+      { feature: 'level', param: 'curls', depth: 0.02 },
+      { feature: 'bass', param: 'opacity', depth: 0.4 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+    ] },
+  ],
+  guilloche: [
+    { id: 'engrave', label: { en: 'Engrave', es: 'Graba' }, routes: [
+      { feature: 'bass', param: 'depth', depth: 0.15 },
+      { feature: 'mid', param: 'twist', depth: 0.08 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+    ] },
+    { id: 'shimmer', label: { en: 'Shimmer', es: 'Reluce' }, routes: [
+      { feature: 'bright', param: 'inner', depth: 0.15 },
+      { feature: 'level', param: 'depth', depth: 0.1 },
+    ] },
+  ],
 };
 
 export function presetsFor(patternId: string): AnimPreset[] {

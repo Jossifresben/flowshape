@@ -107,4 +107,24 @@ export const BLURBS: Record<string, { en: string; es: string }> = {
     en: 'Ribbons woven over and under in a closed circuit, the logic behind Celtic knotwork.',
     es: 'Cintas entrelazadas por encima y por debajo en circuito cerrado: la lógica del nudo celta.',
   },
+  billiard: {
+    en: 'A ray bouncing inside an ellipse: every chord stays tangent to one hidden conic no one drew.',
+    es: 'Un rayo rebota dentro de una elipse: cada cuerda queda tangente a una cónica oculta que nadie dibujó.',
+  },
+  loxodrome: {
+    en: 'Circles carried by a Möbius map, spiralling out of one fixed point and into the other.',
+    es: 'Círculos llevados por una transformación de Möbius: salen en espiral de un punto fijo y entran en el otro.',
+  },
+  mystery: {
+    en: 'A sum of a few spinning circles whose frequencies force perfect rotational symmetry.',
+    es: 'La suma de unos pocos círculos giratorios cuyas frecuencias fuerzan una simetría rotacional perfecta.',
+  },
+  curlicue: {
+    en: 'One unbroken line turning a little more at every step; a single number decides all its curls.',
+    es: 'Una sola línea que gira un poco más a cada paso; un único número decide todas sus volutas.',
+  },
+  guilloche: {
+    en: 'Phase-shifted cosine rings that interleave into the machine-turned engraving of bank notes.',
+    es: 'Anillos de coseno desfasados que se entrelazan en el grabado a torno de los billetes.',
+  },
 };

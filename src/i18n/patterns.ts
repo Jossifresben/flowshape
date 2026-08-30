@@ -30,6 +30,11 @@ export const PATTERN_NAMES: Record<string, Pair> = {
   nested: ['Nested Shafts', 'Pozos anidados'],
   tumbling: ['Tumbling Blocks', 'Cubos reversibles'],
   interlace: ['Ribbon Interlace', 'Entrelazado de cintas'],
+  billiard: ['Elliptic Billiard', 'Billar elíptico'],
+  loxodrome: ['Möbius Flow', 'Flujo de Möbius'],
+  mystery: ['Mystery Curve', 'Curva misteriosa'],
+  curlicue: ['Curlicue Fractal', 'Fractal de volutas'],
+  guilloche: ['Guilloché Rosette', 'Roseta guilloché'],
 };
 
 /** Human label for each pattern family. */
