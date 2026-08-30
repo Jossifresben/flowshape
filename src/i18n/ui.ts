@@ -132,8 +132,8 @@ export const UI: Record<string, Pair> = {
   // --- references ---------------------------------------------------------
   'refs.title': ['References', 'Referencias'],
   'refs.intro': [
-    'Every generator here rests on mathematics that was already there. Below is the primary source behind each pattern — the same citation the pattern carries in its own explanation, so the two can never disagree.',
-    'Todos los generadores se apoyan en matemáticas que ya existían. Abajo está la fuente original de cada patrón: la misma cita que el patrón lleva en su propia explicación, de modo que ambas no puedan contradecirse.',
+    'Every generator here rests on mathematics that was already there. Below is the primary source behind each pattern.',
+    'Todos los generadores se apoyan en matemáticas que ya existían. Abajo está la fuente original de cada patrón.',
   ],
   // The legend for the marker below. Says plainly what it does NOT claim,
   // because a bibliography that lets a reader infer new mathematics from a
