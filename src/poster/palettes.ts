@@ -10,7 +10,33 @@ const HEX = /^[0-9a-fA-F]{6}$/;
  *  purpose: 0.22 is the band where sRGB gamut reduction eats most of the hue
  *  signal accent depends on (see the accentL comment below), so the user-
  *  reachable ink chroma is kept out of that band while accent — via
- *  `accentC` below — is still allowed to reach into it. */
+ *  `accentC` below — is still allowed to reach into it.
+ *
+ *  Raising it was investigated and rejected on measurements, so that the next
+ *  reader does not have to repeat the sweep:
+ *
+ *  1. It buys almost no colour. Sweeping candidate caps 0.16 -> 0.22 and
+ *     re-running every guarantee left the worst case *bit-identical* at each
+ *     one (paper/ink gap 0.381, paper/accent gap 0.283, ink/accent distance
+ *     13.0) — because sRGB gamut reduction is already the binding constraint,
+ *     not this cap. Counted directly: over the hue circle at ink's lightness,
+ *     chroma in (0.16, 0.22] adds ZERO new ink hexes for every paperL > 0.5
+ *     (ink near black), and 10-41 out of 345-600 for paperL <= 0.5. At the
+ *     default hue the extra range is a literal no-op: ink is #cde5ff at both
+ *     0.16 and 0.22. The other two roles cannot use it at all — `accentC`
+ *     saturates at its 0.22 clamp once chroma >= 0.13, and `paperC` at its
+ *     0.06 clamp once chroma >= 0.1714.
+ *
+ *  2. It would silently repaint live posters. This constant is not only the
+ *     slider's ceiling; it is the denominator of `monoFactor` below. Changing
+ *     it changes `accentL` for every chroma already in a shared URL — at
+ *     0.16 -> 0.22, five of the six sampled showcase palettes moved (e.g.
+ *     accent #95caff -> #8ac5ff). Decoupling the two roles would avoid that,
+ *     but by (1) there is nothing on the other side worth the seam.
+ *
+ *  The perceived narrowness this was meant to address was never chroma. It
+ *  was that paper, ink and accent all derived from one hue; `hueSpread`
+ *  is the fix. */
 const CHROMA_MAX = 0.16;
 
 /**
