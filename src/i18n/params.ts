@@ -123,6 +123,7 @@ export const PARAMS: Record<string, Pair> = {
 
   // --- colour controls (synthetic ParamDefs in the playground) -----------
   'color.hue': ['HUE', 'TONO'],
+  'color.hueSpread': ['HUE SPREAD', 'SEPAR. TONO'],
   'color.chroma': ['CHROMA', 'CROMA'],
   'color.paperL': ['PAPER', 'PAPEL'],
   'color.accentShift': ['ACCENT SHIFT', 'DESPL. ACENTO'],

@@ -24,6 +24,21 @@ describe('url state', () => {
     expect(decodeState(hash)).toEqual(s);
   });
 
+  // The second hue axis is a *later* addition to a URL format already in the
+  // wild, so its encoding has one job beyond round-tripping: a poster shared
+  // before it existed must keep producing the exact same hash. That only holds
+  // if the default is omitted, so it is asserted rather than assumed.
+  it('omits hueSpread at its default and round-trips it otherwise', () => {
+    const off: AppState = { ...state, color: { ...state.color, hueSpread: 0 } };
+    expect(encodeState(off)).not.toContain('hueSpread=');
+    // ...and byte-identical to the same state with the key simply absent.
+    expect(encodeState(off)).toBe(encodeState(state));
+
+    const on: AppState = { ...state, color: { ...state.color, hueSpread: -137 } };
+    expect(encodeState(on)).toContain('hueSpread=-137');
+    expect(decodeState(encodeState(on))).toEqual(on);
+  });
+
   it('returns null for an unknown route shape', () => {
     expect(decodeState('#/nope')).toBeNull();
     expect(decodeState('')).toBeNull();

@@ -14,7 +14,27 @@ const HEX = /^[0-9a-fA-F]{6}$/;
 const CHROMA_MAX = 0.16;
 
 /**
- * Derives paper/ink/accent from four controls in OKLCH space.
+ * Derives paper/ink/accent from five controls in OKLCH space.
+ *
+ * The model has two hue axes, not one. `hue` positions ink; `hueSpread`
+ * offsets *paper* from it and `accentShift` offsets accent from it. Before
+ * `hueSpread` existed every role derived from the single `hue`, so the whole
+ * design was one hue plus a lightness slider: combinatorially large but
+ * perceptually narrow — a warm ground under cool ink was simply not
+ * expressible. The spread buys that range without adding a drop of chroma,
+ * which is the point: it widens the set of distinct *looks*, not the
+ * saturation.
+ *
+ * Parameterised as a signed offset in [-180, 180] rather than an absolute
+ * paper hue in [0, 360) for two reasons. First, 0 is then the centre of the
+ * slider AND the identity, so the control reads as "off in the middle" and
+ * old URLs (which omit the key) land on it by construction. Second, +-180
+ * covers every hue *relationship* exactly once — the circle is symmetric, so
+ * a spread of +200 is the relationship -160 — and the sign is meaningful to
+ * the eye: one direction warms the ground against the mark, the other cools
+ * it. The endpoints -180 and +180 name the same complementary relationship;
+ * that duplicate is the price of putting the identity at the centre, and it
+ * is the right trade for a control whose default is "do nothing".
  *
  * - paper stays near-neutral (low chroma) so artwork reads against it.
  * - ink is the high-contrast counterpart of paper's lightness, at full
@@ -28,6 +48,7 @@ const CHROMA_MAX = 0.16;
  */
 export function resolvePalette(c: ColorState): Palette {
   const hue = c.hue ?? COLOR_DEFAULTS.hue;
+  const hueSpread = c.hueSpread ?? COLOR_DEFAULTS.hueSpread;
   const chroma = c.chroma ?? COLOR_DEFAULTS.chroma;
   const paperL = c.paperL ?? COLOR_DEFAULTS.paperL;
   const accentShift = c.accentShift ?? COLOR_DEFAULTS.accentShift;
@@ -78,7 +99,19 @@ export function resolvePalette(c: ColorState): Palette {
   const monoFactor = 1 - 0.4 * Math.min(chroma / CHROMA_MAX, 1);
   const accentL = Math.min(0.97, Math.max(0.05, inkL + (paperL <= 0.5 ? -1 : 1) * 0.16 * monoFactor));
 
-  const paper = oklchToHex(paperL, paperC, hue);
+  // `hue + hueSpread` with hueSpread at its default of 0 is exactly `hue` for
+  // every finite hue, so the pre-spread palette is reproduced bit-for-bit —
+  // asserted directly in tests/poster/palettes.test.ts rather than assumed,
+  // because live poster URLs depend on it.
+  //
+  // The spread is applied unconstrained across the full +-180. That is a
+  // measured decision, not an omission: paper's chroma is already held to
+  // min(chroma * 0.35, 0.06), so moving its hue moves its sRGB luminance very
+  // little. Sweeping the whole space costs the paper/ink luminance gap 0.0014
+  // in the worst case (0.3928 -> 0.3914 against a 0.35 floor) and costs the
+  // paper/accent gap nothing at all. There is no region of this axis that
+  // needs clamping, folding into paperC, or compensating in inkL.
+  const paper = oklchToHex(paperL, paperC, hue + hueSpread);
   const ink = oklchToHex(inkL, chroma, hue);
   const accent = oklchToHex(accentL, accentC, hue + accentShift);
 

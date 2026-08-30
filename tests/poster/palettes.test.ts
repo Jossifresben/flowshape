@@ -73,17 +73,78 @@ describe('resolvePalette', () => {
     );
   });
 
+  // --- the second hue axis ------------------------------------------------
+  //
+  // `hueSpread` offsets paper's hue from ink's. Two properties are asserted
+  // before any sweep, because everything else rests on them:
+  //
+  //  1. At hueSpread = 0 the palette is byte-for-byte what it was before the
+  //     axis existed. Live poster URLs omit the key and decode to 0, so this
+  //     is a compatibility guarantee, not a nicety. Asserted against hexes
+  //     computed with no hueSpread in the state at all — i.e. against the
+  //     `?? COLOR_DEFAULTS` path old URLs actually take.
+  //  2. hueSpread moves paper and ONLY paper. Ink and accent never read it,
+  //     so the ink/accent distance guarantees below are invariant along this
+  //     axis by construction — which is why they sweep it at a few points as
+  //     a regression tripwire rather than at full density.
+  describe('hueSpread (the paper hue axis)', () => {
+    it('is the identity at 0 — the pre-spread palette, byte for byte', () => {
+      for (let i = 4; i <= 96; i += 2) {
+        const paperL = i / 100;
+        for (const chroma of [0, 0.04, 0.08, 0.12, 0.16, 0.22]) {
+          for (const hue of [0, 37, 90, 137, 180, 250, 270, 300, 359]) {
+            for (const accentShift of [0, 60, 150, 180]) {
+              // No hueSpread key at all: exactly the shape an old URL decodes to.
+              const before = resolvePalette({ paperL, chroma, hue, accentShift });
+              const after = resolvePalette({ paperL, chroma, hue, accentShift, hueSpread: 0 });
+              expect(after).toEqual(before);
+            }
+          }
+        }
+      }
+    });
+
+    it('moves paper and nothing else', () => {
+      for (const hueSpread of [-180, -137, -90, -1, 1, 45, 90, 180]) {
+        for (const chroma of [0, 0.08, 0.16]) {
+          for (const paperL of [0.09, 0.5, 0.52, 0.96]) {
+            const base = resolvePalette({ paperL, chroma, hue: 250, accentShift: 150 });
+            const spread = resolvePalette({ paperL, chroma, hue: 250, accentShift: 150, hueSpread });
+            expect(spread.ink).toBe(base.ink);
+            expect(spread.accent).toBe(base.accent);
+          }
+        }
+      }
+    });
+
+    it('actually changes paper once there is chroma to carry it', () => {
+      // Paper's chroma is min(chroma * 0.35, 0.06), so at chroma 0 paper is a
+      // pure grey and the spread is correctly a no-op. It must bite above that
+      // — an axis that silently does nothing is worse than no axis.
+      const grey = resolvePalette({ paperL: 0.5, chroma: 0, hue: 250 });
+      expect(resolvePalette({ paperL: 0.5, chroma: 0, hue: 250, hueSpread: 120 }).paper).toBe(grey.paper);
+      const tinted = resolvePalette({ paperL: 0.5, chroma: 0.16, hue: 250 });
+      expect(resolvePalette({ paperL: 0.5, chroma: 0.16, hue: 250, hueSpread: 120 }).paper).not.toBe(tinted.paper);
+    });
+  });
+
   it('guarantees a wide perceptual gap between paper and ink across the full paperL range, at every chroma and hue', () => {
     // Integer-stepped (not accumulated float addition) so paperL hits exact
     // values like 0.50 — the single point where both branches of the Li
     // tie-break clamp to an extreme and the guarantee is tightest.
+    // hueSpread is swept at full width here because this is the one guarantee
+    // it can actually erode: paper's hue moves, so paper's sRGB luminance
+    // moves with it, while ink stays put. Measured cost of opening the axis
+    // to the full +-180: worst-case gap 0.3928 -> 0.3914. The floor is 0.35.
     for (let i = 4; i <= 96; i += 2) {
       const paperL = i / 100;
       for (const chroma of [0, 0.11, 0.22]) {
         for (const hue of [0, 90, 180, 250, 270, 300]) {
-          const p = resolvePalette({ paperL, chroma, hue });
-          const gap = Math.abs(srgbLuminance(p.paper) - srgbLuminance(p.ink));
-          expect(gap).toBeGreaterThan(0.35);
+          for (const hueSpread of [-180, -90, -30, 0, 30, 90, 180]) {
+            const p = resolvePalette({ paperL, chroma, hue, hueSpread });
+            const gap = Math.abs(srgbLuminance(p.paper) - srgbLuminance(p.ink));
+            expect(gap).toBeGreaterThan(0.35);
+          }
         }
       }
     }
@@ -117,11 +178,16 @@ describe('resolvePalette', () => {
         for (const chroma of [0, 0.08, 0.16]) {
           for (const hue of [0, 90, 180, 250, 270, 300]) {
             for (const accentShift of [0, 60, 150]) {
-              const p = resolvePalette({ paperL, chroma, hue, accentShift });
-              const dist = srgbDistance(p.ink, p.accent);
-              const lumGap = Math.abs(srgbLuminance(p.paper) - srgbLuminance(p.accent));
-              expect(dist).toBeGreaterThanOrEqual(6);
-              expect(lumGap).toBeGreaterThanOrEqual(0.28);
+              // Full-width spread: the paper/accent luminance gap is the other
+              // guarantee paper's hue can touch. Measured worst case over the
+              // whole axis, 0.3048, against a 0.28 floor.
+              for (const hueSpread of [-180, -90, 0, 90, 180]) {
+                const p = resolvePalette({ paperL, chroma, hue, accentShift, hueSpread });
+                const dist = srgbDistance(p.ink, p.accent);
+                const lumGap = Math.abs(srgbLuminance(p.paper) - srgbLuminance(p.accent));
+                expect(dist).toBeGreaterThanOrEqual(6);
+                expect(lumGap).toBeGreaterThanOrEqual(0.28);
+              }
             }
           }
         }
@@ -136,10 +202,16 @@ describe('resolvePalette', () => {
         for (const chroma of [0, 0.08, 0.16]) {
           for (const hue of [0, 90, 180, 250, 270, 300]) {
             for (const accentShift of [0, 60, 150]) {
-              checked++;
-              const p = resolvePalette({ paperL, chroma, hue, accentShift });
-              const dist = srgbDistance(p.ink, p.accent);
-              expect(dist).toBeGreaterThanOrEqual(28);
+              // Sparse on purpose: neither ink nor accent reads hueSpread (the
+              // invariance is asserted directly above), so the extremes are a
+              // regression tripwire against someone later wiring the spread
+              // into ink or accent without revisiting this guarantee.
+              for (const hueSpread of [-180, 0, 180]) {
+                checked++;
+                const p = resolvePalette({ paperL, chroma, hue, accentShift, hueSpread });
+                const dist = srgbDistance(p.ink, p.accent);
+                expect(dist).toBeGreaterThanOrEqual(28);
+              }
             }
           }
         }
