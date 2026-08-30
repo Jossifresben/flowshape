@@ -688,9 +688,12 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     ] },
   ],
   guilloche: [
+    // `inner` is the rosette's central well: bass drives it, so the well
+    // opens on every low swell and closes back to the resting figure as it
+    // fades — the whole ring band breathing with the music's low end.
     { id: 'engrave', label: { en: 'Engrave', es: 'Graba' }, routes: [
-      { feature: 'bass', param: 'depth', depth: 0.15 },
-      { feature: 'mid', param: 'twist', depth: 0.08 },
+      { feature: 'bass', param: 'inner', depth: 0.35 },
+      { feature: 'mid', param: 'depth', depth: 0.12 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
     ] },
     { id: 'shimmer', label: { en: 'Shimmer', es: 'Reluce' }, routes: [
