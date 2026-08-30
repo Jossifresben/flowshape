@@ -25,9 +25,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "npm run thumbs",
+    "prebuild": "npm run thumbs && npm run refs",
     "build": "tsc --noEmit && vite build",
     "thumbs": "vite-node scripts/build-thumbs.ts",
+    "refs": "vite-node scripts/build-references.ts",
     "og": "vite-node scripts/build-og.ts && node scripts/shoot-og.mjs",
     "set-version": "node scripts/set-version.mjs",
     "preview": "vite preview",

@@ -128,6 +128,13 @@ export const UI: Record<string, Pair> = {
   ],
   'tip.direct': ['Open the tip page in a new tab', 'Abrir la página de propinas en otra pestaña'],
   'tip.cta': ['Send a tip', 'Enviar una propina'],
+
+  // --- references ---------------------------------------------------------
+  'refs.title': ['References', 'Referencias'],
+  'refs.intro': [
+    'Every generator here came from somewhere, and none of it was invented for this site. Below is the primary source behind each pattern — the same citation the pattern carries in its own explanation, so the two can never disagree.',
+    'Cada generador viene de alguna parte, y nada de esto se inventó para este sitio. Abajo está la fuente original de cada patrón: la misma cita que el patrón lleva en su propia explicación, de modo que ambas no puedan contradecirse.',
+  ],
   'tip.methods': [
     'Card, PayPal, Apple Pay or Google Pay',
     'Tarjeta, PayPal, Apple Pay o Google Pay',
