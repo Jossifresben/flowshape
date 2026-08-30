@@ -159,8 +159,22 @@ export function mountGallery(root: HTMLElement): void {
           card.style.transitionDelay = `${Math.min(revealed++, 8) * 45}ms`;
           card.classList.remove('gal-card-pending');
         };
-        if (img.complete) reveal();
-        else {
+        if (img.complete) {
+          // Already cached — which is the normal case when switching family
+          // filters, since the grid is rebuilt from thumbnails the browser
+          // already holds. Revealing here and now would set the hidden class
+          // and clear it inside one tick, before the card is even in the DOM,
+          // so no transition would run and the filtered grid would snap in
+          // exactly as it used to. Two frames: one to get the pending state
+          // appended and painted, the next to transition out of it.
+          //
+          // The timeout is the same safety net the load path has, and it is
+          // needed for a reason that is easy to miss: a background tab starves
+          // requestAnimationFrame, so filtering with the tab hidden would leave
+          // every card at opacity 0 until it were focused again.
+          requestAnimationFrame(() => requestAnimationFrame(reveal));
+          window.setTimeout(reveal, 2000);
+        } else {
           img.addEventListener('load', reveal, { once: true });
           img.addEventListener('error', reveal, { once: true });
           window.setTimeout(reveal, 2000);
