@@ -6,7 +6,7 @@
 export const RESERVED = new Set([
   'v', 'seed', 'pal', 'bg', 'ink', 'acc', 'theme', 'lang',
   'layout', 'format', 'title', 'caption', 'cway', 'notext',
-  'hue', 'chroma', 'paperL', 'accentShift',
+  'hue', 'hueSpread', 'chroma', 'paperL', 'accentShift',
   'cw', 'ch', 'cu',
   // 'mode' is deliberately NOT reserved — delaunay, fabric and moire already
   // ship a 'mode' param, and the animate route is path-based (#/a/<pattern>),

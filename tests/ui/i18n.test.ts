@@ -47,8 +47,8 @@ describe('i18n coverage', () => {
     }
   });
 
-  it('labels the four colour controls', () => {
-    for (const key of ['color.hue', 'color.chroma', 'color.paperL', 'color.accentShift']) {
+  it('labels the five colour controls', () => {
+    for (const key of ['color.hue', 'color.hueSpread', 'color.chroma', 'color.paperL', 'color.accentShift']) {
       expect(hasParamLabel(key), `no label for '${key}'`).toBe(true);
     }
   });

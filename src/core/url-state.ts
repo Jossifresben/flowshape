@@ -3,6 +3,11 @@ import { DEFAULT_FORMAT } from '../poster/formats';
 
 export interface ColorState {
   hue?: number;
+  /** Offsets *paper's* hue from ink's, in degrees. The second hue axis: at 0
+   *  the whole palette is one hue plus a lightness slider; away from 0 the
+   *  ground and the mark sit at different points on the hue circle, which is
+   *  what makes a warm paper under cool ink possible at all. */
+  hueSpread?: number;
   chroma?: number;
   paperL?: number;
   accentShift?: number;
@@ -11,10 +16,15 @@ export interface ColorState {
   acc?: string;
 }
 
-/** Defaults for the four OKLCH colour controls. `ColorState` lives here, so
+/** Defaults for the five OKLCH colour controls. `ColorState` lives here, so
  *  this is the single canonical copy; `src/poster/palettes.ts` re-exports
- *  it as `COLOR_DEFAULTS` for colour resolution. */
-export const COLOR_DEFAULTS = { hue: 250, chroma: 0, paperL: 0.09, accentShift: 150 } as const;
+ *  it as `COLOR_DEFAULTS` for colour resolution.
+ *
+ *  `hueSpread` defaults to 0 and must stay there: every poster URL shared
+ *  before this axis existed omits the key, so 0 is what those URLs decode to,
+ *  and `resolvePalette` is required to reproduce the old palette exactly at
+ *  that value. */
+export const COLOR_DEFAULTS = { hue: 250, hueSpread: 0, chroma: 0, paperL: 0.09, accentShift: 150 } as const;
 
 /** The three routes a creation hash can name. 'a' = animate stage; 'c' =
  *  poster composer; 'p' = playground. */
@@ -54,6 +64,7 @@ export function encodeState(s: AppState): string {
   q.set('v', '1');
   q.set('seed', String(s.seed));
   if (s.color.hue !== undefined && s.color.hue !== COLOR_DEFAULTS.hue) q.set('hue', String(s.color.hue));
+  if (s.color.hueSpread !== undefined && s.color.hueSpread !== COLOR_DEFAULTS.hueSpread) q.set('hueSpread', String(s.color.hueSpread));
   if (s.color.chroma !== undefined && s.color.chroma !== COLOR_DEFAULTS.chroma) q.set('chroma', String(s.color.chroma));
   if (s.color.paperL !== undefined && s.color.paperL !== COLOR_DEFAULTS.paperL) q.set('paperL', String(s.color.paperL));
   if (s.color.accentShift !== undefined && s.color.accentShift !== COLOR_DEFAULTS.accentShift) q.set('accentShift', String(s.color.accentShift));
@@ -97,6 +108,7 @@ export function decodeState(hash: string): AppState | null {
   const seedRaw = Number(q.get('seed'));
   const color: ColorState = {};
   const hueRaw = q.get('hue'); if (hueRaw !== null) { const n = Number(hueRaw); if (Number.isFinite(n)) color.hue = n; }
+  const hueSpreadRaw = q.get('hueSpread'); if (hueSpreadRaw !== null) { const n = Number(hueSpreadRaw); if (Number.isFinite(n)) color.hueSpread = n; }
   const chromaRaw = q.get('chroma'); if (chromaRaw !== null) { const n = Number(chromaRaw); if (Number.isFinite(n)) color.chroma = n; }
   const paperLRaw = q.get('paperL'); if (paperLRaw !== null) { const n = Number(paperLRaw); if (Number.isFinite(n)) color.paperL = n; }
   const accentShiftRaw = q.get('accentShift'); if (accentShiftRaw !== null) { const n = Number(accentShiftRaw); if (Number.isFinite(n)) color.accentShift = n; }

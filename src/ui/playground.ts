@@ -33,6 +33,9 @@ function dependencyHint(
  *  Their labels are real i18n keys, like every other control's. */
 const COLOR_PARAM_DEFS: Record<keyof typeof COLOR_DEFAULTS, ParamDef> = {
   hue: { key: 'hue', kind: 'float', min: 0, max: 360, step: 1, default: COLOR_DEFAULTS.hue, label: 'color.hue' },
+  // Signed, centred on 0: the middle of the slider is "paper and ink share a
+  // hue", which is where every URL written before this control existed sits.
+  hueSpread: { key: 'hueSpread', kind: 'float', min: -180, max: 180, step: 1, default: COLOR_DEFAULTS.hueSpread, label: 'color.hueSpread' },
   chroma: { key: 'chroma', kind: 'float', min: 0, max: 0.16, step: 0.005, default: COLOR_DEFAULTS.chroma, label: 'color.chroma' },
   paperL: { key: 'paperL', kind: 'float', min: 0.04, max: 0.96, step: 0.01, default: COLOR_DEFAULTS.paperL, label: 'color.paperL' },
   accentShift: { key: 'accentShift', kind: 'float', min: 0, max: 180, step: 1, default: COLOR_DEFAULTS.accentShift, label: 'color.accentShift' },
@@ -288,7 +291,7 @@ export function mountPlayground(root: HTMLElement): () => void {
 
     // --- colour (deliberately after the parameters: colour follows shape) ---
     const colourSec = sectionRow('colour', t('pg.colour', lang), true);
-    for (const key of ['hue', 'chroma', 'paperL', 'accentShift'] as const) {
+    for (const key of ['hue', 'hueSpread', 'chroma', 'paperL', 'accentShift'] as const) {
       const def2 = COLOR_PARAM_DEFS[key];
       const v = state.color[key] ?? COLOR_DEFAULTS[key];
       colourSec.body.append(sliderRow(def2, v, lang, (nv) => setColor(key, nv)));
