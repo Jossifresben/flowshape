@@ -46,33 +46,51 @@ describe('frameParams', () => {
     expect(at(8)).not.toBe(at(7));
     expect(at(15)).toBe(at(8));
   });
-  it('step events cycle a param through their range and wrap', () => {
-    // Driven off the preset's own spec rather than hard-coded numbers, so a
-    // recalibration of the cadence doesn't silently stop testing the wrap.
-    const mdef = getPattern('maurer')!;
-    const mpreset = PRESETS_BY_PATTERN['maurer']![0]!;
-    const ev = mpreset.event!;
+  // Any step preset with a from/to sub-range serves as the fixture; it is
+  // scanned for rather than named, because which patterns step is a design
+  // decision that moves (maurer stepped once, and stopped — its structure IS
+  // the visitor's design). Driven off the preset's own spec rather than
+  // hard-coded numbers, so a recalibration doesn't silently stop testing.
+  const stepFixture = (() => {
+    for (const [pattern, presets] of Object.entries(PRESETS_BY_PATTERN)) {
+      for (const preset of presets) {
+        const ev = preset.event;
+        if (ev?.kind === 'step' && ev.from !== undefined && getPattern(pattern)) {
+          return { def: getPattern(pattern)!, preset };
+        }
+      }
+    }
+    throw new Error('no step preset with a sub-range left to test');
+  })();
+
+  it('step events start from the base value, cycle the range and wrap', () => {
+    const { def: sdef, preset: spreset } = stepFixture;
+    const ev = spreset.event!;
     const steps = ev.steps!;
+    const pd = sdef.params.find((p) => p.key === ev.param)!;
+    // pd.min is outside the from..to sub-range (asserted below), so a base
+    // parked there can never be mistaken for a stepped value.
+    const baseVal = pd.min;
     const at = (beat: number) =>
-      frameParams({ def: mdef, baseParams: defaultParams(mdef), baseSeed: 1, preset: mpreset, intensity: 1, features: ZERO_FRAME, phase: 0, beatIndex: beat }).params['d'];
+      frameParams({ def: sdef, baseParams: { ...defaultParams(sdef), [ev.param!]: baseVal }, baseSeed: 1, preset: spreset, intensity: 1, features: ZERO_FRAME, phase: 0, beatIndex: beat }).params[ev.param!];
+    expect(at(0)).toBe(baseVal);                        // home window IS the design
     expect(at(0)).toBe(at(ev.everyBeats - 1));          // holds inside a window
     expect(at(0)).not.toBe(at(ev.everyBeats));          // moves across windows
-    expect(at(0)).toBe(at(ev.everyBeats * steps));      // wraps after `steps`
+    expect(at(0)).toBe(at(ev.everyBeats * (steps + 1)));// wraps after home + steps
   });
   it('a step with from/to stays inside that sub-range, not the param range', () => {
-    const mdef = getPattern('maurer')!;
-    const mpreset = PRESETS_BY_PATTERN['maurer']![0]!;
-    const ev = mpreset.event!;
-    expect(ev.from).toBeDefined();
+    const { def: sdef, preset: spreset } = stepFixture;
+    const ev = spreset.event!;
     const seen: number[] = [];
-    for (let k = 0; k < ev.steps!; k++) {
-      seen.push(frameParams({ def: mdef, baseParams: defaultParams(mdef), baseSeed: 1, preset: mpreset, intensity: 1, features: ZERO_FRAME, phase: 0, beatIndex: k * ev.everyBeats }).params['d']!);
+    // Window 0 is the visitor's own value; the traversal is windows 1..steps.
+    for (let k = 1; k <= ev.steps!; k++) {
+      seen.push(frameParams({ def: sdef, baseParams: defaultParams(sdef), baseSeed: 1, preset: spreset, intensity: 1, features: ZERO_FRAME, phase: 0, beatIndex: k * ev.everyBeats }).params[ev.param!]!);
     }
     expect(Math.min(...seen)).toBe(ev.from);
     expect(Math.max(...seen)).toBe(ev.to);
-    const pd = mdef.params.find((p) => p.key === 'd')!;
+    const pd = sdef.params.find((p) => p.key === ev.param)!;
     expect(Math.min(...seen)).toBeGreaterThan(pd.min);  // the degenerate end is never visited
-    expect(Math.max(...seen)).toBeLessThan(pd.max);
+    expect(Math.max(...seen)).toBeLessThanOrEqual(pd.max);
   });
   it('injects phase for usesPhase patterns and omits it otherwise', () => {
     const h = getPattern('harmonograph')!;

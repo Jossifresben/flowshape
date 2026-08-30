@@ -73,9 +73,15 @@ export function frameParams(inp: FrameInput): { params: Params; seed: number } {
         // circles against 209 at 6, maurer at d = 1 collapses the rose to a
         // thin ring — and a step that visits them empties the stage once per
         // cycle. See the per-preset notes in presets.ts.
+        // The cycle's home position is the visitor's OWN value: like reseed's
+        // window 0 and flip's even windows, the figure that was designed must
+        // keep appearing, or the stage never shows the rose being shared.
         const lo = ev.from ?? pd.min;
         const hi = ev.to ?? pd.max;
-        overrides[ev.param!] = lo + ((hi - lo) * (k % steps)) / (steps - 1);
+        const pos = k % (steps + 1);
+        overrides[ev.param!] = pos === 0
+          ? inp.baseParams[ev.param!] ?? pd.default
+          : lo + ((hi - lo) * (pos - 1)) / (steps - 1);
       }
     }
   }
