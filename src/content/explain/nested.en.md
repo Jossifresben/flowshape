@@ -1,6 +1,7 @@
 ---
 source: Rhombille ("tumbling blocks") tiling, the dual of the trihexagonal tiling — Grünbaum, B. & Shephard, G.C. (1987) "Tilings and Patterns"; nonzero winding rule, W3C SVG 1.1 §11.3 "fill-rule"
 url: https://en.wikipedia.org/wiki/Rhombille_tiling
+construction: original
 ---
 
 ## Formula

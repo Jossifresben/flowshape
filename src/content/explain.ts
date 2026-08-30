@@ -1,6 +1,11 @@
 export interface ExplainDoc {
   source: string;
   url: string;
+  /** True when the front matter carries `construction: original` — the
+   *  pattern's *construction* (its composition and parameterisation) was
+   *  worked out for this project. Never a claim about the mathematics, which
+   *  stays classical and stays cited in `source`. */
+  original: boolean;
   body: string;
 }
 
@@ -20,7 +25,10 @@ export async function loadExplain(id: string, lang: 'en' | 'es'): Promise<Explai
 
 const FRONT_MATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
 
-/** Parses the `source:`/`url:` front matter block and returns the remaining markdown as `body`. Pure and synchronous so it is unit-testable without touching the filesystem or Vite. */
+/** The one value `construction:` accepts. A closed vocabulary rather than a free string, so the marker cannot drift into six different spellings across six files. */
+const ORIGINAL = 'original';
+
+/** Parses the `source:`/`url:`/`construction:` front matter block and returns the remaining markdown as `body`. Pure and synchronous so it is unit-testable without touching the filesystem or Vite. */
 export function parseFrontMatter(raw: string): ExplainDoc {
   const match = FRONT_MATTER.exec(raw);
   if (!match) {
@@ -40,7 +48,11 @@ export function parseFrontMatter(raw: string): ExplainDoc {
   if (!url) {
     throw new Error('explain doc front matter is missing required field "url" — a silent empty citation is worse than a loud failure');
   }
-  return { source, url, body: rest.trim() };
+  const construction = fields['construction'];
+  if (construction !== undefined && construction !== ORIGINAL) {
+    throw new Error(`explain doc front matter has construction: "${construction}" — the only accepted value is "${ORIGINAL}"`);
+  }
+  return { source, url, original: construction === ORIGINAL, body: rest.trim() };
 }
 
 /** Pattern ids present in the explain content directory, derived from the glob keys (each id may appear once per language). */

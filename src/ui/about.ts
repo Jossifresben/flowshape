@@ -1,5 +1,7 @@
 import { listPatterns } from '../patterns/registry';
-import { currentLang, t, type Lang, type Pair } from '../i18n';
+import { currentLang, patternName, t, type Lang, type Pair } from '../i18n';
+import { REFERENCES } from '../content/references';
+import { BLURBS } from '../content/blurbs';
 import { openTipJar } from './tip';
 import { buildNav } from './nav';
 import { buildFooter, AUTHOR_NAME, AUTHOR_URL, ORCID_URL, REPO_URL } from './footer';
@@ -49,8 +51,23 @@ const BLOCKS: Block[] = [
   {
     kind: 'p',
     text: [
-      'The pattern, every parameter, the seed, the colour and the format are all encoded in the address bar. Copy the link and whoever opens it sees exactly what you saw — identical, down to the last coordinate. There is nothing to save and nothing to sign in to.',
-      'El patrón, cada parámetro, la semilla, el color y el formato van codificados en la barra de direcciones. Copia el enlace y quien lo abra verá exactamente lo que tú viste, idéntico hasta la última coordenada. No hay nada que guardar ni sesión que iniciar.',
+      'The pattern, every parameter, the seed, the colour and the format are all encoded in the address bar. Copy the link and whoever opens it sees exactly what you saw — identical, down to the last coordinate. Nothing has to be saved, and there is nothing to sign in to.',
+      'El patrón, cada parámetro, la semilla, el color y el formato van codificados en la barra de direcciones. Copia el enlace y quien lo abra verá exactamente lo que tú viste, idéntico hasta la última coordenada. No hace falta guardar nada, ni hay sesión que iniciar.',
+    ],
+  },
+  { kind: 'h2', text: ['A gallery, and your own favourites', 'Una galería, y tus favoritos'] },
+  {
+    kind: 'p',
+    text: [
+      'The gallery is a set chosen by hand — designs, posters and recorded animations. None of it is a screenshot: every piece opens as the live thing, at the exact parameters that made it, ready to be taken apart.',
+      'La galería es un conjunto elegido a mano: diseños, pósters y animaciones grabadas. Nada de eso es una captura: cada pieza se abre como la obra viva, con los parámetros exactos que la crearon, lista para desmontarla.',
+    ],
+  },
+  {
+    kind: 'p',
+    text: [
+      'Anything worth returning to goes to your favourites — designs, posters and animations alike. They are kept in your own browser rather than on a server, so there is still nothing to sign in to; and since each one is only its link, you can export the whole collection to a file and import it on another machine.',
+      'Lo que merezca la pena recuperar va a tus favoritos: diseños, pósters y animaciones por igual. Se guardan en tu propio navegador y no en un servidor, así que sigue sin haber sesión que iniciar; y como cada uno es solo su enlace, puedes exportar la colección entera a un archivo e importarla en otro equipo.',
     ],
   },
   { kind: 'h2', text: ['The maths is not hidden', 'Las matemáticas no se esconden'] },
@@ -59,6 +76,13 @@ const BLOCKS: Block[] = [
     text: [
       'Every pattern carries the equation that draws it, a plain-language reading of that equation, a note on what each parameter really does, and the primary source it comes from — in English and Spanish. Next to it sits the generator’s own code, exactly as it runs. Nothing is a rewritten teaching version.',
       'Cada patrón lleva consigo la ecuación que lo dibuja, una lectura en lenguaje llano de esa ecuación, una nota sobre lo que hace realmente cada parámetro y la fuente original de la que procede, en inglés y en español. Al lado está el propio código del generador, tal cual se ejecuta. Nada es una versión didáctica reescrita.',
+    ],
+  },
+  {
+    kind: 'p',
+    text: [
+      'All of it hides behind the “Explain the math” button, which most visitors will never press, and the artwork does not mind in the slightest. It is there for the sort of person who reads the formula before touching a single slider. You know who you are.',
+      'Todo eso se esconde tras el botón «Explica las matemáticas», que la mayoría no pulsará jamás, y a la obra le da exactamente igual. Está para esa clase de persona que lee la fórmula antes de tocar un solo deslizador. Ya sabes quién eres.',
     ],
   },
   { kind: 'h2', text: ['Patterns that move', 'Patrones que se mueven'] },
@@ -81,13 +105,6 @@ const BLOCKS: Block[] = [
     text: [
       'Your audio never leaves your browser. It is analysed as it plays, and there is nowhere to send it.',
       'Tu audio nunca sale del navegador. Se analiza mientras suena, y no hay adónde enviarlo.',
-    ],
-  },
-  {
-    kind: 'p',
-    text: [
-      'The animated stage is in development and is not live on the site yet.',
-      'El escenario animado está en desarrollo y todavía no está publicado en el sitio.',
     ],
   },
   { kind: 'h2', text: ['The rules it keeps', 'Las reglas que respeta'] },
@@ -157,6 +174,65 @@ function extLink(href: string, text: string): HTMLAnchorElement {
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
   return a;
+}
+
+/**
+ * The bibliography: one line per pattern — its name, its one-line blurb and a
+ * link to the primary source it is built on. Driven by the registry rather
+ * than by the citation table, so a pattern that ships without a reference is
+ * conspicuously missing one here instead of quietly absent from the list.
+ *
+ * Entries whose `original` flag is set carry one extra line. It annotates the
+ * citation, it never replaces it: the mathematics under those patterns is as
+ * classical as everything else on the page, and only the construction laid on
+ * top of it belongs to this project. The head note says so in as many words,
+ * so the marker cannot be read as a claim of new mathematics.
+ */
+function buildReferences(lang: Lang): DocumentFragment {
+  const frag = document.createDocumentFragment();
+  const heading = document.createElement('h2');
+  heading.textContent = t('refs.title', lang);
+  const intro = document.createElement('p');
+  intro.textContent = t('refs.intro', lang);
+  const list = document.createElement('ul');
+  list.className = 'about-refs';
+  const byName = listPatterns()
+    .map((p) => ({ id: p.id, name: patternName(p.id, lang) }))
+    .sort((a, b) => a.name.localeCompare(b.name, lang));
+  let owned = 0;
+  for (const { id, name } of byName) {
+    const ref = REFERENCES[id];
+    if (!ref) continue;
+    const li = document.createElement('li');
+    const title = document.createElement('span');
+    title.className = 'about-ref-name';
+    title.textContent = name;
+    const blurb = document.createElement('span');
+    blurb.className = 'about-ref-blurb';
+    blurb.textContent = BLURBS[id] ? BLURBS[id]![lang] : '';
+    const cite = document.createElement('a');
+    cite.className = 'about-ref-cite';
+    cite.href = ref.url;
+    cite.target = '_blank';
+    cite.rel = 'noopener noreferrer';
+    cite.textContent = ref.source;
+    li.append(title, blurb, cite);
+    if (ref.original) {
+      owned += 1;
+      const own = document.createElement('span');
+      own.className = 'about-ref-own';
+      own.textContent = t('refs.own', lang);
+      li.append(own);
+    }
+    list.append(li);
+  }
+  // Counted from what was actually rendered rather than written into the
+  // string, so the note can never name a number the list disagrees with.
+  const note = document.createElement('p');
+  note.className = 'about-refs-note';
+  note.textContent = t('refs.note', lang).replace('{n}', String(owned));
+  frag.append(heading, intro, note, list);
+  return frag;
 }
 
 export function mountAbout(root: HTMLElement): void {
@@ -237,6 +313,8 @@ export function mountAbout(root: HTMLElement): void {
   const repo = document.createElement('p');
   repo.append(extLink(REPO_URL, 'github.com/Jossifresben/flowshape'));
   article.append(licenceHeading, licence, repo);
+
+  article.append(buildReferences(lang));
 
   root.append(buildNav(lang, 'about'), article, buildFooter(lang));
 }

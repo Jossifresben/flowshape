@@ -1,6 +1,7 @@
 ---
 source: Proyección isométrica; algoritmo del pintor (Newell, Newell y Sancha, 1972, "A Solution to the Hidden Surface Problem"); 3-coloración de la retícula triangular
 url: https://en.wikipedia.org/wiki/Painter%27s_algorithm
+construction: original
 ---
 
 ## Fórmula

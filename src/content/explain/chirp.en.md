@@ -1,6 +1,7 @@
 ---
 source: Linear (frequency-swept) chirp signal; cf. Wikipedia, "Chirp"
 url: https://en.wikipedia.org/wiki/Chirp
+construction: original
 ---
 
 ## Formula

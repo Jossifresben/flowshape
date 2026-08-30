@@ -1,6 +1,7 @@
 ---
 source: Teselado rómbico o rhombille ("tumbling blocks", cubos apilados), dual del teselado trihexagonal — Grünbaum, B. y Shephard, G.C. (1987) "Tilings and Patterns"; regla de relleno nonzero (número de vueltas), W3C SVG 1.1 §11.3 "fill-rule"
 url: https://en.wikipedia.org/wiki/Rhombille_tiling
+construction: original
 ---
 
 ## Fórmula
