@@ -54,17 +54,17 @@ function build(): Record<string, string> {
 
 function main(): void {
   const thumbs = build();
-  const ids = Object.keys(thumbs).sort();
+  const entries = Object.entries(thumbs).sort(([a], [b]) => (a < b ? -1 : 1));
 
   const here = path.dirname(fileURLToPath(import.meta.url));
   const outDir = path.join(here, '..', 'public', 'thumbs');
   mkdirSync(outDir, { recursive: true });
 
-  for (const id of ids) {
-    writeFileSync(path.join(outDir, `${id}.svg`), thumbs[id], 'utf-8');
+  for (const [id, svg] of entries) {
+    writeFileSync(path.join(outDir, `${id}.svg`), svg, 'utf-8');
   }
   // eslint-disable-next-line no-console
-  console.log(`wrote ${ids.length} thumbnails to ${path.relative(process.cwd(), outDir)}`);
+  console.log(`wrote ${entries.length} thumbnails to ${path.relative(process.cwd(), outDir)}`);
 }
 
 main();
