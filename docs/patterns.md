@@ -29,6 +29,7 @@ the animated stage.
 | [**Delaunay Mesh**](#delaunay-mesh) | `delaunay` | `points` · `mode` · `strokeWidth` · `vertexSize` · `accentEvery` | ✓ | — |
 | [**Voronoi Cells**](#voronoi-cells) | `voronoi` | `sites` · `inset` · `strokeWidth` · `inkEvery` · `accentEvery` | ✓ | — |
 | [**Apollonian Circles**](#apollonian-circles) | `apollonian` | `maxDepth` · `minRadius` · `strokeWidth` · `fillAlternate` | — | — |
+| [**Möbius Flow**](#möbius-flow) | `loxodrome` | `seeds` · `steps` · `twist` · `shrink` · `seedRadius` · `spread` · `strokeWidth` · `opacity` | — | — |
 
 ### Curves
 
@@ -40,6 +41,10 @@ the animated stage.
 | [**Concentric Bands**](#concentric-bands) | `bands` | `bandCount` · `minThickness` · `maxThickness` · `growthExponent` · `gap` · `startAngle` · `sweepAngle` · `accentEvery` | — | — |
 | [**Rose Lattice**](#rose-lattice) | `roselattice` | `petals` · `rings` · `spokes` · `petalDepth` · `innerFraction` · `strokeWidth` | — | — |
 | [**Helix Ladder**](#helix-ladder) | `helix` | `turns` · `radiusFraction` · `rungEvery` · `depthFade` · `strokeWidth` | — | — |
+| [**Elliptic Billiard**](#elliptic-billiard) | `billiard` | `ecc` · `launch` · `bounces` · `strokeWidth` · `opacity` · `showEllipse` | — | — |
+| [**Mystery Curve**](#mystery-curve) | `mystery` | `symmetry` · `harmonics` · `falloff` · `bloom` · `layers` · `strokeWidth` · `opacity` | ✓ | — |
+| [**Curlicue Fractal**](#curlicue-fractal) | `curlicue` | `alpha` · `curls` · `swell` · `waves` · `strokeWidth` · `opacity` | — | — |
+| [**Guilloché Rosette**](#guilloché-rosette) | `guilloche` | `rings` · `lobes` · `depth` · `inner` · `twist` · `strokeWidth` · `opacity` | — | — |
 | [**Lissajous Knot**](#lissajous-knot) | `knot` | `triple` · `tumble` · `breathe` · `depth` · `layers` · `strokeWidth` · `opacity` | ✓ | — |
 | [**Hyperbolic Weave**](#hyperbolic-weave) | `hyperweave` | `symmetry` · `grain` · `wind` · `wobble` · `layers` · `strokeWidth` · `opacity` | ✓ | — |
 
@@ -172,6 +177,24 @@ Descartes' theorem says that whenever four circles are mutually tangent — each
 
 **Parameters.** `maxDepth`, `minRadius`, `strokeWidth`, `fillAlternate` — each one annotated in the explanation document above.
 
+### Möbius Flow
+
+`loxodrome` · [generator](../src/patterns/loxodrome.ts) · [explanation: EN](../src/content/explain/loxodrome.en.md) · [ES](../src/content/explain/loxodrome.es.md)
+
+```
+T(z) = (z − p)/(z − q)            sends the fixed points p → 0, q → ∞
+M    = T⁻¹ ∘ (λ·) ∘ T,   λ = s·e^{iθ},   0 < s < 1
+
+each circle drawn is M^u(C₀) for u = −K … K
+(fractional powers λ^u extend the discrete chain to a continuous flow)
+```
+
+A Möbius transformation is built from the four simplest moves there are — shift, rotate, scale, invert — and it sends every circle to another perfect circle, in closed form, no sampling anywhere. The *loxodromic* kind has two fixed points and a complex multiplier λ that both shrinks and turns: conjugated to the origin it is just "multiply by λ", so every orbit spirals out of one fixed point and into the other along a double-armed vortex — the geometry of *Indra's Pearls*, traced back to Felix Klein's school. Each seed circle's whole orbit is computed exactly by iterating the map forward and backward, and because λ^u makes sense for fractional u, the discrete chain of circles extends to a continuous flow — the animation slides every circle one step along its own orbit per cycle, so the family maps exactly onto itself at the wrap.
+
+**Source.** Mumford, D., Series, C. & Wright, D. (2002) "Indra's Pearls: The Vision of Felix Klein", Cambridge University Press · [reference](https://en.wikipedia.org/wiki/M%C3%B6bius_transformation)
+
+**Parameters.** `seeds`, `steps`, `twist`, `shrink`, `seedRadius`, `spread`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
+
 ## Curves
 
 ### Maurer Rose
@@ -278,6 +301,72 @@ A helix is a curve that turns at constant angular speed around an axis while adv
 
 **Parameters.** `turns`, `radiusFraction`, `rungEvery`, `depthFade`, `strokeWidth` — each one annotated in the explanation document above.
 
+### Elliptic Billiard
+
+`billiard` · [generator](../src/patterns/billiard.ts) · [explanation: EN](../src/content/explain/billiard.en.md) · [ES](../src/content/explain/billiard.es.md)
+
+```
+ellipse: (x/A)² + (y/B)² = 1,   B = A·√(1 − e²)
+from a boundary point, follow the ray to its next boundary hit:
+  one root of the quadratic is s = 0, so the exit is  s = −2·(P·d)ₑ / (d·d)ₑ
+reflect specularly:  d′ = d − 2(d·n̂)n̂,   n̂ ∝ (x/A², y/B²)
+```
+
+Roll a billiard ball inside an elliptical table and let it bounce a few hundred times, each bounce a perfect mirror reflection. The chords are all straight lines, yet they crowd along a boundary the ray never crosses — the billiard's *caustic*, and its existence is a theorem, not an accident. Elliptical billiards are integrable: besides its energy, the bouncing ray conserves the product of its angular momenta about the two foci, and that conservation pins every chord of a single orbit tangent to one fixed conic confocal with the table. A launch angle that keeps the ray outside the foci gives an elliptical caustic and a woven annulus; one that sends it between them gives a hyperbolic caustic and an hourglass. It is the same magic as the times-table chords — hundreds of straight lines conjuring a curve that exists only as their envelope — enforced here by a conservation law rather than by modular arithmetic.
+
+**Source.** Tabachnikov, S. (2005) "Geometry and Billiards", AMS Student Mathematical Library 30 · [reference](https://en.wikipedia.org/wiki/Dynamical_billiards)
+
+**Parameters.** `ecc`, `launch`, `bounces`, `strokeWidth`, `opacity`, `showEllipse` — each one annotated in the explanation document above.
+
+### Mystery Curve
+
+`mystery` · [generator](../src/patterns/mystery.ts) · [explanation: EN](../src/content/explain/mystery.en.md) · [ES](../src/content/explain/mystery.es.md) · seeded
+
+```
+z(t) = Σₕ Aₕ · e^{i(kₕt + φₕ)},   t ∈ [0, 2π]
+every frequency kₕ ≡ 1 (mod m):   k ∈ {1, 1+m, 1−m, 1+2m, …}
+amplitudes decay as Aₕ = 1/(1+|s|)^β,   where kₕ = 1 + m·s
+```
+
+A finite Fourier series — a point riding a circle riding a circle, each spinning at its own integer frequency — where every frequency is required to leave remainder 1 when divided by m. That congruence is Farris's one-line theorem: advancing t by one m-th of a turn multiplies every term by the same unit factor e^{2πi/m}, so the whole curve maps onto itself rotated by exactly 360/m degrees. Perfect m-fold symmetry, forced rather than tuned — and since the phases and amplitudes are completely free, every seed is a different flourish with the same flawless order. Farris called them "mystery curves" because the symmetry seems to come from nowhere; the falloff exponent decides whether the high frequencies whisper (smooth calligraphic loops) or shout (wild spiky rosettes).
+
+**Source.** Farris, F. A. (2015) "Creating Symmetry: The Artful Mathematics of Wallpaper Patterns", Princeton University Press · [reference](https://press.princeton.edu/books/hardcover/9780691161730/creating-symmetry)
+
+**Parameters.** `symmetry`, `harmonics`, `falloff`, `bloom`, `layers`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
+
+### Curlicue Fractal
+
+`curlicue` · [generator](../src/patterns/curlicue.ts) · [explanation: EN](../src/content/explain/curlicue.en.md) · [ES](../src/content/explain/curlicue.es.md)
+
+```
+heading:  θₙ = θₙ₋₁ + 2π·α·n              (so θₙ ≈ π·α·n², a quadratic phase)
+walk:     Pₙ₊₁ = Pₙ + (cos θₙ, sin θₙ),   unit steps, n = 1 … N
+N ≈ curls / α                              (the curl budget fixes the step count)
+```
+
+Walk in unit steps, but at every step turn a little more than you turned last time, the extra turn growing by the same fixed amount 2πα each step. The walk is the polygonal graph of the theta sum Σ e^{πiαn²} — Fresnel diffraction's discrete cousin, locally forever tracing Euler spirals — and everything on screen is decided by the continued-fraction personality of the single number α: rationals close into periodic crystals, √2−1 chains identical seahorse curls, the golden ratio lays the most uniform lace, and π−3, whose expansion opens with the enormous term 292, marches in long straight avenues before deigning to curl. Berry and Goldberg showed the structure is self-similar under renormalisation: the curls of curls obey the same rule with a transformed α, driven by the same Gauss map that drives continued fractions.
+
+**Source.** Berry, M. V. & Goldberg, J. (1988) "Renormalisation of curlicues", Nonlinearity 1 · [reference](https://mathworld.wolfram.com/CurlicueFractal.html)
+
+**Parameters.** `alpha`, `curls`, `swell`, `waves`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
+
+### Guilloché Rosette
+
+`guilloche` · [generator](../src/patterns/guilloche.ts) · [explanation: EN](../src/content/explain/guilloche.en.md) · [ES](../src/content/explain/guilloche.es.md)
+
+```
+ring k of K:  r(t) = baseₖ + A·cos(q·t + k·Δχ),   t ∈ [0, 2π]
+point (r·cos t, r·sin t);   q an integer, so every ring closes exactly
+baseₖ spans the band from inner to outer radius
+Δχ = twist · 2π/q,   the lobe-phase advance from ring to ring
+```
+
+Guilloché is the machine-turned engraving of bank notes, passports and watch dials, cut since the 18th century on a rose engine — a lathe whose rosette cams push the cutting tool in and out as the workpiece turns. Each pass of the tool is one ring: a circle whose radius breathes sinusoidally, q lobes per revolution, closing on itself exactly because q is a whole number. The craft is in the stack: cut K rings from inner to outer radius and advance the lobe phase by a fixed twist between passes, and adjacent rings' crests and troughs interleave until the eye stops seeing rings at all — it sees woven metal, diamond lattices, flowing channels, structure that exists nowhere in the ink, only in the interference between phase-shifted cosines. A cousin of the moiré effect, engineered rather than accidental — which is why forgers hated it.
+
+**Source.** Rose engine turning and the guilloché tradition; hypotrochoid ring construction · [reference](https://en.wikipedia.org/wiki/Guilloch%C3%A9)
+
+**Parameters.** `rings`, `lobes`, `depth`, `inner`, `twist`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
+
 ### Lissajous Knot
 
 `knot` · [generator](../src/patterns/knot.ts) · [explanation: EN](../src/content/explain/knot.en.md) · [ES](../src/content/explain/knot.es.md) · seeded
@@ -306,7 +395,7 @@ geodesic u → v: circle orthogonal to the rim — centre (u+v)/(1+u·v),
 radius √((1−u·v)/(1+u·v));  ripple is exactly (B/m)-periodic in j
 ```
 
-A single closed walk of hyperbolic geodesics in the Poincaré disk. Each edge of the walk is drawn as the true hyperbolic straight line between its endpoints — the circular arc meeting the rim at right angles — so ink piles up near the boundary the way Escher's *Circle Limit* figures shrink toward theirs. Two theorems keep it orderly: the coprime coercion of the step forces the walk to visit all B rim points before closing (one continuous line, by arithmetic), and the seed's ripple is exactly (B/m)-periodic in the point index, cutting the full rotational symmetry down to exactly m-fold rather than approximately. A cap holds the step under ~0.3·B, because steps near B/2 join near-diametral pairs whose geodesics flatten into straight chords — the hyperbolic look survives every value the controls can reach.
+A single closed walk of hyperbolic geodesics in the Poincaré disk. Each edge of the walk is drawn as the true hyperbolic straight line between its endpoints — the circular arc meeting the rim at right angles — so ink piles up near the boundary the way Escher's *Circle Limit* figures shrink toward theirs. Two theorems keep it orderly: the coprime coercion of the step forces the walk to visit all B rim points before closing (one continuous line, by arithmetic), and the seed's ripple is exactly (B/m)-periodic in the point index, cutting the full rotational symmetry down to exactly m-fold rather than approximately. A cap holds the step under ~0.25·B, because steps near B/2 join near-diametral pairs whose geodesics flatten into straight chords — the hyperbolic look survives every value the controls can reach.
 
 **Source.** Poincaré disk model of the hyperbolic plane; Coxeter, H.S.M. (1979) "The Non-Euclidean Symmetry of Escher's Picture 'Circle Limit III'", Leonardo 12; the closed coprime walk and its rippled symmetry are this project's own construction · [reference](https://en.wikipedia.org/wiki/Poincar%C3%A9_disk_model)
 
