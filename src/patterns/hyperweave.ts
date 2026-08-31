@@ -41,9 +41,14 @@ import { mulberry32, deriveSeed } from '../core/prng';
  * hyperbolic one. Measured as bulge/chord (the arc's maximum deviation from
  * its own chord over the chord length): 0.29 at δ/B = 0.25, 0.16 at 0.30,
  * 0.08 at 0.40, 0.01 at 0.485 (the old default-B extreme). The slider's
- * whole 2..40 range is therefore mapped linearly onto 2..⌊0.3·B⌋ before the
+ * whole 2..40 range is therefore mapped linearly onto 2..⌊0.25·B⌋ before the
  * coprime coercion — every value `randomize` can reach keeps the rim-hugging
- * signature, and no stretch of the slider is dead.
+ * signature, and no stretch of the slider is dead. 0.25 rather than 0.3:
+ * the wobble ripple stretches individual gaps by an amount that grows as
+ * B shrinks (its amplitude rides the 2π/B point spacing), and at the
+ * default B=28 a 0.3 cap let one wobbled pair breach the arc-radius
+ * guard. 0.25 holds the guard at every B and, per the bulge table above,
+ * bows the arcs harder — more hyperbolic, not less.
  */
 
 function gcd(a: number, b: number): number {
@@ -74,13 +79,13 @@ export const hyperweave = definePattern({
   anim: { continuous: ['wobble', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
   params: [
     { key: 'symmetry', kind: 'int', min: 3, max: 12, step: 1, default: 7, label: 'hyperweave.symmetry' },
-    { key: 'grain', kind: 'int', min: 3, max: 9, step: 1, default: 5, label: 'hyperweave.grain' },
+    { key: 'grain', kind: 'int', min: 3, max: 9, step: 1, default: 4, label: 'hyperweave.grain' },
     // Default 21 lands on δ = 6 at the default B = 35 (δ/B = 0.17, arc bulge
     // 0.29 of its chord) — mid-density, so the beat events can step the walk
     // both tighter and wider without any window thinning past the guards.
-    { key: 'wind', kind: 'int', min: 2, max: 40, step: 1, default: 21, label: 'hyperweave.wind' },
+    { key: 'wind', kind: 'int', min: 2, max: 40, step: 1, default: 12, label: 'hyperweave.wind' },
     { key: 'wobble', kind: 'float', min: 0, max: 0.5, step: 0.02, default: 0.22, label: 'hyperweave.wobble' },
-    { key: 'layers', kind: 'int', min: 1, max: 6, step: 1, default: 4, label: 'hyperweave.layers' },
+    { key: 'layers', kind: 'int', min: 1, max: 6, step: 1, default: 3, label: 'hyperweave.layers' },
     { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 0.5, label: 'hyperweave.strokeWidth' },
     { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.6, label: 'hyperweave.opacity' },
   ],
@@ -90,7 +95,7 @@ export const hyperweave = definePattern({
     const B = m * g;
     // The wind cap (see the header): 2..40 remapped onto 2..⌊0.3·B⌋ so the
     // arcs stay visibly hyperbolic at every reachable value.
-    const deltaCap = Math.max(3, Math.floor(0.3 * B));
+    const deltaCap = Math.max(3, Math.floor(0.25 * B));
     const target = 2 + Math.round(((p['wind']! - 2) / (WIND_MAX - 2)) * (deltaCap - 2));
     const delta = coprimeStep(target, B);
     const rnd = mulberry32(deriveSeed(seed, 'hyperweave'));

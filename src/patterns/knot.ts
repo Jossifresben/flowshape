@@ -75,12 +75,12 @@ export const knot = definePattern({
   anim: { continuous: ['tumble', 'breathe', 'depth', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
   params: [
     { key: 'triple', kind: 'enum', min: 0, max: 4, step: 1, default: 3, label: 'knot.triple', options: ['knot.t235', 'knot.t345', 'knot.t237', 'knot.t357', 'knot.t457'] },
-    { key: 'tumble', kind: 'float', min: 0, max: 1.4, step: 0.02, default: 0.6, label: 'knot.tumble' },
-    { key: 'breathe', kind: 'float', min: 0, max: 0.6, step: 0.02, default: 0.3, label: 'knot.breathe' },
-    { key: 'depth', kind: 'float', min: 0, max: 2, step: 0.05, default: 1.6, label: 'knot.depth' },
-    { key: 'layers', kind: 'int', min: 1, max: 5, step: 1, default: 2, label: 'knot.layers' },
-    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 0.8, label: 'knot.strokeWidth' },
-    { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.85, label: 'knot.opacity' },
+    { key: 'tumble', kind: 'float', min: 0, max: 1.4, step: 0.02, default: 0.46, label: 'knot.tumble' },
+    { key: 'breathe', kind: 'float', min: 0, max: 0.6, step: 0.02, default: 0.16, label: 'knot.breathe' },
+    { key: 'depth', kind: 'float', min: 0, max: 2, step: 0.05, default: 0.15, label: 'knot.depth' },
+    { key: 'layers', kind: 'int', min: 1, max: 5, step: 1, default: 3, label: 'knot.layers' },
+    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 1.4, label: 'knot.strokeWidth' },
+    { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.8, label: 'knot.opacity' },
   ],
   generate(p, seed, size) {
     const n = TRIPLES[p['triple']!] ?? TRIPLES[0]!;

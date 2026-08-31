@@ -48,7 +48,8 @@ describe('hyperweave specifics', () => {
     for (const m of [3, 5, 8]) {
       const p = { ...defaultParams(hyperweave), symmetry: m, layers: 1, wobble: 0.5 };
       const pts = pathPoints(dsOf(p, 11), 300, 300);
-      expect(pts.length).toBe(m * 5 + 1); // B vertices + the closing return
+      const grain = defaultParams(hyperweave)['grain']!;
+      expect(pts.length).toBe(m * grain + 1); // B vertices + the closing return
       const c = Math.cos((2 * Math.PI) / m), s = Math.sin((2 * Math.PI) / m);
       for (const [x, y] of pts) {
         const rx = x * c - y * s, ry = x * s + y * c;
