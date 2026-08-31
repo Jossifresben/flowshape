@@ -147,14 +147,23 @@ export function mountSpike(root: HTMLElement): () => void {
   // The router's setView is private to main.ts; the animate stage's layout
   // hangs off this class, so apply it here and drop it on cleanup.
   root.classList.add('view-animate');
+  // A fixed overlay chip, not a flex child: as a sibling inside the animate
+  // view's flex row it became a narrow left column and shoved the stage off
+  // centre (the bug Jossi screenshotted).
   const bar = document.createElement('div');
   bar.style.cssText =
-    'display:flex;gap:8px;align-items:center;padding:8px 16px;font:12px/1.4 monospace;';
+    'position:fixed;top:12px;left:16px;z-index:40;display:flex;gap:8px;align-items:center;' +
+    'padding:6px 10px;font:12px/1.4 monospace;color:#8e8e90;background:rgba(16,16,18,0.88);' +
+    'border:1px solid #2e2e33;';
   const note = document.createElement('span');
   note.textContent = 'DEV SPIKE · field patterns —';
   bar.append(note);
 
   const stage = document.createElement('div');
+  // display:contents so mountAnimate's own wrapper is laid out as a direct
+  // child of #app.view-animate — the extra div otherwise defeats the view's
+  // flex/descendant rules.
+  stage.style.display = 'contents';
   let cleanup: (() => void) | null = null;
   let active = linefield.id;
 

@@ -19,7 +19,9 @@ const CHROME_CANDIDATES = [
   '/usr/bin/google-chrome',
   '/usr/bin/chromium',
 ].filter(Boolean) as string[];
-const chrome = CHROME_CANDIDATES.find((c) => existsSync(c));
+const chromeFound = CHROME_CANDIDATES.find((c): c is string => typeof c === 'string' && existsSync(c));
+if (!chromeFound) throw new Error('No Chrome found for stills — set CHROME=/path/to/chrome');
+const chrome: string = chromeFound;
 if (!chrome) {
   console.error('No Chrome found. Set CHROME=/path/to/chrome and re-run.');
   process.exit(1);
