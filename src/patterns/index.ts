@@ -30,3 +30,6 @@ import './curlicue';
 import './guilloche';
 import './knot';
 import './hyperweave';
+import './linefield';
+import './nodegarden';
+import './interference';

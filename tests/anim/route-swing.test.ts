@@ -93,6 +93,10 @@ const NEVER_ROUTE: Record<string, string> = {
   'maurer.n': 'a single unit redraws the rose completely',
   'hyperweave.wind': 'edge churn 1.00 whenever the remapped walk step δ changes (measured at B=35 for 9→10, 2→40, 16→21): the closed walk re-laces completely, every geodesic joining a different pair. Beat-locked step events only',
   'hyperweave.grain': 'churn 1.00 at +1 — B = m·grain changes, every boundary point moves and every geodesic is new. Beat-locked step events only',
+  'linefield.cells': 're-seats the whole grid resolution — every stroke position changes. Chaotic, never continuous',
+  'linefield.vortices': 'reshuffles the whole vortex seed stream (placement/strength/radius all redraw) — chaotic; beat-locked step events only',
+  'nodegarden.cell': 're-lays the whole lattice — every point position changes. Chaotic, never continuous',
+  'interference.lines': 'changes the sample count (line population), not a smooth deformation of the existing lines — chaotic',
   // inert at default settings
   'girih.ribbonWidth': 'read only when render = 1 (ribbons); renders at 2, 9 and 20 are byte-identical at the default',
   'moire.offset': 'read only in mode 1 (circles)',

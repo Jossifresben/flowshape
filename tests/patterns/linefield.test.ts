@@ -3,9 +3,6 @@ import { linefield } from '../../src/patterns/linefield';
 import { standardPatternTests, render, SIZE } from './harness';
 import { defaultParams } from '../../src/patterns/registry';
 
-// Spike note: linefield is deliberately NOT registered in src/patterns/index.ts,
-// so the registry-wide suites (all.test.ts) never see it — this file drives the
-// definePattern return value directly.
 standardPatternTests(linefield, { maxElements: 1500 });
 
 interface Stroke { x1: number; y1: number; x2: number; y2: number; op: number }

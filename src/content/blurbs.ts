@@ -135,4 +135,16 @@ export const BLURBS: Record<string, { en: string; es: string }> = {
     en: 'One closed walk of hyperbolic geodesics in the Poincaré disk, arcs hugging the rim like an engraving.',
     es: 'Un paseo cerrado de geodésicas hiperbólicas en el disco de Poincaré; los arcos se pegan al borde como un grabado.',
   },
+  linefield: {
+    en: 'Short strokes oriented by a curl field of vortices and waves — divergence-free by construction, so it can only swirl.',
+    es: 'Trazos cortos orientados por un campo de vórtices y ondas en rizo — sin divergencia por construcción: solo puede arremolinarse.',
+  },
+  nodegarden: {
+    en: 'A jittered lattice of large dots, wired into a sparse proximity graph wherever two of them drift within reach.',
+    es: 'Una retícula con desorden de puntos grandes, unida en un grafo de proximidad disperso donde dos se acercan lo bastante.',
+  },
+  interference: {
+    en: 'Horizontal lines displaced by the summed ripples of two wave sources, braiding wherever the fringes cross.',
+    es: 'Líneas horizontales desplazadas por la suma de dos fuentes de ondas, trenzadas donde las franjas se cruzan.',
+  },
 };

@@ -774,6 +774,93 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'level', param: 'size', depth: 0.08 },
     ] },
   ],
+  linefield: [
+    // Vortex: every route rides GEOMETRY (Jossi's stage verdict on the first
+    // cut: stroke width moved more than the field — retuned 2026-08-31).
+    // bass→swirl (range 0..2, swing 0.40): bass deepens the same rotation
+    // the intrinsic field already draws, still clear of the ε-only corner
+    // at 0. mid→waviness (0..1, swing 0.25) lifts the default 0.3 toward
+    // 0.55 — the curl-wave bending nearly doubles on sustained mids.
+    // high→warp (0..1, swing 0.20) bends the domain lattice on fine detail.
+    // The grid is fixed (1706 strokes at 1920x1080, verified unchanged
+    // across every route) — only orientation and the |V|-driven opacity
+    // move. Beat event: `vortices` is chaotic (re-seats the whole vortex
+    // seed stream — NEVER routed), so it steps as a section change every
+    // 8 beats through 4..8 (home = the designed 6; the fixed grid means
+    // the frame-emptying guard passes trivially — every window draws the
+    // full stroke set).
+    { id: 'vortex', label: { en: 'Vortex', es: 'Vórtice' }, routes: [
+      { feature: 'bass', param: 'swirl', depth: 0.20 },
+      { feature: 'mid', param: 'waviness', depth: 0.25 },
+      { feature: 'high', param: 'warp', depth: 0.20 },
+      { feature: 'level', param: 'size', depth: 0.08 },
+    ], event: { kind: 'step', param: 'vortices', everyBeats: 8, steps: 4, from: 4, to: 8 } },
+    // Ripple: waviness (curl-wave amplitude, 0..1) bends the field's broad
+    // S-curves; warp (0..1) is the domain pre-distortion. Both default well
+    // under half their range, so a 0.25-0.30 swing stays inside a single
+    // wall without ever forcing the field back toward the compass-circle
+    // look warp=0 would read as.
+    { id: 'ripple', label: { en: 'Ripple', es: 'Ondula' }, routes: [
+      { feature: 'mid', param: 'waviness', depth: 0.30 },
+      { feature: 'bass', param: 'warp', depth: 0.25 },
+      { feature: 'level', param: 'size', depth: 0.08 },
+    ] },
+  ],
+  nodegarden: [
+    // Drift first: Jossi's pick as the default preset (2026-08-31).
+    // Drift: drift (0..30) displaces points along the noise field, but the
+    // overlap guard clamps jitter+drift to `maxDisp` (≈9px at defaults)
+    // regardless of the nominal value, so this axis self-limits — swing 12
+    // (depth 0.4) measured only 471 -> 453 children, well inside safe
+    // territory. edgeFade softens the boundary fade on bright passages
+    // (timbre, per the bass/mid/high/level/bright convention).
+    { id: 'drift', label: { en: 'Drift', es: 'Deriva' }, routes: [
+      { feature: 'mid', param: 'drift', depth: 0.40 },
+      { feature: 'bright', param: 'edgeFade', depth: 0.30 },
+      { feature: 'level', param: 'opacity', depth: 0.15 },
+    ] },
+    // Bloom: radius sits at 64.5 with cell=72 — right at the graph's own
+    // percolation threshold (edges: 471 total children at default, jumping
+    // past 1000 by swing ~13; even swing 1 moves it noticeably). A full
+    // house-convention depth (0.15+) shreds the sparse-network character
+    // the pattern is built on, so this route uses a deliberately tiny depth
+    // (0.03, swing 3.78) — measured 471 -> 597 children (+27%) at the full
+    // extreme, a visible "bloom" of new edges on a bass hit without ever
+    // reaching the dense-mesh look. strokeWidth/size are ordinary swings on
+    // axes with no such sensitivity.
+    { id: 'bloom', label: { en: 'Bloom', es: 'Florece' }, routes: [
+      { feature: 'bass', param: 'radius', depth: 0.03 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.25 },
+      { feature: 'level', param: 'size', depth: 0.08 },
+    ] },
+  ],
+  interference: [
+    // Braid: amplitude (2..200) is the pattern's own drama knob — bass
+    // deepens the same crossing/braiding the default register already
+    // relies on (measured y-excursion grew from [-268,1331] to [-326,1386],
+    // a ~7% wider bleed, not a blowout). frequency needs care: its full
+    // 0.002..0.06 span risks the aliasing the SAMPLES=420 budget guards
+    // against (see interference.ts's header), so this route uses a small
+    // depth (0.05, swing 0.0029) — measured near-identical to the default
+    // fringe geometry, a shimmer rather than a re-grating.
+    { id: 'braid', label: { en: 'Braid', es: 'Trenza' }, routes: [
+      { feature: 'bass', param: 'amplitude', depth: 0.15 },
+      { feature: 'high', param: 'frequency', depth: 0.05 },
+      { feature: 'level', param: 'strokeWidth', depth: 0.20 },
+    ] },
+    // Drift: separation (200..8000, sources off-canvas by design) nudges
+    // the source geometry without ever bringing the sources into frame —
+    // swing 468 keeps them well past the off-canvas floor the pattern's
+    // "no bullseye" invariant depends on. detune is the fringe-drift-speed
+    // axis (0..0.5); bass deepening it reads as the braid speeding up on
+    // the beat. Id 'drift' repeats nodegarden's — harmless, since preset
+    // ids only need to be unique within one pattern's own table.
+    { id: 'drift', label: { en: 'Drift', es: 'Deriva' }, routes: [
+      { feature: 'mid', param: 'separation', depth: 0.06 },
+      { feature: 'bass', param: 'detune', depth: 0.30 },
+      { feature: 'level', param: 'opacity', depth: 0.20 },
+    ] },
+  ],
 };
 
 export function presetsFor(patternId: string): AnimPreset[] {

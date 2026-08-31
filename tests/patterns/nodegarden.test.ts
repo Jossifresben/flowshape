@@ -3,9 +3,6 @@ import { nodegarden, computeGarden } from '../../src/patterns/nodegarden';
 import { standardPatternTests, render, SIZE } from './harness';
 import { defaultParams, clampParams } from '../../src/patterns/registry';
 
-// nodegarden is a spike (docs/superpowers/specs/2026-08-31-flowshape-part5-field-patterns-spec.md
-// §2) and is deliberately NOT imported from src/patterns/index.ts — driven
-// directly here, as knot.test.ts drives knot before registration precedent.
 standardPatternTests(nodegarden, { maxElements: 900 });
 
 const base = defaultParams(nodegarden) as Record<string, number>;

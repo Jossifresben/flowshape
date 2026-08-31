@@ -3,10 +3,6 @@ import { interference } from '../../src/patterns/interference';
 import { standardPatternTests, render, SIZE } from './harness';
 import { defaultParams, generateSafe } from '../../src/patterns/registry';
 
-// Spike-only (branch spike/interference): interference is deliberately not
-// registered in src/patterns/index.ts, so it's driven directly here rather
-// than through the shared registry list — see tests/patterns/knot.test.ts
-// for the precedent this follows.
 standardPatternTests(interference, { maxElements: 145 });
 
 /** All [x, y] vertex pairs of one rendered line's path, in row order
