@@ -37,6 +37,9 @@ export const PATTERN_NAMES: Record<string, Pair> = {
   guilloche: ['Guilloché Rosette', 'Roseta guilloché'],
   knot: ['Lissajous Knot', 'Nudo de Lissajous'],
   hyperweave: ['Hyperbolic Weave', 'Tejido hiperbólico'],
+  linefield: ['Line Field', 'Campo de líneas'],
+  nodegarden: ['Node Garden', 'Jardín de nodos'],
+  interference: ['Interference', 'Interferencia'],
 };
 
 /** Human label for each pattern family. */

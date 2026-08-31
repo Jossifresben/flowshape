@@ -72,8 +72,23 @@ const SIXTH_WAVE = ['billiard', 'loxodrome', 'mystery', 'curlicue', 'guilloche']
  * motion folds phase through `% 1`, so the loop closes byte-for-byte.
  */
 const SEVENTH_WAVE = ['knot', 'hyperweave'];
+/**
+ * The eighth pass: the three field patterns of the 2026-08-31 field-patterns
+ * expansion, all built phase-first to the same brief. linefield turns the
+ * whole orientation field by one tick per cycle plus a structure-timed
+ * shimmer, breathes each wave's amplitude at its own small-integer rate, and
+ * orbits each vortex centre on a tiny closed circle — the grid itself never
+ * moves. nodegarden orbits the drift read-point once around a fixed circle
+ * in noise space, so the jitter+drift lattice returns exactly to where it
+ * started. interference advances each source's phase by its own small
+ * integer number of turns per cycle, so the summed fringe field is exactly
+ * 1-periodic regardless of `detune`. Every motion folds phase through `% 1`,
+ * so the loop closes byte-for-byte.
+ */
+const EIGHTH_WAVE = ['linefield', 'nodegarden', 'interference'];
 const LOOPERS = [
   ...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE, ...SIXTH_WAVE, ...SEVENTH_WAVE,
+  ...EIGHTH_WAVE,
 ];
 const ADOPTERS = [...FIRST_WAVE, ...LOOPERS];
 

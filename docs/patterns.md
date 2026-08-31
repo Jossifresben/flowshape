@@ -1,6 +1,6 @@
 # The pattern catalogue
 
-32 generators, grouped into six families. Every one is a pure function of
+35 generators, grouped into six families. Every one is a pure function of
 `(params, seed, size)` returning an `SvgNode` tree — see
 [architecture.md](architecture.md) for the contract.
 
@@ -30,6 +30,7 @@ the animated stage.
 | [**Voronoi Cells**](#voronoi-cells) | `voronoi` | `sites` · `inset` · `strokeWidth` · `inkEvery` · `accentEvery` | ✓ | — |
 | [**Apollonian Circles**](#apollonian-circles) | `apollonian` | `maxDepth` · `minRadius` · `strokeWidth` · `fillAlternate` | — | — |
 | [**Möbius Flow**](#möbius-flow) | `loxodrome` | `seeds` · `steps` · `twist` · `shrink` · `seedRadius` · `spread` · `strokeWidth` · `opacity` | — | — |
+| [**Node Garden**](#node-garden) | `nodegarden` | `cell` · `jitter` · `radius` · `drift` · `dotSize` · `edgeFade` · `strokeWidth` · `opacity` | ✓ | — |
 
 ### Curves
 
@@ -57,6 +58,8 @@ the animated stage.
 | [**Moiré Weave**](#moiré-weave) | `moire` | `mode` · `spacingA` · `spacingB` · `angleA` · `angleB` · `offset` · `strokeWidth` | — | — |
 | [**Warped Fabric**](#warped-fabric) | `fabric` | `gridSize` · `warpAmount` · `noiseScale` · `mode` · `dotSize` · `strokeWidth` | ✓ | — |
 | [**Converging Chirp**](#converging-chirp) | `chirp` | `lineCount` · `freqStart` · `freqEnd` · `amplitude` · `phaseStep` · `strokeWidth` | — | — |
+| [**Line Field**](#line-field) | `linefield` | `cells` · `vortices` · `swirl` · `waviness` · `warp` · `strokeLen` · `strokeWidth` · `opacity` | ✓ | — |
+| [**Interference**](#interference) | `interference` | `lines` · `sources` · `frequency` · `amplitude` · `separation` · `detune` · `strokeWidth` · `opacity` | ✓ | — |
 
 ### Tilings
 
@@ -194,6 +197,22 @@ A Möbius transformation is built from the four simplest moves there are — shi
 **Source.** Mumford, D., Series, C. & Wright, D. (2002) "Indra's Pearls: The Vision of Felix Klein", Cambridge University Press · [reference](https://en.wikipedia.org/wiki/M%C3%B6bius_transformation)
 
 **Parameters.** `seeds`, `steps`, `twist`, `shrink`, `seedRadius`, `spread`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
+
+### Node Garden
+
+`nodegarden` · [generator](../src/patterns/nodegarden.ts) · [explanation: EN](../src/content/explain/nodegarden.en.md) · [ES](../src/content/explain/nodegarden.es.md) · seeded
+
+```
+p(i,j) = lattice(i,j) + jitter·ξᵢⱼ + drift·N(x + ρ·cos2πph, y + ρ·sin2πph)
+edge(a,b) exists  ⇔  dist(pₐ, p_b) < radius
+opacity(edge) = 1 above dist = radius·(1−edgeFade), fading linearly to 0 at dist = radius
+```
+
+A random geometric graph — Gilbert's 1961 question about a scatter of points joined whenever they land within a fixed radius of each other, which produces clusters, chains and voids rather than a uniform mesh. The points themselves sit on a jittered regular lattice rather than a pure scatter, so rows and columns stay legible and it is the jitter alone that occasionally brings a pair close enough to connect; large dots and a radius held just under the lattice spacing keep most points unconnected at the defaults, so the handful of edges read as small constellations, not a network. Edges are trimmed rim-to-rim, and `edgeFade` fades a line to nothing exactly as it crosses the connection radius, so a link breaks by dimming rather than popping. The phase axis orbits a fixed closed loop in noise space, so the drift field returns exactly to where it started at the wrap.
+
+**Source.** Gilbert, E.N. (1961) "Random Plane Networks", Journal of the Society for Industrial and Applied Mathematics 9(4), 533–543; the jittered-lattice placement, rim-to-rim edge trimming and phase-driven drift orbit are this project's own construction · [reference](https://epubs.siam.org/doi/10.1137/0109045)
+
+**Parameters.** `cell`, `jitter`, `radius`, `drift`, `dotSize`, `edgeFade`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
 
 ## Curves
 
@@ -487,6 +506,40 @@ Each of the lineCount rows is a sine wave, but not one of constant pitch: φ(u) 
 **Source.** Linear (frequency-swept) chirp signal; cf. Wikipedia, "Chirp" · [reference](https://en.wikipedia.org/wiki/Chirp)
 
 **Parameters.** `lineCount`, `freqStart`, `freqEnd`, `amplitude`, `phaseStep`, `strokeWidth` — each one annotated in the explanation document above.
+
+### Line Field
+
+`linefield` · [generator](../src/patterns/linefield.ts) · [explanation: EN](../src/content/explain/linefield.en.md) · [ES](../src/content/explain/linefield.es.md) · seeded
+
+```
+V(x,y) = swirl · Σᵢ (−Δyᵢ, Δxᵢ) · sᵢ · exp(−|Δᵢ|² / 2σᵢ²)          (vortices)
+         + waviness · Σⱼ (kyⱼ, −kxⱼ) · Aⱼ · cos(kxⱼ·x + kyⱼ·y + φⱼ)  (curl waves)
+evaluated at x′ = x + warp·N₁(x,y), y′ = y + warp·N₂(x,y)           (domain warp)
+θ(x,y) = atan2(Vy, Vx)                                              (stroke orientation)
+```
+
+A fixed grid of short strokes, each oriented by a vector field built entirely from curls: every vortex term is the curl of a Gaussian bump and every wave term the curl of a plane sinusoid, and the curl of any scalar function is divergence-free by identity — no sources, no sinks, so the field can only swirl and neighbouring strokes agree by construction, not by tuning. Vortices set the broad counter-rotating structure; curl waves layer smaller local bending on top; a domain warp — Quílez's technique, the same one this project uses for the warped fabric — bends the coordinates first, which is what keeps the vortices from reading as perfect compass circles. Only orientation moves with phase; the grid itself, and therefore the stroke count, never changes.
+
+**Source.** Stream function formulation of a divergence-free 2D vector field (classical vector calculus; cf. the Helmholtz decomposition); domain warping after Quílez, I. (2002) "Domain Warping"; the vortex/curl-wave field composition and its phase motion are this project's own construction · [reference](https://en.wikipedia.org/wiki/Stream_function)
+
+**Parameters.** `cells`, `vortices`, `swirl`, `waviness`, `warp`, `strokeLen`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
+
+### Interference
+
+`interference` · [generator](../src/patterns/interference.ts) · [explanation: EN](../src/content/explain/interference.en.md) · [ES](../src/content/explain/interference.es.md) · seeded
+
+```
+Sᵢ = sources on the frame's centre-line, `separation` apart, symmetric about the vertical axis
+kᵢ = frequency · (1 + detune · i)
+z(x,y) = Σᵢ sin( kᵢ · dist((x,y), Sᵢ) + φᵢ )
+y(x) = row_y + z(x, row_y) · amplitude
+```
+
+A bed of horizontal lines bent vertically by the summed field of two (or three) circular wave sources. With equal wavenumbers, the set of points sharing a fixed path-length difference from two fixed foci is a hyperbola by definition, so the bright and dark fringes sit exactly on the hyperbola family with foci at the sources — forced by the distance-field geometry, not tuned. At the default register the sources sit far off-canvas and the displacement is large enough that neighbouring lines cross and stay crossed, braiding under a translucent stroke into luminous ribbons; dropping the line count and amplitude relaxes the same geometry to a calmer, non-crossing sweep. `detune` breaks the equal-wavenumber premise so the fringes visibly drift, while each source's phase still advances an integer number of turns per cycle, keeping the whole field exactly one-periodic regardless.
+
+**Source.** Two-source wave interference — the phase-difference argument fixing the fringes to the hyperbola family with foci at the sources is classical wave physics; cf. Wikipedia, "Wave interference"; the horizontal-line displacement rendering and its composition are this project's own construction · [reference](https://en.wikipedia.org/wiki/Wave_interference)
+
+**Parameters.** `lines`, `sources`, `frequency`, `amplitude`, `separation`, `detune`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
 
 ## Tilings
 

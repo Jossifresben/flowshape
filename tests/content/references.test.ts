@@ -23,7 +23,10 @@ const DIR = path.join(process.cwd(), 'src', 'content', 'explain');
 // but the composition — knot's depth-banded projection and its 1-periodic
 // motions, hyperweave's closed coprime walk with the (B/m)-periodic ripple —
 // was worked out for this project.
-const OWN_CONSTRUCTION = ['bands', 'chirp', 'helix', 'hyperweave', 'isoweave', 'knot', 'nested', 'roselattice'];
+const OWN_CONSTRUCTION = [
+  'bands', 'chirp', 'helix', 'hyperweave', 'interference', 'isoweave', 'knot', 'linefield',
+  'nested', 'nodegarden', 'roselattice',
+];
 
 describe('references', () => {
   it('marks exactly the patterns whose construction is this project\'s own', () => {
