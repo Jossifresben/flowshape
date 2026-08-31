@@ -44,7 +44,7 @@ export const SITE = 'https://flowshape.art';
  * the files and this constant names them, so the tags and the files can never
  * disagree about the version.
  */
-export const CARD_VERSION = 'v3';
+export const CARD_VERSION = 'v4';
 
 /** The four views that get a share page. */
 export const PAGE_IDS = ['home', 'gallery', 'posters', 'videos'] as const;

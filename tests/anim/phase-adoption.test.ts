@@ -61,7 +61,20 @@ const FIFTH_WAVE = ['hitomezashi'];
  * the loop closes byte-for-byte.
  */
 const SIXTH_WAVE = ['billiard', 'loxodrome', 'mystery', 'curlicue', 'guilloche'];
-const LOOPERS = [...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE, ...SIXTH_WAVE];
+/**
+ * The seventh pass: the two patterns promoted from spike/next-curve, both
+ * built phase-first to mystery's brief. knot precesses its projection azimuth
+ * by exactly one turn per cycle, breathes its axis weights at integer rates
+ * (sin 2πk·tw, zero at the wrap), and fans its layer trail through
+ * (1 − cos 2π·ph); hyperweave turns by exactly one symmetry step 2π/m per
+ * cycle (the m-fold symmetry makes that the identity at the wrap) while its
+ * (B/m)-periodic seed ripple travels once around its own sector. Every
+ * motion folds phase through `% 1`, so the loop closes byte-for-byte.
+ */
+const SEVENTH_WAVE = ['knot', 'hyperweave'];
+const LOOPERS = [
+  ...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE, ...SIXTH_WAVE, ...SEVENTH_WAVE,
+];
 const ADOPTERS = [...FIRST_WAVE, ...LOOPERS];
 
 function at(id: string, phase?: number): string {

@@ -40,13 +40,6 @@ function route(): void {
     void import('./ui/fidelity').then((m) => m.mountFidelity(app));
     return;
   }
-  // Spike stage for the two next-curve candidates (see src/ui/spike.ts).
-  // Unlike fidelity, the mounted view runs a rAF loop and may hold audio, so
-  // its cleanup is captured for the next navigation.
-  if (import.meta.env.DEV && location.hash === '#/dev/spike') {
-    void import('./ui/spike').then((m) => { cleanup = m.mountSpike(app); });
-    return;
-  }
   if (location.hash.startsWith('#/about')) {
     setView('about');
     mountAbout(app);

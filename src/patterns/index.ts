@@ -28,3 +28,5 @@ import './loxodrome';
 import './mystery';
 import './curlicue';
 import './guilloche';
+import './knot';
+import './hyperweave';

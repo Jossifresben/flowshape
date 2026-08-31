@@ -181,4 +181,20 @@ export const PARAMS: Record<string, Pair> = {
   'guilloche.depth': ['DEPTH', 'PROFUNDIDAD'],
   'guilloche.inner': ['INNER', 'INTERIOR'],
   'guilloche.twist': ['TWIST', 'GIRO'],
+  'knot.triple': ['FREQUENCIES', 'FRECUENCIAS'],
+  'knot.tumble': ['TILT', 'INCLINACIÓN'],
+  'knot.breathe': ['BREATHE', 'RESPIRACIÓN'],
+  'knot.layers': ['LAYERS', 'CAPAS'],
+  'hyperweave.symmetry': ['SYMMETRY', 'SIMETRÍA'],
+  'hyperweave.grain': ['GRAIN', 'GRANO'],
+  'hyperweave.wind': ['WIND', 'DEVANADO'],
+  'hyperweave.wobble': ['RIPPLE', 'ONDULACIÓN'],
+  'hyperweave.layers': ['LAYERS', 'CAPAS'],
+
+  // The knot's coprime frequency triples: numerals, identical by design.
+  'knot.t235': ['2·3·5', '2·3·5'],
+  'knot.t345': ['3·4·5', '3·4·5'],
+  'knot.t237': ['2·3·7', '2·3·7'],
+  'knot.t357': ['3·5·7', '3·5·7'],
+  'knot.t457': ['4·5·7', '4·5·7'],
 };

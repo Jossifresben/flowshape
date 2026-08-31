@@ -1,6 +1,6 @@
 # The pattern catalogue
 
-30 generators, grouped into six families. Every one is a pure function of
+32 generators, grouped into six families. Every one is a pure function of
 `(params, seed, size)` returning an `SvgNode` tree — see
 [architecture.md](architecture.md) for the contract.
 
@@ -40,6 +40,8 @@ the animated stage.
 | [**Concentric Bands**](#concentric-bands) | `bands` | `bandCount` · `minThickness` · `maxThickness` · `growthExponent` · `gap` · `startAngle` · `sweepAngle` · `accentEvery` | — | — |
 | [**Rose Lattice**](#rose-lattice) | `roselattice` | `petals` · `rings` · `spokes` · `petalDepth` · `innerFraction` · `strokeWidth` | — | — |
 | [**Helix Ladder**](#helix-ladder) | `helix` | `turns` · `radiusFraction` · `rungEvery` · `depthFade` · `strokeWidth` | — | — |
+| [**Lissajous Knot**](#lissajous-knot) | `knot` | `triple` · `tumble` · `breathe` · `depth` · `layers` · `strokeWidth` · `opacity` | ✓ | — |
+| [**Hyperbolic Weave**](#hyperbolic-weave) | `hyperweave` | `symmetry` · `grain` · `wind` · `wobble` · `layers` · `strokeWidth` · `opacity` | ✓ | — |
 
 ### Fields
 
@@ -275,6 +277,40 @@ A helix is a curve that turns at constant angular speed around an axis while adv
 **Source.** Helix, parametric double-helix curve; cf. Wikipedia, "Helix" · [reference](https://en.wikipedia.org/wiki/Helix)
 
 **Parameters.** `turns`, `radiusFraction`, `rungEvery`, `depthFade`, `strokeWidth` — each one annotated in the explanation document above.
+
+### Lissajous Knot
+
+`knot` · [generator](../src/patterns/knot.ts) · [explanation: EN](../src/content/explain/knot.en.md) · [ES](../src/content/explain/knot.es.md) · seeded
+
+```
+x(t) = cos(n₁t + φ₁),  y(t) = cos(n₂t + φ₂),  z(t) = cos(n₃t + φ₃),   t ∈ [0, 2π]
+(n₁, n₂, n₃) pairwise coprime; phases resampled off the singular set
+nᵢφⱼ − nⱼφᵢ ≡ 0 (mod π); projection split into depth bands, near strands
+wider and more opaque
+```
+
+A Lissajous figure with a third axis: one cosine per coordinate, integer frequencies. Integrality forces the curve to close after exactly one period, and pairwise coprimality forces it to be a genuine space curve rather than a multiple cover of a shorter one — Bogle, Hearst, Jones and Stoilov showed in 1994 that many of these closed curves are knots in the strict sense. The phases are free, drawn per seed but resampled away from the singular set where the projection folds onto a doubly-traced arc, so every seed is a flourish and none a scribble. The rendering is this project's own construction: the projected curve is cut into depth bands drawn from far to near, farther strands thin and faint, so the knot's over-and-under reads as a made object rather than a flat tangle.
+
+**Source.** Bogle, M.G.V., Hearst, J.E., Jones, V.F.R. & Stoilov, L. (1994) "Lissajous knots", Journal of Knot Theory and Its Ramifications 3(2), 121–140; the depth-banded projection and its motions are this project's own construction · [reference](https://en.wikipedia.org/wiki/Lissajous_knot)
+
+**Parameters.** `triple`, `tumble`, `breathe`, `depth`, `layers`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
+
+### Hyperbolic Weave
+
+`hyperweave` · [generator](../src/patterns/hyperweave.ts) · [explanation: EN](../src/content/explain/hyperweave.en.md) · [ES](../src/content/explain/hyperweave.es.md) · seeded
+
+```
+B = symmetry · grain points on the rim:  Pⱼ at θⱼ = 2πj/B + ripple(j)
+walk j → j + δ (mod B), δ coerced to the nearest integer coprime with B
+geodesic u → v: circle orthogonal to the rim — centre (u+v)/(1+u·v),
+radius √((1−u·v)/(1+u·v));  ripple is exactly (B/m)-periodic in j
+```
+
+A single closed walk of hyperbolic geodesics in the Poincaré disk. Each edge of the walk is drawn as the true hyperbolic straight line between its endpoints — the circular arc meeting the rim at right angles — so ink piles up near the boundary the way Escher's *Circle Limit* figures shrink toward theirs. Two theorems keep it orderly: the coprime coercion of the step forces the walk to visit all B rim points before closing (one continuous line, by arithmetic), and the seed's ripple is exactly (B/m)-periodic in the point index, cutting the full rotational symmetry down to exactly m-fold rather than approximately. A cap holds the step under ~0.3·B, because steps near B/2 join near-diametral pairs whose geodesics flatten into straight chords — the hyperbolic look survives every value the controls can reach.
+
+**Source.** Poincaré disk model of the hyperbolic plane; Coxeter, H.S.M. (1979) "The Non-Euclidean Symmetry of Escher's Picture 'Circle Limit III'", Leonardo 12; the closed coprime walk and its rippled symmetry are this project's own construction · [reference](https://en.wikipedia.org/wiki/Poincar%C3%A9_disk_model)
+
+**Parameters.** `symmetry`, `grain`, `wind`, `wobble`, `layers`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
 
 ## Fields
 

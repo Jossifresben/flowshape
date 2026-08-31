@@ -3,8 +3,6 @@ import { definePattern } from './registry';
 import { mulberry32, deriveSeed } from '../core/prng';
 
 /**
- * SPIKE (spike/next-curve) — not registered in patterns/index.ts.
- *
  * Fourier (Lissajous) knots: x(t) = cos(n₁t+φ₁), y(t) = cos(n₂t+φ₂),
  * z(t) = cos(n₃t+φ₃) with (n₁,n₂,n₃) pairwise coprime. The theorem doing
  * mystery's job: integer frequencies force the curve to close after exactly
@@ -76,7 +74,7 @@ export const knot = definePattern({
   usesSeed: true,
   anim: { continuous: ['tumble', 'breathe', 'depth', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
   params: [
-    { key: 'triple', kind: 'enum', min: 0, max: 4, step: 1, default: 3, label: 'knot.triple', options: ['2·3·5', '3·4·5', '2·3·7', '3·5·7', '4·5·7'] },
+    { key: 'triple', kind: 'enum', min: 0, max: 4, step: 1, default: 3, label: 'knot.triple', options: ['knot.t235', 'knot.t345', 'knot.t237', 'knot.t357', 'knot.t457'] },
     { key: 'tumble', kind: 'float', min: 0, max: 1.4, step: 0.02, default: 0.6, label: 'knot.tumble' },
     { key: 'breathe', kind: 'float', min: 0, max: 0.6, step: 0.02, default: 0.3, label: 'knot.breathe' },
     { key: 'depth', kind: 'float', min: 0, max: 2, step: 0.05, default: 1.6, label: 'knot.depth' },

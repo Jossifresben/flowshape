@@ -8,7 +8,7 @@
 
 **[flowshape.art](https://flowshape.art)** — turn mathematics into art.
 
-Explore 30 pattern generators, read the maths that draws each one, and take the result out as a print-ready poster or as a visual that moves with your music.
+Explore 32 pattern generators, read the maths that draws each one, and take the result out as a print-ready poster or as a visual that moves with your music.
 
 Free, open source, no accounts, no backend. Everything runs in the browser.
 
@@ -28,7 +28,7 @@ Both are built on the same idea as everything else here: a saved favourite *is* 
 
 ## What it is
 
-flowshape turns mathematics into art. Pick one of **30 deterministic pattern generators** — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — move every parameter it has, and watch the shape respond.
+flowshape turns mathematics into art. Pick one of **32 deterministic pattern generators** — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — move every parameter it has, and watch the shape respond.
 
 Then take it somewhere:
 
@@ -97,7 +97,7 @@ Forty lines, no framework, no hidden library doing the interesting part. That is
 
 **Growth** *(1)* — [Differential Growth](docs/patterns.md#differential-growth)
 
-All 30, with the formula, explanation, parameters and citation for each, in **[docs/patterns.md](docs/patterns.md)**. Sources run from Vogel and Descartes to Hankin, Truchet, Seaton, Jobard & Lefer, Quílez, Newell and Müller-Brockmann.
+All 32, with the formula, explanation, parameters and citation for each, in **[docs/patterns.md](docs/patterns.md)**. Sources run from Vogel and Descartes to Hankin, Truchet, Seaton, Jobard & Lefer, Quílez, Newell and Müller-Brockmann.
 
 ## Design rules
 
@@ -135,7 +135,7 @@ Take a pattern you have tuned, feed it audio — a dropped file or the microphon
 
 - **Six features per frame** — `bass`, `mid`, `high`, `level`, `bright` (spectral centroid), `flux` — each auto-gained per band so a quiet voice memo modulates as fully as a mastered track, then smoothed by an envelope follower. Raw FFT frames never touch a parameter; the envelopes are what make motion musical instead of jittery.
 - **Beat-aware.** In file mode, onsets and tempo are precomputed over the whole buffer, so the next frame can be built *before* the downbeat and swapped exactly on it. In mic mode, detection is realtime.
-- **All 30 patterns animate.** Continuous per-frame modulation where the geometry allows it; a universal beat-quantised event mode — reroll the seed, step a structural parameter, flip a boolean — for everything else, including discrete tilings that have nothing continuous to move.
+- **All 32 patterns animate.** Continuous per-frame modulation where the geometry allows it; a universal beat-quantised event mode — reroll the seed, step a structural parameter, flip a boolean — for everything else, including discrete tilings that have nothing continuous to move.
 - **Same generators, different renderer.** A small adapter draws the existing `SvgNode` tree to canvas2d, checked against the SVG output by a per-pattern pixel diff. The poster path stays pure SVG.
 - **Download the video.** Record the stage and save an **MP4** with the audio muxed in, at 1920×1080, 1080×1920 or 1080×1080. Capture goes through `MediaRecorder` first, falling back to WebM on browsers that will not record H.264/AAC; a deterministic WebCodecs offline encoder — same audio + same URL ⇒ byte-identical MP4, faster than realtime — is the next phase.
 - **Audio never leaves the browser.** There is nowhere to send it.
@@ -168,7 +168,7 @@ Every pattern is covered by a shared test harness that checks determinism, snaps
 ```
 src/
   core/       prng · url-state · svg builder · noise · geometry · oklch · persist · saved
-  patterns/   registry + one module per pattern (30) + presets, randomize
+  patterns/   registry + one module per pattern (32) + presets, randomize
   poster/     formats · palettes · export (SVG / PNG)
   compose/    poster composer — units · colorways · regions · skeletons · variants · render
   ui/         gallery · showcase · playground · poster · animate · saved · about

@@ -127,4 +127,12 @@ export const BLURBS: Record<string, { en: string; es: string }> = {
     en: 'Phase-shifted cosine rings that interleave into the machine-turned engraving of bank notes.',
     es: 'Anillos de coseno desfasados que se entrelazan en el grabado a torno de los billetes.',
   },
+  knot: {
+    en: 'A space curve of three coprime cosines, closed by arithmetic; depth-banded strands make it a knot.',
+    es: 'Una curva espacial de tres cosenos coprimos, cerrada por aritmética; las hebras por profundidad la hacen nudo.',
+  },
+  hyperweave: {
+    en: 'One closed walk of hyperbolic geodesics in the Poincaré disk, arcs hugging the rim like an engraving.',
+    es: 'Un paseo cerrado de geodésicas hiperbólicas en el disco de Poincaré; los arcos se pegan al borde como un grabado.',
+  },
 };

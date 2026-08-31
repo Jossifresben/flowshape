@@ -91,6 +91,8 @@ const NEVER_ROUTE: Record<string, string> = {
   'voronoi.sites': 'churn 0.05 per site: any useful swing re-forms a third of the diagram',
   'maurer.d': 'a single unit redraws the rose completely',
   'maurer.n': 'a single unit redraws the rose completely',
+  'hyperweave.wind': 'edge churn 1.00 whenever the remapped walk step δ changes (measured at B=35 for 9→10, 2→40, 16→21): the closed walk re-laces completely, every geodesic joining a different pair. Beat-locked step events only',
+  'hyperweave.grain': 'churn 1.00 at +1 — B = m·grain changes, every boundary point moves and every geodesic is new. Beat-locked step events only',
   // inert at default settings
   'girih.ribbonWidth': 'read only when render = 1 (ribbons); renders at 2, 9 and 20 are byte-identical at the default',
   'moire.offset': 'read only in mode 1 (circles)',

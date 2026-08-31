@@ -35,6 +35,8 @@ export const PATTERN_NAMES: Record<string, Pair> = {
   mystery: ['Mystery Curve', 'Curva misteriosa'],
   curlicue: ['Curlicue Fractal', 'Fractal de volutas'],
   guilloche: ['Guilloché Rosette', 'Roseta guilloché'],
+  knot: ['Lissajous Knot', 'Nudo de Lissajous'],
+  hyperweave: ['Hyperbolic Weave', 'Tejido hiperbólico'],
 };
 
 /** Human label for each pattern family. */

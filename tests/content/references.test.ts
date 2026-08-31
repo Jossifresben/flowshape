@@ -14,13 +14,19 @@ const DIR = path.join(process.cwd(), 'src', 'content', 'explain');
 
 // Written out rather than derived from the data, because the point of this
 // list is to be a decision that has to be made again on purpose. Adding a
-// seventh pattern to the six, or dropping one, should require editing this
-// line and thinking about whether the claim is true — not merely editing a
-// markdown file and watching a test go green on its own.
-const OWN_CONSTRUCTION = ['bands', 'chirp', 'helix', 'isoweave', 'nested', 'roselattice'];
+// pattern to the list, or dropping one, should require editing this line and
+// thinking about whether the claim is true — not merely editing a markdown
+// file and watching a test go green on its own.
+//
+// knot and hyperweave (2026-08-31): the mathematics is classical and cited
+// (Lissajous knots after Bogle–Hearst–Jones–Stoilov; Poincaré-disk geodesics),
+// but the composition — knot's depth-banded projection and its 1-periodic
+// motions, hyperweave's closed coprime walk with the (B/m)-periodic ripple —
+// was worked out for this project.
+const OWN_CONSTRUCTION = ['bands', 'chirp', 'helix', 'hyperweave', 'isoweave', 'knot', 'nested', 'roselattice'];
 
 describe('references', () => {
-  it('marks exactly the six patterns whose construction is this project\'s own', () => {
+  it('marks exactly the patterns whose construction is this project\'s own', () => {
     const marked = Object.entries(REFERENCES)
       .filter(([, ref]) => ref.original)
       .map(([id]) => id)

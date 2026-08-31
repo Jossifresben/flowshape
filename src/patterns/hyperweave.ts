@@ -3,8 +3,6 @@ import { definePattern } from './registry';
 import { mulberry32, deriveSeed } from '../core/prng';
 
 /**
- * SPIKE (spike/next-curve) — not registered in patterns/index.ts.
- *
  * Hyperbolic weave: a single closed walk of hyperbolic geodesics in the
  * Poincaré disk. B = m·grain points sit on the boundary circle; the walk
  * visits them by a fixed step δ and joins consecutive points with the
@@ -34,6 +32,18 @@ import { mulberry32, deriveSeed } from '../core/prng';
  *    ripple runs, and the wrap is the identity again.
  *  - fan (mystery's trail): layers spread apart in the phase flow
  *    mid-cycle and close at the wrap.
+ *
+ * The wind cap: the walk step δ is what `wind` asks for only after a remap.
+ * A pair of walk-adjacent points subtends θ = 2πδ/B, and the geodesic
+ * between two boundary points at angle θ is an arc of radius tan(θ/2) —
+ * which blows up as θ → π, so a step near B/2 joins near-diametral pairs
+ * with arcs that are chords in all but name: the times-table look, not the
+ * hyperbolic one. Measured as bulge/chord (the arc's maximum deviation from
+ * its own chord over the chord length): 0.29 at δ/B = 0.25, 0.16 at 0.30,
+ * 0.08 at 0.40, 0.01 at 0.485 (the old default-B extreme). The slider's
+ * whole 2..40 range is therefore mapped linearly onto 2..⌊0.3·B⌋ before the
+ * coprime coercion — every value `randomize` can reach keeps the rim-hugging
+ * signature, and no stretch of the slider is dead.
  */
 
 function gcd(a: number, b: number): number {
@@ -52,6 +62,9 @@ function coprimeStep(target: number, B: number): number {
   return 1; // unreachable: every B ≥ 9 has a coprime in [2, B−2]
 }
 
+/** The `wind` param's declared max — the remap above divides by it. */
+const WIND_MAX = 40;
+
 export const hyperweave = definePattern({
   id: 'hyperweave',
   family: 'curves',
@@ -62,7 +75,10 @@ export const hyperweave = definePattern({
   params: [
     { key: 'symmetry', kind: 'int', min: 3, max: 12, step: 1, default: 7, label: 'hyperweave.symmetry' },
     { key: 'grain', kind: 'int', min: 3, max: 9, step: 1, default: 5, label: 'hyperweave.grain' },
-    { key: 'wind', kind: 'int', min: 2, max: 40, step: 1, default: 9, label: 'hyperweave.wind' },
+    // Default 21 lands on δ = 6 at the default B = 35 (δ/B = 0.17, arc bulge
+    // 0.29 of its chord) — mid-density, so the beat events can step the walk
+    // both tighter and wider without any window thinning past the guards.
+    { key: 'wind', kind: 'int', min: 2, max: 40, step: 1, default: 21, label: 'hyperweave.wind' },
     { key: 'wobble', kind: 'float', min: 0, max: 0.5, step: 0.02, default: 0.22, label: 'hyperweave.wobble' },
     { key: 'layers', kind: 'int', min: 1, max: 6, step: 1, default: 4, label: 'hyperweave.layers' },
     { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 0.5, label: 'hyperweave.strokeWidth' },
@@ -72,7 +88,11 @@ export const hyperweave = definePattern({
     const m = p['symmetry']!;
     const g = p['grain']!;
     const B = m * g;
-    const delta = coprimeStep(p['wind']!, B);
+    // The wind cap (see the header): 2..40 remapped onto 2..⌊0.3·B⌋ so the
+    // arcs stay visibly hyperbolic at every reachable value.
+    const deltaCap = Math.max(3, Math.floor(0.3 * B));
+    const target = 2 + Math.round(((p['wind']! - 2) / (WIND_MAX - 2)) * (deltaCap - 2));
+    const delta = coprimeStep(target, B);
     const rnd = mulberry32(deriveSeed(seed, 'hyperweave'));
     const phiSeed = rnd() * 2 * Math.PI;
     // The ripple's wavenumber around one sector: 1 … g−1 keeps the wave

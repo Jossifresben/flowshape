@@ -711,6 +711,65 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'level', param: 'depth', depth: 0.1 },
     ] },
   ],
+  knot: [
+    // `breathe` is the amplitude axis the intrinsic motion already rides,
+    // so bass pushes the same swell the phase flow produces; `depth` on
+    // brightness makes the over/under contrast sharpen on bright passages.
+    { id: 'tumble', label: { en: 'Tumble', es: 'Voltereta' }, routes: [
+      { feature: 'bass', param: 'breathe', depth: 0.4 },
+      { feature: 'bright', param: 'depth', depth: 0.25 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'level', param: 'size', depth: 0.1 },
+    ] },
+    { id: 'deep', label: { en: 'Deep', es: 'Fondo' }, routes: [
+      { feature: 'level', param: 'depth', depth: 0.45 },
+      { feature: 'mid', param: 'opacity', depth: 0.4 },
+    ] },
+  ],
+  hyperweave: [
+    // `wind` and `grain` are the params Hermes asked to hear ("wind and grain
+    // pulsating with the beat"), and both are chaotic: any change of the
+    // remapped walk step re-laces the whole closed walk (edge churn 1.00 —
+    // see NEVER_ROUTE), and a grain step changes B = m·grain so every
+    // boundary point moves. Continuous routes on them would strobe exactly
+    // like timestable's multiplier did, so both pulse as beat-locked step
+    // events instead — a re-lacing that lands ON the beat reads as rhythm —
+    // while the smooth axes (`wobble`, weight, scale) breathe between beats.
+    //
+    // Pulse: the walk step. The sub-range 6..30 at steps 3 lands the three
+    // step windows on wind 6, 18, 30 → δ = 3, 4, 8 at the default B = 35;
+    // with the home window (the default wind 21 → δ = 6) that is a
+    // four-window cycle of four genuinely different lacings — tight rim
+    // engraving to open star — and no window repeats inside a cycle.
+    // Measured against the default still: worst window keeps 68% coverage /
+    // 58% ink (δ3), best 120% ink (δ8); nothing approaches the half-ink
+    // collapse line.
+    { id: 'pulse', label: { en: 'Pulse', es: 'Pulso' }, routes: [
+      { feature: 'bass', param: 'wobble', depth: 0.3 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'level', param: 'size', depth: 0.08 },
+    ], event: { kind: 'step', param: 'wind', everyBeats: 2, steps: 3, from: 6, to: 30 } },
+    // Grain: the boundary density. A step multiplies B itself, which is a
+    // bigger reconfiguration than a re-lacing, so it gets the section
+    // cadence (8 beats) rather than the pulse one. steps 3 over 4..7 gives
+    // windows at grain 4, 6, 7 (the midpoint 5.5 clamps to 6), so with the
+    // home grain 5 every window of the cycle is distinct: B = 28, 35, 42,
+    // 49 points. Windows measured at 82–135% of the default's ink, 88–104%
+    // coverage. The ripple deepens with the track's level under it.
+    { id: 'grain', label: { en: 'Grain', es: 'Grano' }, routes: [
+      { feature: 'level', param: 'wobble', depth: 0.35 },
+      { feature: 'bright', param: 'strokeWidth', depth: 0.25 },
+      { feature: 'mid', param: 'opacity', depth: 0.3 },
+    ], event: { kind: 'step', param: 'grain', everyBeats: 8, steps: 3, from: 4, to: 7 } },
+    // Ripple: no event — the figure the visitor designed, breathing only.
+    // `wobble` is the seed ripple the intrinsic motion already rides, so
+    // bass deepens the same shimmer; the arcs never lose the theorem.
+    { id: 'ripple', label: { en: 'Ripple', es: 'Ondula' }, routes: [
+      { feature: 'bass', param: 'wobble', depth: 0.35 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'level', param: 'size', depth: 0.08 },
+    ] },
+  ],
 };
 
 export function presetsFor(patternId: string): AnimPreset[] {
