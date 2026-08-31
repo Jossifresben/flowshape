@@ -102,6 +102,50 @@ export class EnvelopeFollower {
   }
 }
 
+/**
+ * Two-sided running-range normalizer: maps a value onto 0..1 against the range
+ * it has actually occupied recently, both ends decaying back toward the
+ * current value so the window follows the material.
+ *
+ * `AutoGain` below normalizes against a running MAX, which is right for
+ * energy-like features that genuinely reach zero (level, the bands, flux).
+ * The spectral centroid does not: it lives in a narrow band whose position
+ * depends on the track's timbre, so max-only normalization leaves a bass-heavy
+ * piece pinned near the bottom of the scale. Measured across the four shipped
+ * demos, `bright` spans p10..p90 of 0.318-0.545 on one and 0.060-0.109 on
+ * another — the second occupies 5% of the scale, so anything mapping it
+ * linearly (the stage's hue route) barely moves. This class is what lets a
+ * dark track sweep the same hue arc as a bright one.
+ *
+ * `MIN_SPAN` is the guard that stops a nearly-constant input from being
+ * stretched into full-swing noise: below it, the output stays near the middle
+ * rather than amplifying jitter.
+ */
+export class RangeGain {
+  private lo = Number.NaN;
+  private hi = Number.NaN;
+  /** Narrowest range that will be stretched to the full 0..1 output.
+   *  Deliberately well below a real instrument's band: the solo-piano demo
+   *  occupies p10..p90 of only 0.049, so a guard set anywhere near that would
+   *  flatten exactly the case this class exists to fix. 0.02 sits above frame
+   *  to frame centroid jitter and below any musical variation. */
+  static readonly MIN_SPAN = 0.02;
+  constructor(private halfLifeSec: number) {}
+  process(x: number, dtMs: number): number {
+    if (Number.isNaN(this.lo)) { this.lo = x; this.hi = x; }
+    // Each bound relaxes toward the current value, and jumps instantly to a
+    // new extreme — the same asymmetry AutoGain uses, mirrored.
+    const k = 1 - Math.pow(0.5, dtMs / 1000 / this.halfLifeSec);
+    this.lo += (x - this.lo) * k;
+    this.hi += (x - this.hi) * k;
+    if (x < this.lo) this.lo = x;
+    if (x > this.hi) this.hi = x;
+    const span = this.hi - this.lo;
+    if (span < RangeGain.MIN_SPAN) return 0.5;
+    return Math.min(1, Math.max(0, (x - this.lo) / span));
+  }
+}
+
 /** Running-max normalizer with exponential decay (half-life in seconds), so a
  *  quiet voice memo modulates as fully as a mastered track. `observe`/`norm`
  *  are split so the caller can combine per-value maxima with a shared floor

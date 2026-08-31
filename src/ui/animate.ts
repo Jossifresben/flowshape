@@ -7,6 +7,7 @@ import {
 } from '../audio/features';
 import { detectOnsets, estimateTempo, beatGrid, LiveOnsetDetector } from '../audio/onsets';
 import { fileRig, micRig, type AudioRig } from '../audio/sources';
+import { RangeGain } from '../audio/dsp';
 import { BeatClock, phaseAt, frameParams } from '../anim/engine';
 import { drawTree } from '../anim/canvas-render';
 import { presetsFor, DEFAULT_COLOUR_ROUTE, type AnimPreset } from '../anim/presets';
@@ -58,6 +59,9 @@ export function mountAnimate(root: HTMLElement): () => void {
   // never a freshly-resolved one — so output is byte-identical to before
   // colour existed.
   let colourOn = state.acol ?? false;
+  // ~8 s half-life: long enough that one phrase does not drag the hue around,
+  // short enough to re-centre across a section change.
+  const hueRange = new RangeGain(8);
   // Music-interpretation tuning: URL wins, then the pipeline's defaults —
   // an old shared link (no tuning keys) reproduces the pre-tuning motion.
   const tuning: AudioTuning = {
@@ -513,7 +517,16 @@ export function mountAnimate(root: HTMLElement): () => void {
   function paletteFor(features: FeatureFrame): Palette {
     if (!colourOn) return pal;
     const route = preset.colour ?? DEFAULT_COLOUR_ROUTE;
-    const hue = route.hue.from + (route.hue.to - route.hue.from) * clamp01(features[route.hue.feature]);
+    // The hue feature goes through a running RANGE, not its raw value. The
+    // spectral centroid is a timbre position, not an energy: a solo piano
+    // occupies a narrow, low band of it (measured p10..p90 of 0.060..0.109 on
+    // demo 3, against 0.318..0.545 on demo 1), so mapping it linearly pinned
+    // that track to one hue and it never changed colour — the bug Jossi hit.
+    // Normalizing against the range the material actually occupies lets a dark
+    // instrument sweep the same arc a bright one does. Chroma keeps the raw
+    // feature: it IS an energy, and silence must still resolve to monochrome.
+    const hueFeature = hueRange.process(clamp01(features[route.hue.feature]), 1000 / 60);
+    const hue = route.hue.from + (route.hue.to - route.hue.from) * hueFeature;
     // level → chroma, scaled by intensity: silence (feature 0) or intensity
     // 0 both resolve to chroma 0 — plain monochrome ink either way.
     const chroma = clamp01(features[route.chroma.feature]) * route.chroma.max * intensity;

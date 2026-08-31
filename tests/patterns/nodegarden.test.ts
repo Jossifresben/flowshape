@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { nodegarden, computeGarden } from '../../src/patterns/nodegarden';
 import { standardPatternTests, render, SIZE } from './harness';
-import { defaultParams, clampParams } from '../../src/patterns/registry';
+import { defaultParams, clampParams, generateSafe } from '../../src/patterns/registry';
+import { serialize } from '../../src/core/svg';
+import { resolvePalette } from '../../src/poster/palettes';
 
 standardPatternTests(nodegarden, { maxElements: 900 });
 
@@ -443,3 +445,51 @@ describe('nodegarden specifics', () => {
   });
 });
 
+describe('nodegarden · edges born by the animation', () => {
+  const base = (): Record<string, number> => {
+    const p: Record<string, number> = {};
+    for (const d of nodegarden.params) p[d.key] = d.default;
+    return p;
+  };
+
+  it('marks nothing born in the resting design', () => {
+    // Jossi's requirement: only the connections that APPEAR while the stage
+    // plays are drawn heavier — the ones already in the still design keep the
+    // weight they always had. Phase 0 IS that still, so it must have none.
+    const g = computeGarden(base(), 3, { w: 900, h: 520 }, 0);
+    expect(g.edges.length).toBeGreaterThan(0);
+    expect(g.edges.filter((e) => e.born).length).toBe(0);
+  });
+
+  it('marks a real share of edges born mid-cycle', () => {
+    for (const ph of [0.1, 0.25, 0.5, 0.75]) {
+      const g = computeGarden(base(), 3, { w: 900, h: 520 }, ph);
+      const born = g.edges.filter((e) => e.born).length;
+      expect(born).toBeGreaterThan(0);
+      // Sanity: if most edges were "born" the reference would be wrong.
+      expect(born).toBeLessThan(g.edges.length * 0.6);
+    }
+  });
+
+  it('a born edge is genuinely absent from the resting configuration', () => {
+    // The property the flag claims, checked directly rather than trusted.
+    const p = base();
+    const g = computeGarden(p, 3, { w: 900, h: 520 }, 0.5);
+    const r = computeGarden(p, 3, { w: 900, h: 520 }, 0);
+    const radius = p['radius']!;
+    for (const e of g.edges.filter((x) => x.born)) {
+      const a = r.points[e.a]!, c = r.points[e.b]!;
+      expect(Math.hypot(c.x - a.x, c.y - a.y)).toBeGreaterThanOrEqual(radius);
+    }
+  });
+
+  it('draws born edges heavier and brighter than resting ones', () => {
+    const svg = serialize(
+      generateSafe(nodegarden, { ...base(), phase: 0.5 }, 3, { w: 900, h: 520 }),
+      resolvePalette({ paperL: 0.08 }),
+    );
+    const widths = [...svg.matchAll(/<line[^>]*stroke-width="([\d.]+)"/g)].map((m) => Number(m[1]));
+    expect(new Set(widths).size).toBeGreaterThan(1); // two tiers present
+    expect(Math.max(...widths)).toBeGreaterThan(Math.min(...widths));
+  });
+});

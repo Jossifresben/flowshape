@@ -70,7 +70,17 @@ import { fbm2D } from '../core/noise';
  */
 
 export interface GardenPoint { x: number; y: number; i: number; j: number }
-export interface GardenEdge { a: number; b: number; dist: number; rimGap: number; opacity: number }
+export interface GardenEdge {
+  a: number; b: number; dist: number; rimGap: number; opacity: number;
+  /** True when this pair is inside `radius` NOW but was not in the pattern's
+   *  resting configuration (phase 0) — i.e. the phase orbit carried the two
+   *  nodes together. These are the connections that appear while the stage
+   *  plays, as opposed to the ones already present in the still design, and
+   *  they are the ones drawn heavier. Derived from the current frame alone:
+   *  the pattern is a pure function with no frame-to-frame memory, so "new"
+   *  has to be a property of the geometry, not of history. */
+  born: boolean;
+}
 export interface Garden { points: GardenPoint[]; edges: GardenEdge[]; cols: number; rows: number; maxDisp: number }
 
 const MARGIN = 24;
@@ -83,12 +93,21 @@ const NOISE_SPAN = 3.5;
  *  sweeps a visually meaningful arc of the noise field without the read
  *  point leaving its local neighbourhood entirely). */
 const ORBIT_R = 0.5;
+/** The orbit read-point at phase 0 — the resting configuration every edge is
+ *  compared against to decide whether the animation created it. */
+const REST_DX = ORBIT_R;
+const REST_DY = 0;
 /** The guaranteed floor on rim-to-rim gap between ANY two dots, as a
  *  fraction of `cell`. This is what makes "dots never overlap" a property
  *  of the construction rather than a lucky default — see `maxDisp` below. */
 const MIN_GAP_FRAC = 0.08;
 /** Below this many px of rim-to-rim gap, a line reads as touching dots
  *  anyway — skip drawing the stub rather than paint a few-pixel sliver. */
+/** How much brighter a NEWLY-FORMED edge is than one already in the design. */
+const EDGE_VIVID = 1.35;
+/** And how much heavier. Applied only to `born` edges — see GardenEdge.born. */
+const EDGE_BORN_WIDTH = 1.6;
+
 const MIN_DRAWABLE_GAP_PX = 2;
 /** Cap on the neighbour-search half-width (in grid cells), so a pathological
  *  param corner (max radius + max jitter + max drift, min cell) can't blow
@@ -143,6 +162,7 @@ export function computeGarden(p: Params, seed: number, size: Size, ph: number): 
   const dyOrbit = ORBIT_R * Math.sin(2 * Math.PI * ph);
 
   const points: GardenPoint[] = new Array(cols * rows);
+  const rest: GardenPoint[] = new Array(cols * rows);
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
       const gx = ox + i * cell, gy = oy + j * cell;
@@ -157,6 +177,18 @@ export function computeGarden(p: Params, seed: number, size: Size, ph: number): 
         dx *= scale; dy *= scale;
       }
       points[j * cols + i] = { x: gx + dx, y: gy + dy, i, j };
+      // The same node at phase 0 — same jitter, same drift amplitude, only
+      // the orbit removed — so a comparison isolates what the phase motion
+      // did rather than what the audio did to `drift`.
+      const rnx = noiseX(gx * freq + REST_DX, gy * freq + REST_DY);
+      const rny = noiseY(gx * freq + REST_DX, gy * freq + REST_DY);
+      let rdx = jx + drift * rnx, rdy = jy + drift * rny;
+      const rmag = Math.hypot(rdx, rdy);
+      if (rmag > maxDisp) {
+        const rs = maxDisp / (rmag || 1);
+        rdx *= rs; rdy *= rs;
+      }
+      rest[j * cols + i] = { x: gx + rdx, y: gy + rdy, i, j };
     }
   }
 
@@ -187,7 +219,9 @@ export function computeGarden(p: Params, seed: number, size: Size, ph: number): 
           const dist = Math.hypot(pa.x - pb.x, pa.y - pb.y);
           if (dist >= radius) continue;
           const opacity = dist <= fadeStart ? 1 : 1 - (dist - fadeStart) / fadeSpan;
-          edges.push({ a, b, dist, rimGap: dist - 2 * dotSize, opacity });
+          const ra = rest[a]!, rb = rest[b]!;
+          const born = Math.hypot(rb.x - ra.x, rb.y - ra.y) >= radius;
+          edges.push({ a, b, dist, rimGap: dist - 2 * dotSize, opacity, born });
         }
       }
     }
@@ -213,7 +247,12 @@ export const nodegarden = definePattern({
     { key: 'drift', kind: 'float', min: 0, max: 30, step: 1, default: 8, label: 'nodegarden.drift' },
     { key: 'dotSize', kind: 'float', min: 2, max: 32, step: 0.5, default: 24, label: 'nodegarden.dotSize' },
     { key: 'edgeFade', kind: 'float', min: 0, max: 1, step: 0.05, default: 0.03, label: 'nodegarden.edgeFade' },
-    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2.5, step: 0.05, default: 1.1, label: 'nodegarden.strokeWidth' },
+    // Range and default both raised: at 1.1 against 24px dots the edges were
+    // hairlines between fat circles, and the old 2.5 ceiling could not make
+    // them read as the event they are. 3.0 is a visible thread at the default
+    // dot size; the 6 ceiling lets an edge become a bar. Floor stays 0.1 for
+    // anyone who wants the graph implied rather than drawn.
+    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 6, step: 0.05, default: 3, label: 'nodegarden.strokeWidth' },
     { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.85, label: 'nodegarden.opacity' },
   ],
   generate(p, seed, size) {
@@ -226,7 +265,14 @@ export const nodegarden = definePattern({
     const children: SvgNode[] = [];
     // Edges under dots, so the large dots (the actual composition) read on top.
     for (const e of edges) {
-      const op = Math.round(e.opacity * baseOpacity * 1000) / 1000;
+      // Only the connections the animation created are lifted: an edge already
+      // present in the resting design keeps exactly the weight and brightness
+      // it always had, so the still is unchanged. The ramp near the boundary
+      // still runs to zero either way, so a born edge fades in rather than
+      // popping.
+      const vivid = e.born ? EDGE_VIVID : 1;
+      const op = Math.round(Math.min(1, e.opacity * baseOpacity * vivid) * 1000) / 1000;
+      const sw = Math.round(strokeWidth * (e.born ? EDGE_BORN_WIDTH : 1) * 100) / 100;
       if (op < 0.01) continue; // faded past visibility — skip, not just invisible
       if (e.rimGap < MIN_DRAWABLE_GAP_PX) continue; // reads as touching anyway
       const pa = points[e.a]!, pb = points[e.b]!;
@@ -236,8 +282,11 @@ export const nodegarden = definePattern({
       const x2 = pb.x - ux * dotR, y2 = pb.y - uy * dotR;
       children.push(el('line', {
         x1, y1, x2, y2,
+        // Same `ink` as the dots — the edges are the same material, not a
+        // second colour. Their prominence comes from weight and brightness
+        // instead: see EDGE_VIVID below.
         stroke: 'ink',
-        'stroke-width': strokeWidth,
+        'stroke-width': sw,
         'stroke-linecap': 'round',
         opacity: op,
       }));
