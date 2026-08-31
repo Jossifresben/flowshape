@@ -39,17 +39,26 @@ const DEMOS = [
   { id: '4', src: '/samples/flow-4.mp3' },
 ] as const;
 
-export function mountAnimate(root: HTMLElement): () => void {
+/** DEV-only injection for the `#/dev/spike` route: an explicit state instead
+ *  of the URL hash, a local preset table instead of PRESETS_BY_PATTERN, and
+ *  no URL rewriting (the spike stage lives at its own dev hash). Production
+ *  code never passes this. */
+export interface AnimateDevOverrides {
+  state: AppState;
+  presets: AnimPreset[];
+}
+
+export function mountAnimate(root: HTMLElement, dev?: AnimateDevOverrides): () => void {
   // Same language rule as the playground and the gallery: an explicit
   // `?lang=` in the URL wins, then the reader's stored choice, then the
   // browser's. `decodeState` only ever sees the URL.
-  const state: AppState = { ...decodeState(location.hash)!, lang: currentLang() };
+  const state: AppState = { ...(dev?.state ?? decodeState(location.hash)!), lang: currentLang() };
   const def: PatternDef | undefined = getPattern(state.patternId);
   if (!def) { location.hash = '#/'; return () => undefined; }
 
   const lang = state.lang;
   document.documentElement.lang = lang;
-  const presets = presetsFor(def.id);
+  const presets = dev?.presets ?? presetsFor(def.id);
   let preset: AnimPreset = presets.find((p) => p.id === state.apre) ?? presets[0]!;
   let intensity = state.aint ?? 1;
   let stageId: '169' | '916' | '11' = state.stage ?? '169';
@@ -117,8 +126,14 @@ export function mountAnimate(root: HTMLElement): () => void {
   back.href = encodeState({
     ...state, view: undefined, stage: undefined, apre: undefined, aint: undefined, acol: undefined,
   });
-  favourite = favouriteButton(lang, () => location.hash);
-  navRow.append(back, langSwitch(lang), favourite.el, shareButton(lang));
+  if (dev) {
+    // No favourite/share on the dev stage: both act on location.hash, which
+    // is the dev route's own hash, not a creation URL.
+    navRow.append(back, langSwitch(lang));
+  } else {
+    favourite = favouriteButton(lang, () => location.hash);
+    navRow.append(back, langSwitch(lang), favourite.el, shareButton(lang));
+  }
 
   const title = document.createElement('h1');
   title.textContent = patternName(def.id, lang).toUpperCase();
@@ -442,6 +457,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   }
 
   function syncUrl(): void {
+    if (dev) return; // the dev spike stage never touches the URL
     history.replaceState(null, '', encodeState({
       ...state, view: 'a', stage: stageId, apre: preset.id, aint: intensity, acol: colourOn,
       aatk: tuning.attackMs, arel: tuning.releaseMs,
