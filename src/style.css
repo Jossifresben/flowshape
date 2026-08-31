@@ -300,6 +300,8 @@ a.gal-chip { text-decoration: none; }
 
 a.gal-wordmark { text-decoration: none; }
 .nav-links { display: flex; align-items: center; gap: 22px; }
+/* The burger exists only below the mobile breakpoint; desktop never sees it. */
+.nav-burger, .nav-burger-input { display: none; }
 .nav-link {
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em;
   color: var(--gray); text-decoration: none;
@@ -479,8 +481,24 @@ a.gal-wordmark { text-decoration: none; }
 
 @media (max-width: 640px) {
   .gal-hero-top { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .gal-topbar { height: auto; padding: 14px 20px; flex-wrap: wrap; gap: 10px; }
-  .nav-links { gap: 16px; }
+  /* Burger nav: the four links plus the language switch and share button
+     overflowed the bar and pushed it to two rows, eating vertical space on
+     the smallest screens. Collapsed behind a toggle; the bar is one row
+     again and the menu opens as a full-width column under it. */
+  .gal-topbar { height: auto; padding: 14px 20px; gap: 10px; position: relative; }
+  .nav-burger {
+    display: flex; flex-direction: column; justify-content: center; gap: 4px;
+    width: 44px; height: 44px; margin-right: -10px; padding: 0 10px;
+    cursor: pointer; align-items: stretch;
+  }
+  .nav-burger span { height: 1px; background: var(--ink); transition: none; }
+  .nav-burger-input:checked ~ .nav-burger span:nth-child(2) { opacity: 0; }
+  .nav-links {
+    display: none; gap: 18px; flex-direction: column; align-items: flex-start;
+    flex-basis: 100%; padding: 6px 0 4px;
+  }
+  .nav-burger-input:checked ~ .nav-links { display: flex; }
+  .nav-link { font-size: 13px; padding: 6px 0; }
   .about { padding: 28px 20px 8px; }
   .about-title { font-size: 30px; }
   .site-footer { padding: 20px 20px 28px; }

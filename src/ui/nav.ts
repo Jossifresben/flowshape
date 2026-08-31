@@ -52,7 +52,21 @@ export function buildNav(lang: Lang, active: 'patterns' | 'gallery' | 'about' | 
   link('#/about', t('nav.about', lang), active === 'about');
   links.append(langSwitch(lang), shareButton(lang));
 
-  topbar.append(wordmark, links);
+  // Burger: a checkbox toggle rather than a JS state machine, so the menu
+  // needs no listener, no open/close state to leak across navigations, and
+  // no cleanup — the label toggles the input, CSS does the rest. Hidden
+  // entirely above the mobile breakpoint, where the links sit inline.
+  const toggle = document.createElement('input');
+  toggle.type = 'checkbox';
+  toggle.id = 'nav-burger';
+  toggle.className = 'nav-burger-input';
+  const burger = document.createElement('label');
+  burger.className = 'nav-burger';
+  burger.setAttribute('for', 'nav-burger');
+  burger.setAttribute('aria-label', t('nav.menu', lang));
+  burger.innerHTML = '<span></span><span></span><span></span>';
+
+  topbar.append(wordmark, toggle, burger, links);
   return topbar;
 }
 

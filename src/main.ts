@@ -33,7 +33,24 @@ function setView(
   app.classList.add(`view-${name}`);
 }
 
+/** Hash navigation does not reset scroll, so arriving from a scrolled gallery
+ *  keeps that offset in the next view. On mobile the playground and the stage
+ *  put their control panel BELOW the artwork, so the preserved offset landed
+ *  the reader at the bottom of the parameter list — the panel appeared to
+ *  auto-scroll. Only reset when the route actually changes: a param edit
+ *  rewrites the hash constantly, and yanking the panel to the top mid-drag
+ *  would be far worse than the bug.
+ *
+ *  `routeKey` is the part before `?`, so `#/p/voxel?...` edits are one route. */
+let lastRouteKey: string | null = null;
+
 function route(): void {
+  const routeKey = location.hash.split('?')[0] ?? '';
+  if (lastRouteKey !== null && routeKey !== lastRouteKey) {
+    window.scrollTo(0, 0);
+    document.scrollingElement?.scrollTo(0, 0);
+  }
+  lastRouteKey = routeKey;
   cleanup?.();
   cleanup = null;
   if (import.meta.env.DEV && location.hash === '#/dev/fidelity') {

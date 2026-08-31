@@ -8,6 +8,7 @@ export const UI: Record<string, Pair> = {
   'nav.patterns': ['Patterns', 'Patrones'],
   'nav.about': ['About', 'Acerca de'],
   'nav.language': ['Language', 'Idioma'],
+  'nav.menu': ['Menu', 'Menú'],
   'nav.home': ['flowshape home', 'inicio de flowshape'],
 
   // --- gallery ------------------------------------------------------------
