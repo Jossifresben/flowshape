@@ -46,7 +46,7 @@ import { mulberry32, deriveSeed } from '../core/prng';
  * signature, and no stretch of the slider is dead. 0.25 rather than 0.3:
  * the wobble ripple stretches individual gaps by an amount that grows as
  * B shrinks (its amplitude rides the 2π/B point spacing), and at the
- * default B=28 a 0.3 cap let one wobbled pair breach the arc-radius
+ * default B (28 at the time) a 0.3 cap let one wobbled pair breach the arc-radius
  * guard. 0.25 holds the guard at every B and, per the bulge table above,
  * bows the arcs harder — more hyperbolic, not less.
  */
@@ -78,17 +78,21 @@ export const hyperweave = definePattern({
   usesSeed: true,
   anim: { continuous: ['wobble', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
   params: [
-    { key: 'symmetry', kind: 'int', min: 3, max: 12, step: 1, default: 7, label: 'hyperweave.symmetry' },
-    { key: 'grain', kind: 'int', min: 3, max: 9, step: 1, default: 4, label: 'hyperweave.grain' },
-    // Default 12 lands on δ = 3 at the default B = 28 (δ/B ≈ 0.11, arc bulge
-    // 0.36 of its chord) — the tight, rim-hugging end. At B = 28 the remap
-    // reaches exactly two lacings (δ 3 for wind 2..20, δ 5 from 21 up), so
-    // the beat event alternates them rather than sweeping a ladder.
-    { key: 'wind', kind: 'int', min: 2, max: 40, step: 1, default: 12, label: 'hyperweave.wind' },
-    { key: 'wobble', kind: 'float', min: 0, max: 0.5, step: 0.02, default: 0.22, label: 'hyperweave.wobble' },
-    { key: 'layers', kind: 'int', min: 1, max: 6, step: 1, default: 3, label: 'hyperweave.layers' },
-    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 0.5, label: 'hyperweave.strokeWidth' },
-    { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.6, label: 'hyperweave.opacity' },
+    { key: 'symmetry', kind: 'int', min: 3, max: 12, step: 1, default: 11, label: 'hyperweave.symmetry' },
+    { key: 'grain', kind: 'int', min: 3, max: 9, step: 1, default: 8, label: 'hyperweave.grain' },
+    // Default 36 lands on δ = 19 at the default B = 88 (δ/B ≈ 0.22, near the
+    // 0.25 cap) — the open, wide-arc end rather than the rim-hugging one.
+    // How many lacings the slider reaches is a property of B, not of the
+    // slider: at B = 88 the remap resolves nine distinct δ (3,5,7,9,13,15,
+    // 17,19,21), which is what lets the beat event sweep a real ladder. At a
+    // small B it collapses — B = 28 reaches only two — so any preset event
+    // stepping this param has to be recalibrated whenever a default changes
+    // symmetry or grain.
+    { key: 'wind', kind: 'int', min: 2, max: 40, step: 1, default: 36, label: 'hyperweave.wind' },
+    { key: 'wobble', kind: 'float', min: 0, max: 0.5, step: 0.02, default: 0.16, label: 'hyperweave.wobble' },
+    { key: 'layers', kind: 'int', min: 1, max: 6, step: 1, default: 4, label: 'hyperweave.layers' },
+    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 0.9, label: 'hyperweave.strokeWidth' },
+    { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.52, label: 'hyperweave.opacity' },
   ],
   generate(p, seed, size) {
     const m = p['symmetry']!;
