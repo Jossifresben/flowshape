@@ -59,19 +59,26 @@ window.__spikeBench = async () => {
 
 const SPIKE_PRESETS: Record<string, AnimPreset[]> = {
   [linefield.id]: [
-    // Vortex: swirl is the field's own macro-structure knob (range 0..2) —
-    // bass deepens the same rotation the intrinsic field already draws.
-    // Swing 0.30 (depth 0.15) moves the default (1) a third of the way to
-    // either wall without ever reaching the ε-only degenerate corner at 0.
+    // Vortex: every route rides GEOMETRY (Jossi's stage verdict on the first
+    // cut: stroke width moved more than the field — retuned 2026-08-31).
+    // bass→swirl (range 0..2, swing 0.40): bass deepens the same rotation
+    // the intrinsic field already draws, still clear of the ε-only corner
+    // at 0. mid→waviness (0..1, swing 0.25) lifts the default 0.3 toward
+    // 0.55 — the curl-wave bending nearly doubles on sustained mids.
+    // high→warp (0..1, swing 0.20) bends the domain lattice on fine detail.
     // The grid is fixed (1706 strokes at 1920x1080, verified unchanged
-    // across every route below) — only orientation and the |V|-driven
-    // opacity move; opacity stayed within [0.22, 0.92] at every extreme
-    // tested, never near-invisible, never clipped.
+    // across every route) — only orientation and the |V|-driven opacity
+    // move. Beat event: `vortices` is chaotic (re-seats the whole vortex
+    // seed stream — NEVER routed), so it steps as a section change every
+    // 8 beats through 4..8 (home = the designed 6; the fixed grid means
+    // the frame-emptying guard passes trivially — every window draws the
+    // full stroke set).
     { id: 'vortex', label: { en: 'Vortex', es: 'Vórtice' }, routes: [
-      { feature: 'bass', param: 'swirl', depth: 0.15 },
-      { feature: 'high', param: 'strokeWidth', depth: 0.12 },
+      { feature: 'bass', param: 'swirl', depth: 0.20 },
+      { feature: 'mid', param: 'waviness', depth: 0.25 },
+      { feature: 'high', param: 'warp', depth: 0.20 },
       { feature: 'level', param: 'size', depth: 0.08 },
-    ] },
+    ], event: { kind: 'step', param: 'vortices', everyBeats: 8, steps: 4, from: 4, to: 8 } },
     // Ripple: waviness (curl-wave amplitude, 0..1) bends the field's broad
     // S-curves; warp (0..1) is the domain pre-distortion. Both default well
     // under half their range, so a 0.25-0.30 swing stays inside a single

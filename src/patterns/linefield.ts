@@ -19,13 +19,25 @@ import { fbm2D } from '../core/noise';
  * phases, warp lattice), never per-stroke — nearby strokes agree because they
  * sample the same field, and the reader can follow a swirl across the frame.
  *
- * Phase (exactly 1-periodic, identity at the wrap):
+ * Phase (exactly 1-periodic, identity at the wrap — every term below is a
+ * sum of sin/cos of integer multiples of 2πph, or vanishes at ph = 0):
+ *  - a whole-field angular drift θ += 2πph turns every tick in place — one
+ *    turn per cycle, two apparent cycles for axial strokes — so the entire
+ *    field is always in motion, not just the wave-dominated corners;
+ *  - a shimmer term SHIM·(sin(2πph+2θ)−sin 2θ) modulates that drift's
+ *    timing by the local field structure (2θ respects the axial identity),
+ *    so the turn sweeps across the swirls as a living wave instead of a
+ *    rigid rotor;
  *  - each wave's phase advances by its own small-integer multiple of 2π per
- *    cycle, so the local bending travels through the swirls;
- *  - each vortex centre orbits a tiny circle, offset (cos(2πph+ψ)−cosψ,
- *    sin(2πph+ψ)−sinψ)·ρ, which vanishes at ph = 0 — the swirls breathe.
+ *    cycle, so the local bending travels through the swirls, and each
+ *    wave's amplitude breathes on its own integer-rate envelope
+ *    1 + BR·(sin(2π·m·ph+β)−sin β) (identity at the wrap);
+ *  - each vortex centre orbits a circle, offset (cos(2πph+ψ)−cosψ,
+ *    sin(2πph+ψ)−sinψ)·ρ, which vanishes at ph = 0 — the swirls wander.
  * The grid itself never moves and no stroke appears or disappears; only
- * orientations (and the |V|-driven opacity below) flow.
+ * orientations (and the |V|-driven opacity below) flow. Every phase term
+ * vanishes at ph = 0, so the phase-0 still is exactly the approved
+ * composition.
  *
  * Degeneracy: where |V| → 0 the angle is undefined and neighbouring strokes
  * would jitter. Two guards, both part of the model: V_base is an ε-strength
@@ -88,20 +100,28 @@ export const linefield = definePattern({
       const sig = 0.18 + 0.16 * rndV();
       vort.push({ u, v, g: (s * swirl) / sig, s2: 2 * sig * sig, psi: rndV() * 2 * Math.PI });
     }
-    const RHO = 0.025; // vortex orbit radius (field units)
+    const RHO = 0.1; // vortex orbit radius (field units) — wander, not tremble
 
     // Curl waves: Vx += ky·A·cos(kx·u + ky·v + φ), Vy += −kx·A·cos(…).
     // A = a₀/k equalises the velocity each wave contributes across
-    // frequencies. Integer phase rates (±1..3 cycles per loop) are what
-    // keep the wrap an identity.
+    // frequencies. Integer phase rates (±2..4 cycles per loop) are what
+    // keep the wrap an identity. Each wave also breathes: its amplitude
+    // rides 1 + BR·(sin(2π·m·ph+β)−sin β), m a small integer from its own
+    // seed stream (rndB, drawn after the others so phase 0 is untouched) —
+    // exactly 1-periodic, identity at ph = 0.
     const NW = 4;
     const lam = p['waviness']!;
+    const rndB = mulberry32(deriveSeed(seed, 'linefield-breathe'));
+    const BR = 0.5;
     const waves: { kx: number; ky: number; wx: number; wy: number; phi: number }[] = [];
     for (let i = 0; i < NW; i++) {
       const dir = rndW() * 2 * Math.PI;
       const k = 2 * Math.PI * (2 + 3 * rndW());
-      const rate = (1 + Math.floor(rndW() * 3)) * (rndW() < 0.5 ? -1 : 1);
-      const amp = (lam * 0.22) / k;
+      const rate = (2 + Math.floor(rndW() * 3)) * (rndW() < 0.5 ? -1 : 1);
+      const m = 1 + Math.floor(rndB() * 2);
+      const beta = rndB() * 2 * Math.PI;
+      const breathe = 1 + BR * (Math.sin(2 * Math.PI * m * ph + beta) - Math.sin(beta));
+      const amp = ((lam * 0.22) / k) * breathe;
       const kx = k * Math.cos(dir), ky = k * Math.sin(dir);
       waves.push({ kx, ky, wx: ky * amp, wy: -kx * amp, phi: rndW() * 2 * Math.PI + 2 * Math.PI * rate * ph });
     }
@@ -146,6 +166,12 @@ export const linefield = definePattern({
     // mean speed — the tanh normaliser below is self-referential, so the
     // opacity design survives any swirl/waviness setting (including the
     // ε-only degenerate corner) without a magic constant.
+    // Whole-field angular drift + structure-timed shimmer (see header). The
+    // drift leaves |V| — and therefore the opacity map, the visible swirl
+    // anatomy — untouched: the composition holds still while every tick in
+    // it turns.
+    const SPIN = 2 * Math.PI * ph;
+    const SHIM = 0.65;
     const n = cols * rows;
     const theta = new Float64Array(n);
     const mag = new Float64Array(n);
@@ -155,7 +181,8 @@ export const linefield = definePattern({
         const x = (c + 0.5) * sx, y = (r + 0.5) * sy;
         const [vx, vy] = field(x / S, y / S);
         const i = r * cols + c;
-        theta[i] = Math.atan2(vy, vx);
+        const t0 = Math.atan2(vy, vx);
+        theta[i] = t0 + SPIN + SHIM * (Math.sin(SPIN + 2 * t0) - Math.sin(2 * t0));
         mag[i] = Math.hypot(vx, vy);
         sum += mag[i]!;
       }
