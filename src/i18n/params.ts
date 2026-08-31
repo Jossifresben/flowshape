@@ -133,6 +133,7 @@ export const PARAMS: Record<string, Pair> = {
   'delaunay.mosaic': ['mosaic', 'mosaico'],
   'fabric.dots': ['dots', 'puntos'],
   'fabric.mesh': ['mesh', 'malla'],
+  'fabric.squares': ['squares', 'cuadrados'],
   'girih.strokes': ['strokes', 'trazos'],
   'girih.ribbons': ['ribbons', 'cintas'],
   'harmonograph.r23': ['2:3', '2:3'],
