@@ -48,7 +48,18 @@ function cardHref(id: string, lang: Lang): string {
 
 export function mountGallery(root: HTMLElement): void {
   const lang = currentLang();
-  const patterns = listPatterns().sort((a, b) => a.id.localeCompare(b.id));
+  // Ordered by FAMILY first — the same order the filter chips use — then by
+  // the name the reader actually SEES. Sorting by `id` put "Hyperbolic Weave"
+  // under h-for-hyperweave and "Nested Shafts" under n-for-nested, so the grid
+  // was alphabetical by a string nobody is shown: it read as random, and
+  // families interleaved. Grouping makes the unfiltered grid legible as
+  // clusters and makes the chips a way of zooming in on a block the reader can
+  // already see, rather than a way of discovering hidden structure.
+  const patterns = listPatterns().slice().sort((a, b) => {
+    const fa = FAMILY_ORDER.indexOf(a.family), fb = FAMILY_ORDER.indexOf(b.family);
+    if (fa !== fb) return fa - fb;
+    return patternName(a.id, lang).localeCompare(patternName(b.id, lang), lang);
+  });
   const families = FAMILY_ORDER.filter((f) => patterns.some((p) => p.family === f));
 
   let activeFamily: Family | 'all' = 'all';
@@ -118,11 +129,14 @@ export function mountGallery(root: HTMLElement): void {
   function renderGrid(): void {
     grid.innerHTML = '';
     const visible = patterns.filter((p) => activeFamily === 'all' || p.family === activeFamily);
-    // Counts reveals in the order they complete, so the wave follows the order
-    // thumbnails actually land. Capped so a card scrolled to much later does
-    // not inherit a long delay from everything that preceded it.
-    let revealed = 0;
+    // The cascade is keyed to each card's POSITION in the grid, not to the
+    // order its thumbnail happened to arrive. Reveal order is network luck —
+    // it produced a scatter that never read as a deliberate wave, which is
+    // what Jossi saw. Position gives the same top-left-to-bottom-right sweep
+    // every time, on any connection.
+    let index = 0;
     for (const def of visible) {
+      const cardIndex = index++;
       const card = document.createElement('a');
       card.className = 'gal-card';
       card.href = cardHref(def.id, lang);
@@ -156,7 +170,9 @@ export function mountGallery(root: HTMLElement): void {
         card.classList.add('gal-card-pending');
         const reveal = (): void => {
           if (!card.classList.contains('gal-card-pending')) return;
-          card.style.transitionDelay = `${Math.min(revealed++, 8) * 45}ms`;
+          // Capped so a card scrolled to much later does not inherit a long
+          // delay from everything above it.
+          card.style.transitionDelay = `${Math.min(cardIndex, 22) * 55}ms`;
           card.classList.remove('gal-card-pending');
         };
         if (img.complete) {

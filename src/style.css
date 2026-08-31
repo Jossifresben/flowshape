@@ -131,9 +131,9 @@ a.gal-chip { text-decoration: none; }
   display: block; color: inherit; text-decoration: none;
   /* The resting state is visible: only `.gal-card-pending`, added by script,
      hides a card. If the reveal never ran the grid would still be readable. */
-  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.6, 0.2, 1);
+  transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.2, 0.6, 0.2, 1);
 }
-.gal-card.gal-card-pending { opacity: 0; transform: translateY(8px); }
+.gal-card.gal-card-pending { opacity: 0; transform: translateY(14px); }
 @media (prefers-reduced-motion: reduce) {
   .gal-card { transition: none; }
   .gal-card.gal-card-pending { opacity: 1; transform: none; }
