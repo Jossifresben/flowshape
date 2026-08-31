@@ -19,7 +19,7 @@ En el disco de Poincaré —el mapa del plano hiperbólico sobre el que están d
 
 Este patrón dibuja un único paseo cerrado de tales geodésicas, y dos teoremas lo mantienen en orden. Primero, el paso δ se fuerza al entero coprimo con B más cercano, de modo que el paseo visita *todos* los B puntos de la frontera antes de cerrarse: una sola línea continua, garantizada por la aritmética y nunca por la suerte. Segundo, el conjunto de aristas del paseo se transforma en sí mismo al rotar, y la onda de la semilla —una perturbación de los ángulos exactamente (B/m)-periódica en el índice— recorta esa simetría plena a exactamente m pliegues. La simetría que ves está forzada por la construcción, no afinada.
 
-Un tope protege el aspecto: un paso cercano a B/2 uniría pares casi diametrales, cuyas geodésicas se aplanan en cuerdas rectas por el centro. El paso se mantiene por debajo de ~0,3·B, donde todo arco aún se curva de forma visible, así que la figura sigue siendo hiperbólica en cualquier valor que alcancen los controles. En movimiento, la figura entera precesa exactamente un paso de simetría por ciclo —la simetría m-fold hace de eso la identidad en el retorno— mientras la onda viaja una vez alrededor de su propio sector.
+Un tope protege el aspecto: un paso cercano a B/2 uniría pares casi diametrales, cuyas geodésicas se aplanan en cuerdas rectas por el centro. El paso se mantiene por debajo de ~0,25·B, donde todo arco aún se curva de forma visible, así que la figura sigue siendo hiperbólica en cualquier valor que alcancen los controles. En movimiento, la figura entera precesa exactamente un paso de simetría por ciclo —la simetría m-fold hace de eso la identidad en el retorno— mientras la onda viaja una vez alrededor de su propio sector.
 
 ## Parámetros
 

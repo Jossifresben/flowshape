@@ -39,7 +39,7 @@ import { mulberry32, deriveSeed } from '../core/prng';
  * which blows up as θ → π, so a step near B/2 joins near-diametral pairs
  * with arcs that are chords in all but name: the times-table look, not the
  * hyperbolic one. Measured as bulge/chord (the arc's maximum deviation from
- * its own chord over the chord length): 0.29 at δ/B = 0.25, 0.16 at 0.30,
+ * its own chord over the chord length): 0.21 at δ/B = 0.25, 0.16 at 0.30,
  * 0.08 at 0.40, 0.01 at 0.485 (the old default-B extreme). The slider's
  * whole 2..40 range is therefore mapped linearly onto 2..⌊0.25·B⌋ before the
  * coprime coercion — every value `randomize` can reach keeps the rim-hugging
@@ -80,9 +80,10 @@ export const hyperweave = definePattern({
   params: [
     { key: 'symmetry', kind: 'int', min: 3, max: 12, step: 1, default: 7, label: 'hyperweave.symmetry' },
     { key: 'grain', kind: 'int', min: 3, max: 9, step: 1, default: 4, label: 'hyperweave.grain' },
-    // Default 21 lands on δ = 6 at the default B = 35 (δ/B = 0.17, arc bulge
-    // 0.29 of its chord) — mid-density, so the beat events can step the walk
-    // both tighter and wider without any window thinning past the guards.
+    // Default 12 lands on δ = 3 at the default B = 28 (δ/B ≈ 0.11, arc bulge
+    // 0.36 of its chord) — the tight, rim-hugging end. At B = 28 the remap
+    // reaches exactly two lacings (δ 3 for wind 2..20, δ 5 from 21 up), so
+    // the beat event alternates them rather than sweeping a ladder.
     { key: 'wind', kind: 'int', min: 2, max: 40, step: 1, default: 12, label: 'hyperweave.wind' },
     { key: 'wobble', kind: 'float', min: 0, max: 0.5, step: 0.02, default: 0.22, label: 'hyperweave.wobble' },
     { key: 'layers', kind: 'int', min: 1, max: 6, step: 1, default: 3, label: 'hyperweave.layers' },
@@ -93,7 +94,7 @@ export const hyperweave = definePattern({
     const m = p['symmetry']!;
     const g = p['grain']!;
     const B = m * g;
-    // The wind cap (see the header): 2..40 remapped onto 2..⌊0.3·B⌋ so the
+    // The wind cap (see the header): 2..40 remapped onto 2..⌊0.25·B⌋ so the
     // arcs stay visibly hyperbolic at every reachable value.
     const deltaCap = Math.max(3, Math.floor(0.25 * B));
     const target = 2 + Math.round(((p['wind']! - 2) / (WIND_MAX - 2)) * (deltaCap - 2));

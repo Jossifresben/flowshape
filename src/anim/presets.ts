@@ -736,31 +736,34 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // events instead — a re-lacing that lands ON the beat reads as rhythm —
     // while the smooth axes (`wobble`, weight, scale) breathe between beats.
     //
-    // Pulse: the walk step. The sub-range 6..30 at steps 3 lands the three
-    // step windows on wind 6, 18, 30 → δ = 3, 4, 8 at the default B = 35;
-    // with the home window (the default wind 21 → δ = 6) that is a
-    // four-window cycle of four genuinely different lacings — tight rim
-    // engraving to open star — and no window repeats inside a cycle.
-    // Measured against the default still: worst window keeps 68% coverage /
-    // 58% ink (δ3), best 120% ink (δ8); nothing approaches the half-ink
-    // collapse line.
+    // Pulse: the walk step. At the default B = 28 the wind remap reaches
+    // exactly two lacings — δ = 3 (wind 2..20, the home δ at the default
+    // wind 12) and δ = 5 (wind 21..40) — so a many-step ladder would only
+    // repeat windows. steps 2 over 6..30 lands the step windows on wind 6
+    // (δ 3, the home lacing held) and wind 30 (δ 5, the open counter-
+    // lacing): the designed figure holds for four beats, the δ5 star
+    // answers for two, and both re-laces land on window boundaries.
+    // Measured against the default still: the δ5 window carries 133%
+    // coverage / 147% ink; nothing approaches the half-ink collapse line.
     { id: 'pulse', label: { en: 'Pulse', es: 'Pulso' }, routes: [
       { feature: 'bass', param: 'wobble', depth: 0.3 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
       { feature: 'level', param: 'size', depth: 0.08 },
-    ], event: { kind: 'step', param: 'wind', everyBeats: 2, steps: 3, from: 6, to: 30 } },
+    ], event: { kind: 'step', param: 'wind', everyBeats: 2, steps: 2, from: 6, to: 30 } },
     // Grain: the boundary density. A step multiplies B itself, which is a
     // bigger reconfiguration than a re-lacing, so it gets the section
-    // cadence (8 beats) rather than the pulse one. steps 3 over 4..7 gives
-    // windows at grain 4, 6, 7 (the midpoint 5.5 clamps to 6), so with the
-    // home grain 5 every window of the cycle is distinct: B = 28, 35, 42,
-    // 49 points. Windows measured at 82–135% of the default's ink, 88–104%
-    // coverage. The ripple deepens with the track's level under it.
+    // cadence (8 beats) rather than the pulse one. steps 3 over 5..7 gives
+    // windows at grain 5, 6, 7, so with the home grain 4 every window of
+    // the cycle is distinct: B = 28, 35, 42, 49 points. (The old 4..7
+    // range dates from home grain 5 — with home 4 its first window was
+    // the home figure again.) Windows measured at 132–168% of the
+    // default's ink, 117–131% coverage. The ripple deepens with the
+    // track's level under it.
     { id: 'grain', label: { en: 'Grain', es: 'Grano' }, routes: [
       { feature: 'level', param: 'wobble', depth: 0.35 },
       { feature: 'bright', param: 'strokeWidth', depth: 0.25 },
       { feature: 'mid', param: 'opacity', depth: 0.3 },
-    ], event: { kind: 'step', param: 'grain', everyBeats: 8, steps: 3, from: 4, to: 7 } },
+    ], event: { kind: 'step', param: 'grain', everyBeats: 8, steps: 3, from: 5, to: 7 } },
     // Ripple: no event — the figure the visitor designed, breathing only.
     // `wobble` is the seed ripple the intrinsic motion already rides, so
     // bass deepens the same shimmer; the arcs never lose the theorem.

@@ -19,7 +19,7 @@ In the Poincaré disk — the map of the hyperbolic plane that Escher's *Circle 
 
 This pattern draws one single closed walk of such geodesics, and two theorems keep it orderly. First, the step δ is coerced to the nearest integer coprime with B, so the walk is forced to visit *all* B boundary points before closing — one continuous line, guaranteed by arithmetic, never by luck. Second, the walk's edge set is carried onto itself by rotation, and the seed's ripple — a wave in the point angles that is exactly (B/m)-periodic in the point index — cuts that full symmetry down to exactly m-fold. The symmetry you see is forced by the construction, not tuned into it.
 
-One cap protects the look: a walk step near B/2 would join nearly diametral pairs, whose geodesics flatten into straight chords through the centre. The step is therefore held under ~0.3·B, where every arc still bows visibly, so the figure stays hyperbolic at every value the controls can reach. In motion the whole figure precesses by exactly one symmetry step per cycle — the m-fold symmetry makes that the identity at the wrap — while the ripple travels once around its own sector.
+One cap protects the look: a walk step near B/2 would join nearly diametral pairs, whose geodesics flatten into straight chords through the centre. The step is therefore held under ~0.25·B, where every arc still bows visibly, so the figure stays hyperbolic at every value the controls can reach. In motion the whole figure precesses by exactly one symmetry step per cycle — the m-fold symmetry makes that the identity at the wrap — while the ripple travels once around its own sector.
 
 ## Parameters
 

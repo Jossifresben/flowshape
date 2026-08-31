@@ -73,13 +73,15 @@ describe('hyperweave specifics', () => {
   });
 
   it('stays hyperbolic at every wind the slider can reach (the wind cap)', () => {
-    // The promotion fix: the walk step is capped at ⌊0.3·B⌋, because past it
-    // the geodesic radius tan(πδ/B) blows up and the arcs flatten into
-    // near-diametral chords — the times-table look. At δ/B = 0.3 the radius
-    // is tan(0.3π) ≈ 1.376·R; before the cap, wind 40 at the default B = 35
-    // reached δ 17 and radius ≈ 21·R (an arc flat to one part in a hundred).
-    // Every emitted arc radius must therefore stay under ~1.4·R, at every
-    // wind value randomize can draw.
+    // The promotion fix, tightened with Jossi's defaults: the walk step is
+    // capped at ⌊0.25·B⌋, because past it the geodesic radius tan(πδ/B)
+    // blows up and the arcs flatten into near-diametral chords — the
+    // times-table look. At δ/B = 0.25 the radius is tan(0.25π) = 1·R;
+    // before any cap, wind 40 at B = 35 reached δ 17 and radius ≈ 21·R (an
+    // arc flat to one part in a hundred). The bound keeps headroom over
+    // 1·R because the wobble ripple stretches individual gaps — the same
+    // stretch that forced the cap down from 0.3. Every emitted arc radius
+    // must stay under it at every wind value randomize can draw.
     const R = 600 * 0.46;
     for (let wind = 2; wind <= 40; wind++) {
       const ds = dsOf({ ...defaultParams(hyperweave), wind, layers: 1 }, 5);
