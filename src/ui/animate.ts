@@ -199,6 +199,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   function tuningRow(
     key: Parameters<typeof t>[0], min: number, max: number, step: number,
     get: () => number, set: (v: number) => void, fmt: (v: number) => string,
+    tip?: (v: number) => string,
   ): HTMLElement {
     const row = document.createElement('div');
     row.className = 'ctl-row';
@@ -213,24 +214,49 @@ export function mountAnimate(root: HTMLElement): () => void {
     const input = document.createElement('input');
     input.type = 'range';
     input.min = String(min); input.max = String(max); input.step = String(step);
-    const repaint = (): void => { input.value = String(get()); val.textContent = fmt(get()); };
+    const repaint = (): void => {
+      input.value = String(get());
+      val.textContent = fmt(get());
+      if (tip) input.title = tip(get());
+    };
     tuningRepaints.push(repaint);
     repaint();
     input.addEventListener('input', () => {
       set(Number(input.value));
       val.textContent = fmt(get());
+      if (tip) input.title = tip(get());
       pipeline?.setTuning(tuning);
       syncUrl();
     });
     row.append(head, input);
     return row;
   }
-  const ms = (v: number): string => `${Math.round(v)} MS`;
   const times = (v: number): string => `×${v.toFixed(2)}`;
-  const attackRow = tuningRow('anim.attack', 5, 200, 1,
-    () => tuning.attackMs, (v) => { tuning.attackMs = v; }, ms);
-  const releaseRow = tuningRow('anim.release', 50, 1500, 10,
-    () => tuning.releaseMs, (v) => { tuning.releaseMs = v; }, ms);
+  const pct = (v: number): string => `${Math.round(v)}%`;
+
+  // Attack and release are time constants: `EnvelopeFollower` uses them as τ
+  // in y += (x−y)·(1−e^(−dt/τ)), so a SMALLER number tracks the signal
+  // faster. Exposed raw, both sliders therefore ran backwards under a
+  // heading that reads MUSIC RESPONSE — drag right for more, get less.
+  //
+  // So the panel shows the perceptual quantity and keeps the milliseconds in
+  // the tooltip: SNAP rises as attack shortens, SMOOTHING rises as release
+  // lengthens, and both now mean "more of the named thing" rightward. The
+  // URL still carries `aatk`/`arel` in milliseconds, so links already shared
+  // keep resolving to the same sound — this is presentation, not data.
+  const ATK_SLOW = 200, ATK_FAST = 5;   // ms at 0% and 100% snap
+  const REL_TIGHT = 50, REL_LOOSE = 1500; // ms at 0% and 100% smoothing
+  const snapToMs = (v: number): number => Math.round(ATK_SLOW - (v / 100) * (ATK_SLOW - ATK_FAST));
+  const msToSnap = (ms: number): number => Math.round(((ATK_SLOW - ms) / (ATK_SLOW - ATK_FAST)) * 100);
+  const smoothToMs = (v: number): number => Math.round(REL_TIGHT + (v / 100) * (REL_LOOSE - REL_TIGHT));
+  const msToSmooth = (ms: number): number => Math.round(((ms - REL_TIGHT) / (REL_LOOSE - REL_TIGHT)) * 100);
+
+  const attackRow = tuningRow('anim.snap', 0, 100, 1,
+    () => msToSnap(tuning.attackMs), (v) => { tuning.attackMs = snapToMs(v); }, pct,
+    (v) => `${snapToMs(v)} ms attack`);
+  const releaseRow = tuningRow('anim.smoothing', 0, 100, 1,
+    () => msToSmooth(tuning.releaseMs), (v) => { tuning.releaseMs = smoothToMs(v); }, pct,
+    (v) => `${smoothToMs(v)} ms release`);
   const bassRow = tuningRow('anim.bass', 0, 2, 0.05,
     () => tuning.bassGain, (v) => { tuning.bassGain = v; }, times);
   const midRow = tuningRow('anim.mid', 0, 2, 0.05,
