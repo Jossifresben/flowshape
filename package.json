@@ -1,7 +1,7 @@
 {
   "name": "flowshape",
   "private": true,
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Turn mathematics into art: 35 deterministic pattern generators, composed into print-ready posters or driven by audio. Pure SVG, in the browser.",
   "license": "MIT",
   "author": "Jose \"Jossi\" Fresco Benaim (https://orcid.org/0009-0000-2026-0836)",
