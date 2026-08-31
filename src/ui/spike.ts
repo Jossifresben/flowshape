@@ -91,6 +91,18 @@ const SPIKE_PRESETS: Record<string, AnimPreset[]> = {
     ] },
   ],
   [nodegarden.id]: [
+    // Drift first: Jossi's pick as the default preset (2026-08-31).
+    // Drift: drift (0..30) displaces points along the noise field, but the
+    // overlap guard clamps jitter+drift to `maxDisp` (≈9px at defaults)
+    // regardless of the nominal value, so this axis self-limits — swing 12
+    // (depth 0.4) measured only 471 -> 453 children, well inside safe
+    // territory. edgeFade softens the boundary fade on bright passages
+    // (timbre, per the bass/mid/high/level/bright convention).
+    { id: 'drift', label: { en: 'Drift', es: 'Deriva' }, routes: [
+      { feature: 'mid', param: 'drift', depth: 0.40 },
+      { feature: 'bright', param: 'edgeFade', depth: 0.30 },
+      { feature: 'level', param: 'opacity', depth: 0.15 },
+    ] },
     // Bloom: radius sits at 64.5 with cell=72 — right at the graph's own
     // percolation threshold (edges: 471 total children at default, jumping
     // past 1000 by swing ~13; even swing 1 moves it noticeably). A full
@@ -105,17 +117,7 @@ const SPIKE_PRESETS: Record<string, AnimPreset[]> = {
       { feature: 'high', param: 'strokeWidth', depth: 0.25 },
       { feature: 'level', param: 'size', depth: 0.08 },
     ] },
-    // Drift: drift (0..30) displaces points along the noise field, but the
-    // overlap guard clamps jitter+drift to `maxDisp` (≈9px at defaults)
-    // regardless of the nominal value, so this axis self-limits — swing 12
-    // (depth 0.4) measured only 471 -> 453 children, well inside safe
-    // territory. edgeFade softens the boundary fade on bright passages
-    // (timbre, per the bass/mid/high/level/bright convention).
-    { id: 'drift', label: { en: 'Drift', es: 'Deriva' }, routes: [
-      { feature: 'mid', param: 'drift', depth: 0.40 },
-      { feature: 'bright', param: 'edgeFade', depth: 0.30 },
-      { feature: 'level', param: 'opacity', depth: 0.15 },
-    ] },
+
   ],
   [interference.id]: [
     // Braid: amplitude (2..200) is the pattern's own drama knob — bass
