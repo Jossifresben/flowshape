@@ -101,13 +101,13 @@ const REST_DY = 0;
  *  fraction of `cell`. This is what makes "dots never overlap" a property
  *  of the construction rather than a lucky default — see `maxDisp` below. */
 const MIN_GAP_FRAC = 0.08;
-/** Below this many px of rim-to-rim gap, a line reads as touching dots
- *  anyway — skip drawing the stub rather than paint a few-pixel sliver. */
 /** How much brighter a NEWLY-FORMED edge is than one already in the design. */
 const EDGE_VIVID = 1.35;
 /** And how much heavier. Applied only to `born` edges — see GardenEdge.born. */
 const EDGE_BORN_WIDTH = 1.6;
 
+/** Below this many px of rim-to-rim gap, a line reads as touching dots
+ *  anyway — skip drawing the stub rather than paint a few-pixel sliver. */
 const MIN_DRAWABLE_GAP_PX = 2;
 /** Cap on the neighbour-search half-width (in grid cells), so a pathological
  *  param corner (max radius + max jitter + max drift, min cell) can't blow
@@ -162,7 +162,12 @@ export function computeGarden(p: Params, seed: number, size: Size, ph: number): 
   const dyOrbit = ORBIT_R * Math.sin(2 * Math.PI * ph);
 
   const points: GardenPoint[] = new Array(cols * rows);
-  const rest: GardenPoint[] = new Array(cols * rows);
+  // Jitter is kept per point so the phase-0 reference position can be
+  // resolved lazily: only edge endpoints ever consult it, so computing it
+  // for every lattice point doubled the noise cost for nothing.
+  const jitX = new Float64Array(cols * rows);
+  const jitY = new Float64Array(cols * rows);
+  const restCache: (GardenPoint | undefined)[] = new Array(cols * rows);
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
       const gx = ox + i * cell, gy = oy + j * cell;
@@ -177,18 +182,8 @@ export function computeGarden(p: Params, seed: number, size: Size, ph: number): 
         dx *= scale; dy *= scale;
       }
       points[j * cols + i] = { x: gx + dx, y: gy + dy, i, j };
-      // The same node at phase 0 — same jitter, same drift amplitude, only
-      // the orbit removed — so a comparison isolates what the phase motion
-      // did rather than what the audio did to `drift`.
-      const rnx = noiseX(gx * freq + REST_DX, gy * freq + REST_DY);
-      const rny = noiseY(gx * freq + REST_DX, gy * freq + REST_DY);
-      let rdx = jx + drift * rnx, rdy = jy + drift * rny;
-      const rmag = Math.hypot(rdx, rdy);
-      if (rmag > maxDisp) {
-        const rs = maxDisp / (rmag || 1);
-        rdx *= rs; rdy *= rs;
-      }
-      rest[j * cols + i] = { x: gx + rdx, y: gy + rdy, i, j };
+      jitX[j * cols + i] = jx;
+      jitY[j * cols + i] = jy;
     }
   }
 
@@ -201,6 +196,27 @@ export function computeGarden(p: Params, seed: number, size: Size, ph: number): 
   // cell count and capped for safety.
   const reach = radius + 2 * maxDisp;
   const W = Math.min(MAX_SEARCH_W, Math.max(1, Math.ceil(reach / cell)));
+
+  // The same node at phase 0 — same jitter, same drift amplitude, only the
+  // orbit removed — so a comparison isolates what the phase motion did
+  // rather than what the audio did to `drift`. Memoised per point.
+  const restOf = (idx: number): GardenPoint => {
+    const hit = restCache[idx];
+    if (hit) return hit;
+    const pi = idx % cols, pj = (idx - pi) / cols;
+    const gx = ox + pi * cell, gy = oy + pj * cell;
+    const rnx = noiseX(gx * freq + REST_DX, gy * freq + REST_DY);
+    const rny = noiseY(gx * freq + REST_DX, gy * freq + REST_DY);
+    let rdx = jitX[idx]! + drift * rnx, rdy = jitY[idx]! + drift * rny;
+    const rmag = Math.hypot(rdx, rdy);
+    if (rmag > maxDisp) {
+      const rs = maxDisp / (rmag || 1);
+      rdx *= rs; rdy *= rs;
+    }
+    const r = { x: gx + rdx, y: gy + rdy, i: pi, j: pj };
+    restCache[idx] = r;
+    return r;
+  };
 
   const edges: GardenEdge[] = [];
   const fadeStart = radius * (1 - edgeFade);
@@ -219,7 +235,7 @@ export function computeGarden(p: Params, seed: number, size: Size, ph: number): 
           const dist = Math.hypot(pa.x - pb.x, pa.y - pb.y);
           if (dist >= radius) continue;
           const opacity = dist <= fadeStart ? 1 : 1 - (dist - fadeStart) / fadeSpan;
-          const ra = rest[a]!, rb = rest[b]!;
+          const ra = restOf(a), rb = restOf(b);
           const born = Math.hypot(rb.x - ra.x, rb.y - ra.y) >= radius;
           edges.push({ a, b, dist, rimGap: dist - 2 * dotSize, opacity, born });
         }

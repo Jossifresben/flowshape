@@ -138,8 +138,10 @@ export const interference = definePattern({
     // phase 1 literally phase 0 before the multiply, so the wrap is
     // bit-identical, not just numerically close.
     const ph = (p['phase'] ?? 0) % 1;
-    const rates = [1, 2, 3];
-    const phi = phi0.map((base, i) => base + 2 * Math.PI * rates[i]! * ph);
+    // Rate i+1 per source, derived from the index: a fixed [1, 2, 3] was
+    // safe only while `sources` capped at 3 in the param table — one more
+    // source would have read undefined and NaN'd every vertex silently.
+    const phi = phi0.map((base, i) => base + 2 * Math.PI * (i + 1) * ph);
 
     const W = size.w - 2 * MARGIN;
     const usableHeight = size.h - 2 * MARGIN;

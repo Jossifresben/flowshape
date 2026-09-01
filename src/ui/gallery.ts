@@ -18,8 +18,16 @@ export const FAMILY_LABELS: Record<Family, string> = Object.fromEntries(
   Object.entries(FAMILY_NAMES).map(([f, pair]) => [f, pair[0]]),
 ) as Record<Family, string>;
 
-/** Canonical family display order for the filter chips. */
-const FAMILY_ORDER: Family[] = ['points', 'curves', 'fields', 'tilings', 'isometric', 'growth'];
+/** Canonical family display order, as a rank per family. A `Record<Family,
+ *  number>` rather than an array on purpose: widening the `Family` union
+ *  without ranking the new member is then a compile error, where an array
+ *  silently let an unlisted family sort to indexOf's -1 — ahead of every
+ *  known family — with no filter chip able to reach it. */
+const FAMILY_RANK: Record<Family, number> = {
+  points: 0, curves: 1, fields: 2, tilings: 3, isometric: 4, growth: 5,
+};
+const FAMILY_ORDER: Family[] = (Object.keys(FAMILY_RANK) as Family[])
+  .sort((a, b) => FAMILY_RANK[a] - FAMILY_RANK[b]);
 
 /** The curated gallery-sample state for a pattern (its `PRESETS` entry, or
  *  bare defaults when the pattern has none). Carries the reader's language so
@@ -56,7 +64,7 @@ export function mountGallery(root: HTMLElement): void {
   // clusters and makes the chips a way of zooming in on a block the reader can
   // already see, rather than a way of discovering hidden structure.
   const patterns = listPatterns().slice().sort((a, b) => {
-    const fa = FAMILY_ORDER.indexOf(a.family), fb = FAMILY_ORDER.indexOf(b.family);
+    const fa = FAMILY_RANK[a.family], fb = FAMILY_RANK[b.family];
     if (fa !== fb) return fa - fb;
     return patternName(a.id, lang).localeCompare(patternName(b.id, lang), lang);
   });

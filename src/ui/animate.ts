@@ -514,7 +514,7 @@ export function mountAnimate(root: HTMLElement): () => void {
    *  uses — no colour logic is duplicated or forked for the stage.
    *  With the toggle off this returns the exact `pal` computed once at
    *  mount, so output is byte-identical to before colour existed. */
-  function paletteFor(features: FeatureFrame): Palette {
+  function paletteFor(features: FeatureFrame, dtMs: number): Palette {
     if (!colourOn) return pal;
     const route = preset.colour ?? DEFAULT_COLOUR_ROUTE;
     // The hue feature goes through a running RANGE, not its raw value. The
@@ -525,7 +525,9 @@ export function mountAnimate(root: HTMLElement): () => void {
     // Normalizing against the range the material actually occupies lets a dark
     // instrument sweep the same arc a bright one does. Chroma keeps the raw
     // feature: it IS an energy, and silence must still resolve to monochrome.
-    const hueFeature = hueRange.process(clamp01(features[route.hue.feature]), 1000 / 60);
+    // Real frame delta, not an assumed 60fps: the governor halves to 30fps
+    // under load, and a claimed dt would halve the normalizer's adaptation.
+    const hueFeature = hueRange.process(clamp01(features[route.hue.feature]), dtMs);
     const hue = route.hue.from + (route.hue.to - route.hue.from) * hueFeature;
     // level → chroma, scaled by intensity: silence (feature 0) or intensity
     // 0 both resolve to chroma 0 — plain monochrome ink either way.
@@ -566,7 +568,7 @@ export function mountAnimate(root: HTMLElement): () => void {
       def: def!, baseParams, baseSeed: state.seed, preset, intensity,
       features, phase: phaseAt(tSec, bpm), beatIndex,
     });
-    const framePal = paletteFor(features);
+    const framePal = paletteFor(features, dtMs);
 
     if (def!.heavy && workerClient) {
       // Beat-ahead double buffer: request the NEXT event window's tree early,
