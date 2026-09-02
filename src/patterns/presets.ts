@@ -43,6 +43,20 @@ export const PRESETS: Record<string, Preset> = {
       size: 1,
     },
   },
+  nodegarden: {
+    seed: 1,
+    params: {
+      cell: 72,
+      jitter: 0.16,
+      radius: 75,
+      drift: 15,
+      dotSize: 15,
+      edgeFade: 0.05,
+      strokeWidth: 1.65,
+      opacity: 0.85,
+      size: 0.91,
+    },
+  },
   roselattice: {
     seed: 1,
     params: {
