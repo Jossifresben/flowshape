@@ -104,7 +104,7 @@ export function hopfFibers(p: Params, seed: number): { fibers: HopfFiber[]; rExt
   const dPole = p['pole']!;
   const tilt = p['tilt']!;
   const ph = (p['phase'] ?? 0) % 1;
-  const rnd = mulberry32(deriveSeed(seed, 'hopf'));
+  const rnd = mulberry32(deriveSeed(seed, 'villarceau'));
 
   // Latitude band: colatitudes θ' from the core point −i, evenly spaced
   // across [THETA_LO, THETA_LO + nest]. The seed jitters each latitude
@@ -177,23 +177,23 @@ export function hopfFibers(p: Params, seed: number): { fibers: HopfFiber[]; rExt
   return { fibers, rExt };
 }
 
-export const hopf = definePattern({
-  id: 'hopf',
+export const villarceau = definePattern({
+  id: 'villarceau',
   family: 'curves',
   phase: 1,
   heavy: false,
   usesSeed: true,
   anim: { continuous: ['spread', 'nest', 'pole', 'tilt', 'view', 'strokeWidth', 'opacity', 'size'], usesPhase: true },
   params: [
-    { key: 'latitudes', kind: 'int', min: 1, max: 7, step: 1, default: 3, label: 'hopf.latitudes' },
-    { key: 'fibers', kind: 'int', min: 3, max: 48, step: 1, default: 28, label: 'hopf.fibers' },
-    { key: 'spread', kind: 'float', min: 0.05, max: 1, step: 0.01, default: 0.3, label: 'hopf.spread' },
-    { key: 'nest', kind: 'float', min: 0.2, max: 1.8, step: 0.02, default: 1.0, label: 'hopf.nest' },
-    { key: 'pole', kind: 'float', min: 1, max: 1.6, step: 0.01, default: 1, label: 'hopf.pole' },
-    { key: 'tilt', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.25, label: 'hopf.tilt' },
-    { key: 'view', kind: 'float', min: 0, max: 1.5, step: 0.01, default: 0.6, label: 'hopf.view' },
-    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 1, label: 'hopf.strokeWidth' },
-    { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.85, label: 'hopf.opacity' },
+    { key: 'latitudes', kind: 'int', min: 1, max: 7, step: 1, default: 3, label: 'villarceau.latitudes' },
+    { key: 'fibers', kind: 'int', min: 3, max: 48, step: 1, default: 28, label: 'villarceau.fibers' },
+    { key: 'spread', kind: 'float', min: 0.05, max: 1, step: 0.01, default: 0.3, label: 'villarceau.spread' },
+    { key: 'nest', kind: 'float', min: 0.2, max: 1.8, step: 0.02, default: 1.0, label: 'villarceau.nest' },
+    { key: 'pole', kind: 'float', min: 1, max: 1.6, step: 0.01, default: 1, label: 'villarceau.pole' },
+    { key: 'tilt', kind: 'float', min: 0, max: 1, step: 0.01, default: 0.25, label: 'villarceau.tilt' },
+    { key: 'view', kind: 'float', min: 0, max: 1.5, step: 0.01, default: 0.6, label: 'villarceau.view' },
+    { key: 'strokeWidth', kind: 'float', min: 0.1, max: 2, step: 0.05, default: 1, label: 'villarceau.strokeWidth' },
+    { key: 'opacity', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.85, label: 'villarceau.opacity' },
   ],
   generate(p, seed, size: Size) {
     const { fibers, rExt } = hopfFibers(p, seed);

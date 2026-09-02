@@ -53,17 +53,17 @@ function route(): void {
   lastRouteKey = routeKey;
   cleanup?.();
   cleanup = null;
-  // DEV-only spike stage for the unregistered `hopf` candidate. Rewrites to a
+  // DEV-only spike stage for the unregistered `villarceau` candidate. Rewrites to a
   // real animate hash so `mountAnimate` reads normal state; the import inside
-  // `ui/hopf-spike` is what registers the pattern, and only in dev.
-  // `#/dev/hopf` is only a convenience entry point: it redirects to a real
-  // `#/a/hopf` hash and the ORDINARY animate route takes it from there. The
+  // `ui/villarceau-spike` is what registers the pattern, and only in dev.
+  // `#/dev/villarceau` is only a convenience entry point: it redirects to a real
+  // `#/a/villarceau` hash and the ORDINARY animate route takes it from there. The
   // pattern is put in the registry by `registerSpikes()` at startup (DEV
   // only), not by this branch — an earlier version carried a `dev=hopf`
   // marker in the query instead, and `syncUrl` stripped it on the first
   // param write, so a refresh bounced to the gallery.
-  if (import.meta.env.DEV && location.hash.startsWith('#/dev/hopf')) {
-    location.replace('#/a/hopf?v=1&seed=1&stage=11');
+  if (import.meta.env.DEV && location.hash.startsWith('#/dev/villarceau')) {
+    location.replace('#/a/villarceau?v=1&seed=1&stage=11');
     return;
   }
   if (import.meta.env.DEV && location.hash === '#/dev/fidelity') {
@@ -134,7 +134,7 @@ window.addEventListener(LANG_EVENT, route);
 // costs a microtask in dev and nothing at all in production, where
 // `import.meta.env.DEV` is statically false and the branch is dropped.
 if (import.meta.env.DEV) {
-  void import('./ui/hopf-spike').then((m) => { m.registerSpikes(); route(); });
+  void import('./ui/villarceau-spike').then((m) => { m.registerSpikes(); route(); });
 } else {
   route();
 }

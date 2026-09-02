@@ -1,21 +1,21 @@
 /**
- * DEV-only: `#/dev/hopf` — the unregistered `hopf` spike on the REAL animate
+ * DEV-only: `#/dev/villarceau` — the unregistered `villarceau` spike on the REAL animate
  * stage, with the DEMO tracks, so it can be judged against music before any
  * decision to promote it.
  *
  * The module is imported HERE and nowhere else. `definePattern` registers on
- * import, so this file is the only thing that puts `hopf` in the registry —
+ * import, so this file is the only thing that puts `villarceau` in the registry —
  * `src/patterns/index.ts` does not know it, which keeps it out of the gallery,
  * the worker manifest and the production bundle. The route is gated on
  * `import.meta.env.DEV`, so this module is never reachable in a build.
  *
  * Presets live here too, for the same reason: `PRESETS_BY_PATTERN` is
- * untouched, and `presetsFor('hopf')` returns [] in production. They are
+ * untouched, and `presetsFor('villarceau')` returns [] in production. They are
  * provisional — routes are on measured-smooth structural axes only, with the
  * chaotic ints (`latitudes`, `fibers`) left for beat events, per the house
  * taxonomy. Swings are stated so promotion can reuse or revise them.
  */
-import { hopf } from '../patterns/hopf';
+import { villarceau } from '../patterns/villarceau';
 import type { AnimPreset } from '../anim/presets';
 import { PRESETS_BY_PATTERN } from '../anim/presets';
 
@@ -42,8 +42,8 @@ const SPIKE_PRESETS: AnimPreset[] = [
 
 /** Puts the spike pattern and its provisional presets in the registry.
  *  Called once at startup from `main.ts`, DEV only. Importing this module is
- *  what registers `hopf` — `definePattern` runs on import — so nothing else
+ *  what registers `villarceau` — `definePattern` runs on import — so nothing else
  *  may import it. */
 export function registerSpikes(): void {
-  PRESETS_BY_PATTERN[hopf.id] = SPIKE_PRESETS;
+  PRESETS_BY_PATTERN[villarceau.id] = SPIKE_PRESETS;
 }
