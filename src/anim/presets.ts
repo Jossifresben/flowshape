@@ -186,11 +186,16 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // `amplitude` at depth 0.65 swung 37.7 px on a 16 px default, so at 46
     // lines over the frame the waves overlapped into a single band. 0.35 is
     // 20 px — the sweep still doubles, and the lines stay legible.
+    // `freqStart` (0..20, default 1) was declared continuous and never
+    // routed — the low end of the sweep sat fixed while `freqEnd` did all
+    // the work. depth 0.15, swing 3 (1 -> 4) measured coverage/ink/elements
+    // unchanged at the extreme (46 lines throughout) — the whole chirp
+    // shifts upward instead of only its far end stretching.
     { id: 'wave', label: { en: 'Wave', es: 'Onda' }, routes: [
       { feature: 'bass', param: 'amplitude', depth: 0.35 },
       { feature: 'mid', param: 'freqEnd', depth: 0.2 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
-      { feature: 'level', param: 'size', depth: 0.08 },
+      { feature: 'bright', param: 'freqStart', depth: 0.15 },
     ] },
     { id: 'voice', label: { en: 'Voice', es: 'Voz' }, routes: [
       { feature: 'bright', param: 'freqEnd', depth: 0.3 },
@@ -605,10 +610,19 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'mid', param: 'ribbonWidth', depth: 0.25 },
       { feature: 'level', param: 'size', depth: 0.08 },
     ], event: { kind: 'flip', param: 'junctions', everyBeats: 2 } },
+    // `gapScale` (0.8..2.5, default 1.2) was declared continuous and never
+    // routed anywhere in this pattern — every preset spent its third slot on
+    // `size`. It only reads while `junctions` is 1 (see the param's
+    // dependsOn), which `lattice` never flips, so it's live for the whole
+    // preset here, unlike in `weave` where the junctions flip would leave it
+    // dead half the time. It's the gap cut at every crossing, so widening it
+    // opens the weave's negative space rather than changing weight or scale.
+    // depth 0.2, swing 0.34 (1.2 -> 1.54) measured 100% coverage / 99% ink /
+    // 100% elements at the extreme.
     { id: 'lattice', label: { en: 'Lattice', es: 'Celosía' }, routes: [
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
       { feature: 'bass', param: 'ringScale', depth: 0.2 },
-      { feature: 'level', param: 'size', depth: 0.08 },
+      { feature: 'mid', param: 'gapScale', depth: 0.2 },
     ], event: { kind: 'step', param: 'cell', everyBeats: 4, steps: 4, from: 30, to: 54 } },
   ],
   isoweave: [
@@ -623,10 +637,16 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'mid', param: 'armLength', depth: 0.2 },
       { feature: 'level', param: 'size', depth: 0.08 },
     ], event: { kind: 'step', param: 'stagger', everyBeats: 2, steps: 4 } },
+    // `beamWidth` (0.15..0.7, default 0.36) was declared continuous and
+    // never routed — both presets spent their third slot on `size`. It's the
+    // beam's own square section, so thickening it is the interlock's own
+    // geometry filling in, not a stroke-weight change. depth 0.15, swing
+    // 0.0825 (0.36 -> 0.4425) measured 100% coverage / 120% ink / 100%
+    // elements at the extreme.
     { id: 'shift', label: { en: 'Shift', es: 'Cambia' }, routes: [
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
       { feature: 'bass', param: 'armLength', depth: 0.25 },
-      { feature: 'level', param: 'size', depth: 0.08 },
+      { feature: 'mid', param: 'beamWidth', depth: 0.15 },
     ], event: { kind: 'step', param: 'unit', everyBeats: 4, steps: 3 } },
   ],
   diffgrowth: [
@@ -725,11 +745,16 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // `breathe` is the amplitude axis the intrinsic motion already rides,
     // so bass pushes the same swell the phase flow produces; `depth` on
     // brightness makes the over/under contrast sharpen on bright passages.
+    // The preset is named after `tumble` (0..1.4, default 0.46) but never
+    // routed it: it's the knot's own roll axis (rotates the whole braid
+    // about its own centre) and was sitting idle behind a `size` cosmetic.
+    // depth 0.2, swing 0.28 (0.46 -> 0.74) measured 105% coverage / 90% ink
+    // / 100% elements at the extreme — the knot rolls, it doesn't thin.
     { id: 'tumble', label: { en: 'Tumble', es: 'Voltereta' }, routes: [
       { feature: 'bass', param: 'breathe', depth: 0.4 },
       { feature: 'bright', param: 'depth', depth: 0.25 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
-      { feature: 'level', param: 'size', depth: 0.1 },
+      { feature: 'mid', param: 'tumble', depth: 0.2 },
     ] },
     { id: 'deep', label: { en: 'Deep', es: 'Fondo' }, routes: [
       { feature: 'level', param: 'depth', depth: 0.45 },
@@ -793,8 +818,13 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // 0.55 — the curl-wave bending nearly doubles on sustained mids.
     // high→warp (0..1, swing 0.20) bends the domain lattice on fine detail.
     // The grid is fixed (1706 strokes at 1920x1080, verified unchanged
-    // across every route) — only orientation and the |V|-driven opacity
-    // move. Beat event: `vortices` is chaotic (re-seats the whole vortex
+    // across every route) — only orientation, segment length and the
+    // |V|-driven opacity move. `strokeLen` (0.3..1.6, default 0.85) was
+    // declared continuous and never routed, its slot spent on `size`
+    // instead: level->strokeLen at depth 0.15 (swing 0.195, 0.85 -> 1.045)
+    // measured 101% coverage / 123% ink / 100% elements at the extreme —
+    // the strokes themselves lengthen on sustained loudness, the grid stays
+    // put. Beat event: `vortices` is chaotic (re-seats the whole vortex
     // seed stream — NEVER routed), so it steps as a section change every
     // 8 beats through 4..8 (home = the designed 6; the fixed grid means
     // the frame-emptying guard passes trivially — every window draws the
@@ -803,7 +833,7 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'bass', param: 'swirl', depth: 0.20 },
       { feature: 'mid', param: 'waviness', depth: 0.25 },
       { feature: 'high', param: 'warp', depth: 0.20 },
-      { feature: 'level', param: 'size', depth: 0.08 },
+      { feature: 'level', param: 'strokeLen', depth: 0.15 },
     ], event: { kind: 'step', param: 'vortices', everyBeats: 8, steps: 4, from: 4, to: 8 } },
     // Ripple: waviness (curl-wave amplitude, 0..1) bends the field's broad
     // S-curves; warp (0..1) is the domain pre-distortion. Both default well
@@ -824,10 +854,18 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // (depth 0.4) measured only 471 -> 453 children, well inside safe
     // territory. edgeFade softens the boundary fade on bright passages
     // (timbre, per the bass/mid/high/level/bright convention).
+    // `dotSize` (2..32, default 24) was declared continuous and never
+    // routed — replacing the `opacity` slot here (opacity is already the
+    // pattern's own overlap-guard input via drift, so a second overlap-
+    // sensitive axis in the same preset would compound; dotSize instead
+    // reads independently). depth 0.15, swing 4.5 (24 -> 28.5) measured
+    // coverage 100% / ink 141% / elements 86% at the extreme (dots
+    // thicken and some rims fall below MIN_GAP and drop, same texture
+    // the pattern already produces by hand at larger dotSize values).
     { id: 'drift', label: { en: 'Drift', es: 'Deriva' }, routes: [
       { feature: 'mid', param: 'drift', depth: 0.40 },
       { feature: 'bright', param: 'edgeFade', depth: 0.30 },
-      { feature: 'level', param: 'opacity', depth: 0.15 },
+      { feature: 'high', param: 'dotSize', depth: 0.15 },
     ] },
     // Bloom: radius sits at 64.5 with cell=72 — right at the graph's own
     // percolation threshold (edges: 471 total children at default, jumping
@@ -836,12 +874,16 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // the pattern is built on, so this route uses a deliberately tiny depth
     // (0.03, swing 3.78) — measured 471 -> 597 children (+27%) at the full
     // extreme, a visible "bloom" of new edges on a bass hit without ever
-    // reaching the dense-mesh look. strokeWidth/size are ordinary swings on
-    // axes with no such sensitivity.
+    // reaching the dense-mesh look. `jitter` (0..0.5, default 0.1) was
+    // declared continuous and never routed, its slot spent on `size`
+    // instead; unlike `drift` it isn't used elsewhere in this preset, so it
+    // doesn't compound against the same maxDisp clamp. depth 0.2, swing 0.1
+    // (0.1 -> 0.2) measured coverage 99% / ink 100% / elements 114% at the
+    // extreme — the lattice trembles rather than displacing wholesale.
     { id: 'bloom', label: { en: 'Bloom', es: 'Florece' }, routes: [
       { feature: 'bass', param: 'radius', depth: 0.03 },
       { feature: 'high', param: 'strokeWidth', depth: 0.25 },
-      { feature: 'level', param: 'size', depth: 0.08 },
+      { feature: 'mid', param: 'jitter', depth: 0.2 },
     ] },
   ],
   interference: [
