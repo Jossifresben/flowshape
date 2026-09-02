@@ -1,5 +1,5 @@
 {
-  "title": "flowshape: 35 deterministic pattern generators for print-ready and audio-reactive generative art",
+  "title": "flowshape: 36 deterministic pattern generators for print-ready and audio-reactive generative art",
   "upload_type": "software",
   "access_right": "open",
   "license": "MIT",
@@ -12,7 +12,7 @@
       "orcid": "0009-0000-2026-0836"
     }
   ],
-  "description": "<p><strong>flowshape</strong> is a free, open-source web application that turns mathematics into art. It ships <strong>35 deterministic pattern generators</strong> &mdash; Voronoi meshes, Truchet tilings, flow fields, phyllotaxis spirals, isometric voxel forms, diffusion-limited growth and more &mdash; with every parameter exposed to the reader.</p><p>Four outputs share one generator core:</p><ul><li><strong>Print.</strong> Export the bare pattern as SVG or PNG at any paper size. The SVG opens cleanly in Figma, Illustrator, Inkscape or Canva.</li><li><strong>Compose.</strong> Set the pattern into a designed sheet &mdash; artwork field, title block, parameter table, accent mark &mdash; and browse validated poster layouts. Layouts are data records, not code paths.</li><li><strong>Motion.</strong> Drive the same pattern with audio, from a file or the microphone, on a 16:9, 9:16 or 1:1 stage, and record the result as a video file.</li><li><strong>Keep.</strong> Save any design, poster or animation to the browser and return to it later &mdash; renaming, deleting, or exporting the whole collection as a file. A curated gallery of selected work sits alongside it.</li></ul><p>Two properties make the work citable rather than merely interactive. First, <strong>the URL is the state</strong>: pattern id, every parameter, seed, colour and output format are encoded in the address bar, so the same link always renders the same artwork, byte for byte. There is no backend and no account: a link is the whole document. Work worth keeping is saved in the reader&rsquo;s own browser and can be exported as a file, so nothing is held on a server and nothing is lost when one goes away. Second, <strong>the mathematics and the source are both on the page</strong>: every pattern exposes the formula that draws it, a plain-language reading of that formula in English and Spanish, a note on what each parameter does, a citation to the source literature, and the generator's own unedited source.</p><p>Implemented in TypeScript as a pure-SVG static site with no runtime dependencies. Live at <a href=\"https://flowshape.art\">flowshape.art</a>; source code, issue tracker and full commit history at <a href=\"https://github.com/Jossifresben/flowshape\">github.com/Jossifresben/flowshape</a>. Each deposit archives the corresponding tagged release of that repository.</p>",
+  "description": "<p><strong>flowshape</strong> is a free, open-source web application that turns mathematics into art. It ships <strong>36 deterministic pattern generators</strong> &mdash; Voronoi meshes, Truchet tilings, flow fields, phyllotaxis spirals, isometric voxel forms, diffusion-limited growth and more &mdash; with every parameter exposed to the reader.</p><p>Four outputs share one generator core:</p><ul><li><strong>Print.</strong> Export the bare pattern as SVG or PNG at any paper size. The SVG opens cleanly in Figma, Illustrator, Inkscape or Canva.</li><li><strong>Compose.</strong> Set the pattern into a designed sheet &mdash; artwork field, title block, parameter table, accent mark &mdash; and browse validated poster layouts. Layouts are data records, not code paths.</li><li><strong>Motion.</strong> Drive the same pattern with audio, from a file or the microphone, on a 16:9, 9:16 or 1:1 stage, and record the result as a video file.</li><li><strong>Keep.</strong> Save any design, poster or animation to the browser and return to it later &mdash; renaming, deleting, or exporting the whole collection as a file. A curated gallery of selected work sits alongside it.</li></ul><p>Two properties make the work citable rather than merely interactive. First, <strong>the URL is the state</strong>: pattern id, every parameter, seed, colour and output format are encoded in the address bar, so the same link always renders the same artwork, byte for byte. There is no backend and no account: a link is the whole document. Work worth keeping is saved in the reader&rsquo;s own browser and can be exported as a file, so nothing is held on a server and nothing is lost when one goes away. Second, <strong>the mathematics and the source are both on the page</strong>: every pattern exposes the formula that draws it, a plain-language reading of that formula in English and Spanish, a note on what each parameter does, a citation to the source literature, and the generator's own unedited source.</p><p>Implemented in TypeScript as a pure-SVG static site with no runtime dependencies. Live at <a href=\"https://flowshape.art\">flowshape.art</a>; source code, issue tracker and full commit history at <a href=\"https://github.com/Jossifresben/flowshape\">github.com/Jossifresben/flowshape</a>. Each deposit archives the corresponding tagged release of that repository.</p>",
   "keywords": [
     "generative art",
     "audio visualization",
@@ -139,6 +139,11 @@
     },
     {
       "identifier": "10.1080/14786443208647909",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1007/BF01457962",
       "relation": "cites",
       "scheme": "doi"
     },

@@ -913,6 +913,26 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'level', param: 'opacity', depth: 0.20 },
     ] },
   ],
+  villarceau: [
+    // Roll: the rotation plane itself. `tilt` 0→1 takes the figure from a
+    // rigid spin about the torus axis to ribbons rolling through one
+    // another; depth 0.30 → swing 0.30, which stays below the ~0.5 flare
+    // threshold the spike report flagged, so loud passages open the figure
+    // without filling the frame.
+    { id: 'roll', label: { en: 'Roll', es: 'Giro' }, routes: [
+      { feature: 'bass', param: 'tilt', depth: 0.30 },
+      { feature: 'mid', param: 'spread', depth: 0.25 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.25 },
+    ] },
+    // Nest: breathes the colatitude span, so the tori themselves fatten and
+    // thin. swing 0.32 on a 1.6 range — visible without collapsing the
+    // nesting.
+    { id: 'nest', label: { en: 'Nest', es: 'Anida' }, routes: [
+      { feature: 'level', param: 'nest', depth: 0.20 },
+      { feature: 'bright', param: 'view', depth: 0.18 },
+      { feature: 'mid', param: 'pole', depth: 0.15 },
+    ] },
+  ],
 };
 
 export function presetsFor(patternId: string): AnimPreset[] {

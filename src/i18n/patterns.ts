@@ -40,6 +40,7 @@ export const PATTERN_NAMES: Record<string, Pair> = {
   linefield: ['Line Field', 'Campo de líneas'],
   nodegarden: ['Node Garden', 'Jardín de nodos'],
   interference: ['Interference', 'Interferencia'],
+  villarceau: ['Villarceau Ribbons', 'Cintas de Villarceau'],
 };
 
 /** Human label for each pattern family. */

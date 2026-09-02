@@ -1,6 +1,6 @@
 # The pattern catalogue
 
-35 generators, grouped into six families. Every one is a pure function of
+36 generators, grouped into six families. Every one is a pure function of
 `(params, seed, size)` returning an `SvgNode` tree — see
 [architecture.md](architecture.md) for the contract.
 
@@ -48,6 +48,7 @@ the animated stage.
 | [**Guilloché Rosette**](#guilloché-rosette) | `guilloche` | `rings` · `lobes` · `depth` · `inner` · `twist` · `strokeWidth` · `opacity` | — | — |
 | [**Lissajous Knot**](#lissajous-knot) | `knot` | `triple` · `tumble` · `breathe` · `depth` · `layers` · `strokeWidth` · `opacity` | ✓ | — |
 | [**Hyperbolic Weave**](#hyperbolic-weave) | `hyperweave` | `symmetry` · `grain` · `wind` · `wobble` · `layers` · `strokeWidth` · `opacity` | ✓ | — |
+| [**Villarceau Ribbons**](#villarceau-ribbons) | `villarceau` | `latitudes` · `fibers` · `spread` · `nest` · `pole` · `tilt` · `view` · `strokeWidth` · `opacity` | ✓ | — |
 
 ### Fields
 
@@ -419,6 +420,25 @@ A single closed walk of hyperbolic geodesics in the Poincaré disk. Each edge of
 **Source.** Poincaré disk model of the hyperbolic plane; Coxeter, H.S.M. (1979) "The Non-Euclidean Symmetry of Escher's Picture 'Circle Limit III'", Leonardo 12; the closed coprime walk and its rippled symmetry are this project's own construction · [reference](https://en.wikipedia.org/wiki/Poincar%C3%A9_disk_model)
 
 **Parameters.** `symmetry`, `grain`, `wind`, `wobble`, `layers`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
+
+### Villarceau Ribbons
+
+`villarceau` · [generator](../src/patterns/villarceau.ts) · [explanation: EN](../src/content/explain/villarceau.en.md) · [ES](../src/content/explain/villarceau.es.md) · seeded
+
+```
+fiber over p ∈ S³:      { p·e^{iτ} : τ ∈ [0, 2π) }
+Hopf map:                h(p) = p·i·p̄  ∈ S²
+stereographic proj.:     S³ \ {pole} → ℝ³
+rotation, one parameter: R(φ): p ↦ q(φ)·p,
+                          q(φ) = cos(πφ) + sin(πφ)·n,  n a unit pure quaternion
+                          R(1) = −I  (the antipodal map)
+```
+
+The 3-sphere partitions into great circles — the fibers of Hopf's 1931 map to the ordinary sphere S² — and stereographic projection sends every fiber to an exact circle in space. Fibers over one latitude of S² form a torus of Villarceau circles, so nested latitudes give nested tori of linked rings. The motion is not chosen by eye: a one-parameter SO(4) rotation always carries fibers to fibers, and at φ = 1 it becomes the antipodal map, which is a half-turn within every fiber's own circle — the loop closes by the group law, the same standard held for knot's coprime frequencies and mystery's Farris congruence.
+
+**Source.** Hopf, H. (1931) "Über die Abbildungen der dreidimensionalen Sphäre auf die Kugelfläche", Mathematische Annalen 104, 637–665; the ribbon reparametrisation and the SO(4) motion are this project's own construction · [reference](https://en.wikipedia.org/wiki/Hopf_fibration)
+
+**Parameters.** `latitudes`, `fibers`, `spread`, `nest`, `pole`, `tilt`, `view`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
 
 ## Fields
 

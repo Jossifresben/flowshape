@@ -86,9 +86,22 @@ const SEVENTH_WAVE = ['knot', 'hyperweave'];
  * so the loop closes byte-for-byte.
  */
 const EIGHTH_WAVE = ['linefield', 'nodegarden', 'interference'];
+/**
+ * The ninth pass, one pattern. villarceau's motion is the one-parameter
+ * SO(4) subgroup R(φ): p ↦ q(φ)·p, q(φ) = cos(πφ) + sin(πφ)·n. Left
+ * multiplication commutes with the right fiber action, so R(φ) always
+ * carries Hopf fibers to Hopf fibers; at φ = 1, q = −1 and R(1) = −I, the
+ * antipodal map, which is e^{iπ} within every fiber's own circle group —
+ * every fiber returns to itself as a set, and with the even sample count N
+ * the sample set coincides with itself too. Phase 1 reproduces phase 0 by
+ * the group law, not by construction, and `% 1` folding then makes the two
+ * frames byte-identical, the same class of guarantee as mystery's Farris
+ * congruence and knot's coprime frequencies.
+ */
+const NINTH_WAVE = ['villarceau'];
 const LOOPERS = [
   ...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE, ...SIXTH_WAVE, ...SEVENTH_WAVE,
-  ...EIGHTH_WAVE,
+  ...EIGHTH_WAVE, ...NINTH_WAVE,
 ];
 const ADOPTERS = [...FIRST_WAVE, ...LOOPERS];
 

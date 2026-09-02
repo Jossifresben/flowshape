@@ -25,7 +25,7 @@ const DIR = path.join(process.cwd(), 'src', 'content', 'explain');
 // was worked out for this project.
 const OWN_CONSTRUCTION = [
   'bands', 'chirp', 'helix', 'hyperweave', 'interference', 'isoweave', 'knot', 'linefield',
-  'nested', 'nodegarden', 'roselattice',
+  'nested', 'nodegarden', 'roselattice', 'villarceau',
 ];
 
 describe('references', () => {

@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use flowshape in your work, please cite it as below."
 title: "flowshape"
 abstract: >-
-  A free, open-source web app that turns mathematics into art: 35 deterministic
+  A free, open-source web app that turns mathematics into art: 36 deterministic
   pattern generators with every parameter exposed, exported as print-ready
   vector artwork, composed into designed posters, or driven as an
   audio-reactive animation. Pure SVG, no

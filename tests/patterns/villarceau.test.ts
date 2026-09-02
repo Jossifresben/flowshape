@@ -3,8 +3,6 @@ import { villarceau, hopfFibers, JITTER_MAX } from '../../src/patterns/villarcea
 import { standardPatternTests, render } from './harness';
 import { defaultParams } from '../../src/patterns/registry';
 
-// SPIKE: villarceau is not registered in src/patterns/index.ts; importing the
-// module registers it in the module-local registry for these tests only.
 standardPatternTests(villarceau, { maxElements: 48 });
 
 /** All numeric coordinates of every path's d, as [x, y]. */

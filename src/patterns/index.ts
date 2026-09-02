@@ -33,3 +33,4 @@ import './hyperweave';
 import './linefield';
 import './nodegarden';
 import './interference';
+import './villarceau';

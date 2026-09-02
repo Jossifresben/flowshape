@@ -97,6 +97,8 @@ const NEVER_ROUTE: Record<string, string> = {
   'linefield.vortices': 'reshuffles the whole vortex seed stream (placement/strength/radius all redraw) — chaotic; beat-locked step events only',
   'nodegarden.cell': 're-lays the whole lattice — every point position changes. Chaotic, never continuous',
   'interference.lines': 'changes the sample count (line population), not a smooth deformation of the existing lines — chaotic',
+  'villarceau.latitudes': 'churn 1.00 at +1 — re-seats the whole figure: adds/removes a nested torus and reflows every colatitude slot',
+  'villarceau.fibers': 'churn 1.00 at +1 — re-seats the whole figure: changes the fiber count on every ribbon, redrawing every circle',
   // inert at default settings
   'girih.ribbonWidth': 'read only when render = 1 (ribbons); renders at 2, 9 and 20 are byte-identical at the default',
   'moire.offset': 'read only in mode 1 (circles)',

@@ -104,7 +104,7 @@ PNG at a chosen DPI.
 `src/i18n/` holds the whole EN/ES string layer: chrome strings, pattern display
 names, family labels, and parameter and enum-option labels. Parameter labels
 resolve `<patternId>.<paramKey>` first and fall back to a shared
-`common.<paramKey>`, so `strokeWidth` is translated once rather than 35 times.
+`common.<paramKey>`, so `strokeWidth` is translated once rather than 36 times.
 `tests/ui/i18n.test.ts` asserts that every registered parameter and option
 resolves through a real table entry, so a new pattern cannot ship with an
 untranslated control.

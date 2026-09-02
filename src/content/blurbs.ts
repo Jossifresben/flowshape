@@ -147,4 +147,8 @@ export const BLURBS: Record<string, { en: string; es: string }> = {
     en: 'Horizontal lines displaced by the summed ripples of two wave sources, braiding wherever the fringes cross.',
     es: 'Líneas horizontales desplazadas por la suma de dos fuentes de ondas, trenzadas donde las franjas se cruzan.',
   },
+  villarceau: {
+    en: 'Hopf fibers of the 3-sphere, stereographically projected into nested rings of linked Villarceau circles.',
+    es: 'Fibras de Hopf de la 3-esfera, proyectadas estereográficamente en anillos anidados de círculos de Villarceau enlazados.',
+  },
 };

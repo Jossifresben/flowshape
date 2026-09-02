@@ -53,19 +53,6 @@ function route(): void {
   lastRouteKey = routeKey;
   cleanup?.();
   cleanup = null;
-  // DEV-only spike stage for the unregistered `villarceau` candidate. Rewrites to a
-  // real animate hash so `mountAnimate` reads normal state; the import inside
-  // `ui/villarceau-spike` is what registers the pattern, and only in dev.
-  // `#/dev/villarceau` is only a convenience entry point: it redirects to a real
-  // `#/a/villarceau` hash and the ORDINARY animate route takes it from there. The
-  // pattern is put in the registry by `registerSpikes()` at startup (DEV
-  // only), not by this branch — an earlier version carried a `dev=hopf`
-  // marker in the query instead, and `syncUrl` stripped it on the first
-  // param write, so a refresh bounced to the gallery.
-  if (import.meta.env.DEV && location.hash.startsWith('#/dev/villarceau')) {
-    location.replace('#/a/villarceau?v=1&seed=1&stage=11');
-    return;
-  }
   if (import.meta.env.DEV && location.hash === '#/dev/fidelity') {
     void import('./ui/fidelity').then((m) => m.mountFidelity(app));
     return;
@@ -126,18 +113,7 @@ window.addEventListener('hashchange', route);
 // Switching language rewrites the URL with replaceState (no hashchange), so
 // the language event is what re-renders the current view.
 window.addEventListener(LANG_EVENT, route);
-
-// DEV-only: spike patterns must be in the registry BEFORE the first route
-// runs, or a cold load of `#/a/<spike>` finds no such pattern and bounces to
-// the gallery — taking the hash with it, so a later re-route cannot recover
-// it. Hence: await the registration, then route. Awaiting once at startup
-// costs a microtask in dev and nothing at all in production, where
-// `import.meta.env.DEV` is statically false and the branch is dropped.
-if (import.meta.env.DEV) {
-  void import('./ui/villarceau-spike').then((m) => { m.registerSpikes(); route(); });
-} else {
-  route();
-}
+route();
 
 // Analytics, if and only if the visitor has already said yes; the banner asks
 // the ones who have not. Routing is hash-based, so views are reported here

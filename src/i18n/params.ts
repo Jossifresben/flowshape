@@ -206,6 +206,13 @@ export const PARAMS: Record<string, Pair> = {
   'interference.sources': ['SOURCES', 'FUENTES'],
   'interference.frequency': ['FREQUENCY', 'FRECUENCIA'],
   'interference.separation': ['SEPARATION', 'SEPARACIÓN'],
+  'villarceau.latitudes': ['LATITUDES', 'LATITUDES'],
+  'villarceau.fibers': ['FIBERS', 'FIBRAS'],
+  'villarceau.spread': ['SPREAD', 'ABANICO'],
+  'villarceau.nest': ['NEST', 'ANIDADO'],
+  'villarceau.pole': ['POLE', 'POLO'],
+  'villarceau.tilt': ['TILT', 'INCLINACIÓN'],
+  'villarceau.view': ['VIEW', 'VISTA'],
 
   // The knot's coprime frequency triples: numerals, identical by design.
   'knot.t235': ['2·3·5', '2·3·5'],
