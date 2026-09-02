@@ -346,12 +346,22 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // are pushed to where they read: the thread weight roughly doubles and
     // the lattice scales by a fifth, which on an edge-to-edge tiling is a
     // visible zoom (positive only — shrinking would expose paper).
+    // `stitchLen` is this pattern's only continuous STRUCTURAL axis, added
+    // after the stage-fitness audit measured hitomezashi with none at all —
+    // audio could reach stroke weight and scale and nothing else, which is
+    // why it read as barely responding. Negative depth so louder = shorter
+    // stitch: swing 0.35 × 0.8 = 0.28 of the range, dashes breathing between
+    // full stitches and short ticks without ever reaching the sparse extreme.
+    // Measured smooth: mean vertex displacement grows 0.10 → 0.40 → 1.50 →
+    // 4.00 px across the range, proportional, with no dead zone.
     { id: 'stitch', label: { en: 'Stitch', es: 'Puntada' }, routes: [
+      { feature: 'mid', param: 'stitchLen', depth: -0.35 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
       { feature: 'level', param: 'size', depth: 0.15 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
     { id: 'parity', label: { en: 'Parity', es: 'Paridad' }, routes: [
-      { feature: 'bass', param: 'strokeWidth', depth: 0.35 },
+      { feature: 'bass', param: 'stitchLen', depth: -0.3 },
+      { feature: 'high', param: 'strokeWidth', depth: 0.35 },
       { feature: 'level', param: 'size', depth: 0.18 },
     ], event: { kind: 'flip', param: 'fillParity', everyBeats: 8 } },
   ],

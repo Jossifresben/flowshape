@@ -111,6 +111,7 @@ export const PARAMS: Record<string, Pair> = {
   'common.inkEvery': ['INK EVERY', 'TINTA CADA'],
   'common.emphasisEvery': ['EMPHASIS EVERY', 'ÉNFASIS CADA'],
   'common.bitChance': ['BIT CHANCE', 'PROB. BIT'],
+  'common.stitchLen': ['STITCH LENGTH', 'LARGO DE PUNTADA'],
   'common.boldChance': ['BOLD CHANCE', 'PROB. GRUESO'],
   'common.accentChance': ['ACCENT CHANCE', 'PROB. ACENTO'],
   'common.flipChance': ['FLIP CHANCE', 'PROB. GIRO'],
