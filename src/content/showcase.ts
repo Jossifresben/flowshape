@@ -111,6 +111,12 @@ export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/conecto.mp4', poster: '/showcase/conecto.jpg',
     title: ['Conecto con ese lugar', 'Conecto con ese lugar'],
     credit: ['Song by Jossi Fresco', 'Canción de Jossi Fresco'] },
+  // Second song. Same treatment as Conecto: credit burned into the video and
+  // carried here; `lang` stripped from the stage hash (viewer's preference).
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/insensatez-final.mp4', poster: '/showcase/insensatez.jpg',
+    hash: '#/a/mystery?v=1&seed=76002&hue=0&hueSpread=-24&chroma=0.13&stage=11&apre=breathe&acol=1&symmetry=10&harmonics=6&falloff=1.4&bloom=0.48&layers=4&strokeWidth=1.2&opacity=0.74&size=1.01&phase=0',
+    title: ['Insensatez', 'Insensatez'],
+    credit: ['Cover by Jossi Fresco', 'Versión de Jossi Fresco'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
     title: ['Harmonograph', 'Armonógrafo'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/timestable.mp4', poster: '/showcase/timestable.jpg',
