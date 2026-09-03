@@ -117,6 +117,12 @@ export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
     hash: '#/a/mystery?v=1&seed=76002&hue=0&hueSpread=-24&chroma=0.13&stage=11&apre=breathe&acol=1&symmetry=10&harmonics=6&falloff=1.4&bloom=0.48&layers=4&strokeWidth=1.2&opacity=0.74&size=1.01&phase=0',
     title: ['Insensatez', 'Insensatez'],
     credit: ['Cover by Jossi Fresco', 'Versión de Jossi Fresco'] },
+  // Third song, and the first recorded on Villarceau Ribbons. The hash is the
+  // stage Jossi actually recorded, so the card links to the artwork that plays.
+  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/pozas.mp4', poster: '/showcase/pozas.jpg',
+    hash: '#/a/villarceau?v=1&seed=1&stage=11&apre=nest&latitudes=3&fibers=34&spread=0.57&nest=1.62&pole=1.24&tilt=0.2&view=0.79&strokeWidth=1.15&opacity=0.85&size=1.14&phase=0',
+    title: ['Camino a las pozas', 'Camino a las pozas'],
+    credit: ['By Jossi Fresco', 'De Jossi Fresco'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
     title: ['Harmonograph', 'Armonógrafo'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/timestable.mp4', poster: '/showcase/timestable.jpg',
