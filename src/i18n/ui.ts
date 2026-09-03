@@ -186,6 +186,17 @@ export const UI: Record<string, Pair> = {
   'share.action': ['Share', 'Compartir'],
   'share.copied': ['Link copied', 'Enlace copiado'],
   'share.selected': ['Link selected', 'Enlace seleccionado'],
+  'share.copy': ['Copy link', 'Copiar enlace'],
+  'share.qrAlt': [
+    'QR code for this link',
+    'Código QR de este enlace',
+  ],
+  // Carried in the text the native share sheet hands on, so the invitation
+  // travels with the link rather than living only on our own page.
+  'share.tagline': [
+    'Create your own at flowshape.art',
+    'Crea el tuyo en flowshape.art',
+  ],
 
   // --- favourites ---------------------------------------------------------
   'fav.save': ['Save to favourites', 'Guardar en favoritos'],
@@ -253,4 +264,5 @@ export const UI: Record<string, Pair> = {
   'show.tabVideos': ['Videos', 'Vídeos'],
   'show.play': ['Play', 'Reproducir'],
   'show.openStage': ['Open the live stage', 'Abrir el escenario en vivo'],
+  'show.share': ['Share this video', 'Compartir este vídeo'],
 };

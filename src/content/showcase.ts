@@ -101,6 +101,11 @@ export interface ShowcaseVideo {
    *  translated word for "song", and the modal — which has room — carries this
    *  full credit. One field, so the two can never drift apart. */
   credit?: Pair;
+  /** What the card calls this entry, in place of the generic "song". For a
+   *  recording whose music is worth naming — a solo instrument rather than a
+   *  song — the label is the interesting part. Only meaningful alongside
+   *  `credit`, which is what puts a label on the card at all. */
+  kind?: Pair;
 }
 
 export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
@@ -122,7 +127,8 @@ export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/pozas.mp4', poster: '/showcase/pozas.jpg',
     hash: '#/a/villarceau?v=1&seed=1&stage=11&apre=nest&latitudes=3&fibers=34&spread=0.57&nest=1.62&pole=1.24&tilt=0.2&view=0.79&strokeWidth=1.15&opacity=0.85&size=1.14&phase=0',
     title: ['Camino a las pozas', 'Camino a las pozas'],
-    credit: ['By Jossi Fresco', 'De Jossi Fresco'] },
+    credit: ['Native American flute by Jossi Fresco', 'Flauta nativa americana de Jossi Fresco'],
+    kind: ['Native American Flute', 'Flauta Nativa Americana'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
     title: ['Harmonograph', 'Armonógrafo'] },
   { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/timestable.mp4', poster: '/showcase/timestable.jpg',

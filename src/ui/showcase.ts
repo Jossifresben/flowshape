@@ -5,6 +5,8 @@ import { buildNav } from './nav';
 import { buildFooter } from './footer';
 import { renderThumb, onVisible, stopThumbWorker } from './thumb';
 import { openModal } from './modal';
+import { qrSvg } from './qr-svg';
+import { copyOrSelect } from './clipboard';
 
 /**
  * `#/gallery` — the curated showcase: hand-picked designs from
@@ -108,7 +110,8 @@ function videoBaseName(entry: ShowcaseVideo, lang: Lang): string | null {
 function videoCardName(entry: ShowcaseVideo, lang: Lang): string | null {
   const base = videoBaseName(entry, lang);
   if (!base) return null;
-  return entry.credit ? `${base} — ${t('show.song', lang)}` : base;
+  if (!entry.credit) return base;
+  return `${base} — ${entry.kind ? entry.kind[lang === 'es' ? 1 : 0] : t('show.song', lang)}`;
 }
 
 /** The modal's title. It has the width the card does not, so a song is
@@ -147,6 +150,8 @@ function openVideoModal(entry: ShowcaseVideo, lang: Lang): void {
     wrap.className = 'modal-video-wrap';
     wrap.append(v);
 
+    wrap.append(buildVideoShare(entry, lang));
+
     if (entry.hash) {
       const link = document.createElement('a');
       link.className = 'modal-video-link';
@@ -174,6 +179,95 @@ function openVideoModal(entry: ShowcaseVideo, lang: Lang): void {
     // survives the modal closing.
     onClose: () => video?.pause(),
   });
+}
+
+/**
+ * Where a shared video points. The stage hash when the entry has one — that
+ * is the artwork itself, reproducible from the URL alone, and the same place
+ * the modal's own "open the live stage" link goes. Otherwise the videos tab,
+ * which is the nearest honest thing: individual videos have no URL of their
+ * own, and inventing one that the router would not honour would hand people a
+ * dead link.
+ *
+ * Absolute, because a QR code is scanned by a device that has no idea what
+ * page it came from.
+ */
+function videoShareUrl(entry: ShowcaseVideo): string {
+  return `${location.origin}${location.pathname}${entry.hash ?? '#/gallery/videos'}`;
+}
+
+/**
+ * The share control inside the video modal: a QR code for handing the link to
+ * a phone across a table, and the link itself in a field that can be copied.
+ *
+ * Both are shown at once rather than behind a toggle. The QR is the reason
+ * this exists — someone watching on a laptop wants it on their phone — and
+ * hiding it behind a second click would bury the feature it was asked for.
+ */
+function buildVideoShare(entry: ShowcaseVideo, lang: Lang): HTMLElement {
+  const url = videoShareUrl(entry);
+
+  const box = document.createElement('div');
+  box.className = 'video-share';
+
+  const heading = document.createElement('div');
+  heading.className = 'video-share-head';
+  heading.textContent = t('show.share', lang);
+
+  // Rendering the symbol is pure computation over a short string, but it is
+  // still work we should not do for someone who never opens the modal — which
+  // is why it happens here, on open, rather than when the card is built.
+  const code = qrSvg(url, t('share.qrAlt', lang));
+
+  const link = document.createElement('div');
+  link.className = 'video-share-url';
+  link.textContent = url;
+
+  const copy = document.createElement('button');
+  copy.type = 'button';
+  copy.className = 'btn video-share-copy';
+  copy.textContent = t('share.copy', lang);
+
+  const status = document.createElement('span');
+  status.className = 'video-share-msg';
+  status.setAttribute('role', 'status');
+
+  let timer = 0;
+  copy.addEventListener('click', async () => {
+    const copied = await copyOrSelect(url, link);
+    status.textContent = t(copied ? 'share.copied' : 'share.selected', lang);
+    if (timer) clearTimeout(timer);
+    timer = window.setTimeout(() => { status.textContent = ''; }, 6000);
+  });
+
+  const row = document.createElement('div');
+  row.className = 'video-share-row';
+  row.append(link, copy);
+
+  box.append(heading, code, row, status);
+
+  // The native sheet, where the platform has one: it is how a link actually
+  // reaches someone on a phone. The tagline rides along in the shared text so
+  // the invitation travels with the link — it is deliberately not repeated on
+  // this panel, where the visitor is already on the site.
+  if (navigator.share) {
+    const native = document.createElement('button');
+    native.type = 'button';
+    native.className = 'btn video-share-native';
+    native.textContent = t('share.action', lang);
+    native.addEventListener('click', async () => {
+      const title = videoModalTitle(entry, lang) ?? t('show.tabVideos', lang);
+      try {
+        await navigator.share({ title, text: `${title} — ${t('share.tagline', lang)}`, url });
+      } catch (e) {
+        // A dismissed sheet is a normal outcome, not a failure to report.
+        if ((e as { name?: string } | null)?.name === 'AbortError') return;
+      }
+    });
+    box.append(native);
+  }
+
+  return box;
 }
 
 /** A video card: a still poster plus a play affordance. No `<video>` in the

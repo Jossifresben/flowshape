@@ -202,6 +202,46 @@ a.gal-chip { text-decoration: none; }
 }
 .modal-video-link:hover { text-decoration: underline; }
 
+/* Share panel inside the video modal. The QR is capped rather than fluid:
+   past about 180px it stops being easier to scan and just crowds the video,
+   and below ~120px a dense (version 10) symbol starts to fail on older
+   phone cameras. */
+.video-share {
+  display: flex; flex-direction: column; gap: 10px; align-items: flex-start;
+  padding-top: 12px; border-top: 1px solid var(--line);
+}
+.video-share-head {
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gray);
+}
+.video-share .qr {
+  width: 160px; height: 160px; display: block;
+  /* The white quiet zone is part of the symbol, so the padding that makes it
+     look intentional against a dark panel belongs on the element, not inside
+     the SVG. */
+  border-radius: 2px;
+}
+.video-share-row {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  max-width: 100%;
+}
+.video-share-url {
+  font-family: var(--font-mono); font-size: 10px; color: var(--gray);
+  /* A stage hash is long. It wraps rather than scrolls, so the whole link is
+     visible to select by hand when the clipboard is refused. */
+  overflow-wrap: anywhere; max-width: 44ch; line-height: 1.5;
+  user-select: all;
+}
+.video-share-msg {
+  font-family: var(--font-mono); font-size: 10px; color: var(--accent);
+  min-height: 1em;
+}
+
+@media (max-width: 560px) {
+  .video-share .qr { width: 132px; height: 132px; }
+  .video-share-url { max-width: 100%; }
+}
+
 /* --- saved page --- */
 
 .saved-head {
