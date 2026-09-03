@@ -101,6 +101,19 @@ describe('curated videos', () => {
     }
   });
 
+  // `id` is what a shared `#/gallery/videos?v=` link carries, so a duplicate
+  // would make one video unreachable and a renamed one would break links
+  // already in the wild.
+  it('has a unique, URL-safe id', () => {
+    const seen = new Set<string>();
+    for (const entry of SHOWCASE_VIDEOS) {
+      expect(entry.id, 'id is empty').toBeTruthy();
+      expect(entry.id, `id is not URL-safe: ${entry.id}`).toMatch(/^[a-z0-9][a-z0-9-]*$/);
+      expect(seen.has(entry.id), `duplicate video id: ${entry.id}`).toBe(false);
+      seen.add(entry.id);
+    }
+  });
+
   it('has a poster served locally', () => {
     for (const entry of SHOWCASE_VIDEOS) {
       expect(entry.poster.startsWith('/showcase/'), `poster not under /showcase/: ${entry.poster}`).toBe(true);

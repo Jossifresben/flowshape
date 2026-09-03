@@ -195,12 +195,21 @@ a.gal-chip { text-decoration: none; }
 /* The modal's video tab: the video itself plus, where the entry links back
  * to the live stage, the "open the live stage" link underneath it. */
 .modal-video-wrap { display: flex; flex-direction: column; gap: 12px; }
-.modal-video { display: block; width: 100%; max-height: 72vh; background: #000; }
+.modal-video { display: block; width: 100%; max-height: 56vh; background: #000; }
 .modal-video-link {
   align-self: flex-start; font-family: var(--font-mono); font-size: 11px;
   letter-spacing: 0.06em; color: var(--accent); text-decoration: none;
 }
 .modal-video-link:hover { text-decoration: underline; }
+
+/* The row under the video: the stage link and the share toggle, side by side
+   and always in view. The video is capped short enough that this row survives
+   on a 720px-tall laptop screen — the share control is worthless if it sits
+   below the fold of a modal nobody thinks to scroll. */
+.modal-video-actions {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.modal-video-actions .modal-video-link { margin-right: auto; }
 
 /* Share panel inside the video modal. The QR is capped rather than fluid:
    past about 180px it stops being easier to scan and just crowds the video,
@@ -209,10 +218,6 @@ a.gal-chip { text-decoration: none; }
 .video-share {
   display: flex; flex-direction: column; gap: 10px; align-items: flex-start;
   padding-top: 12px; border-top: 1px solid var(--line);
-}
-.video-share-head {
-  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--gray);
 }
 .video-share .qr {
   width: 160px; height: 160px; display: block;
@@ -240,6 +245,31 @@ a.gal-chip { text-decoration: none; }
 @media (max-width: 560px) {
   .video-share .qr { width: 132px; height: 132px; }
   .video-share-url { max-width: 100%; }
+}
+
+/* --- single video page (#/video/<id>) --- */
+
+/* Deliberately spare: a shared link lands here for one recording, so the page
+   is the video and the navbar, and little else. The player is capped by height
+   rather than width because these recordings are square — a width-driven
+   layout would push the controls off a laptop screen. */
+.vid-box {
+  max-width: 900px; margin: 0 auto; padding: 32px;
+  display: flex; flex-direction: column; gap: 16px; align-items: stretch;
+}
+.vid-head { display: flex; flex-direction: column; gap: 4px; }
+.vid-title { font-size: 15px; letter-spacing: 0.04em; margin: 0; font-weight: 500; }
+.vid-player {
+  /* `width: auto` with both maxima lets the element take the recording's own
+     aspect ratio: these are square, and a full-width box would pillarbox them
+     inside wide black margins. The wide recordings still fill the column. */
+  display: block; width: auto; max-width: 100%; max-height: 62vh;
+  margin: 0 auto; background: #000;
+}
+.vid-back { margin-top: 8px; }
+
+@media (max-width: 560px) {
+  .vid-box { padding: 20px 16px; }
 }
 
 /* --- saved page --- */

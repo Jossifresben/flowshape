@@ -265,4 +265,5 @@ export const UI: Record<string, Pair> = {
   'show.play': ['Play', 'Reproducir'],
   'show.openStage': ['Open the live stage', 'Abrir el escenario en vivo'],
   'show.share': ['Share this video', 'Compartir este vídeo'],
+  'show.allVideos': ['← All videos', '← Todos los vídeos'],
 };

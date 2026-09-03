@@ -7,6 +7,7 @@ import { mountAbout } from './ui/about';
 import { mountComposer } from './ui/poster';
 import { mountSaved } from './ui/saved';
 import { mountShowcase } from './ui/showcase';
+import { mountVideoPage } from './ui/video';
 import { decodeState } from './core/url-state';
 import { LANG_EVENT } from './i18n';
 import { initConsent, trackPageView } from './core/consent';
@@ -24,10 +25,11 @@ let cleanup: (() => void) | null = null;
 // is the curated set at `#/gallery` (module `ui/showcase.ts`). Two different
 // names on purpose — see `ui/showcase.ts`'s header comment.
 function setView(
-  name: 'gallery' | 'showcase' | 'playground' | 'about' | 'animate' | 'composer' | 'saved',
+  name: 'gallery' | 'showcase' | 'playground' | 'about' | 'animate' | 'composer' | 'saved' | 'video',
 ): void {
   app.classList.remove(
     'view-gallery', 'view-showcase', 'view-playground', 'view-about', 'view-animate', 'view-composer',
+    'view-video',
     'view-saved',
   );
   app.classList.add(`view-${name}`);
@@ -65,6 +67,13 @@ function route(): void {
   if (location.hash.startsWith('#/saved')) {
     setView('saved');
     cleanup = mountSaved(app);
+    return;
+  }
+  // Before the gallery test, so `#/video/…` is not mistaken for it, and before
+  // `decodeState`, which does not recognise this shape either.
+  if (location.hash.startsWith('#/video/')) {
+    setView('video');
+    cleanup = mountVideoPage(app);
     return;
   }
   // Matched before `decodeState`: that decoder only recognises `^#/(p|a|c)/…`,

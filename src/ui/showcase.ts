@@ -116,7 +116,7 @@ function videoCardName(entry: ShowcaseVideo, lang: Lang): string | null {
 
 /** The modal's title. It has the width the card does not, so a song is
  *  credited in full here. */
-function videoModalTitle(entry: ShowcaseVideo, lang: Lang): string | null {
+export function videoModalTitle(entry: ShowcaseVideo, lang: Lang): string | null {
   const base = videoBaseName(entry, lang);
   if (!base) return null;
   return entry.credit ? `${base} — ${entry.credit[lang === 'es' ? 1 : 0]}` : base;
@@ -150,7 +150,12 @@ function openVideoModal(entry: ShowcaseVideo, lang: Lang): void {
     wrap.className = 'modal-video-wrap';
     wrap.append(v);
 
-    wrap.append(buildVideoShare(entry, lang));
+    // The action row sits directly under the video, where it is visible
+    // without scrolling. That placement is the point: the share panel used to
+    // live below the video and open by default, which put it off the bottom of
+    // a laptop screen with nothing to hint it was there.
+    const actions = document.createElement('div');
+    actions.className = 'modal-video-actions';
 
     if (entry.hash) {
       const link = document.createElement('a');
@@ -164,8 +169,12 @@ function openVideoModal(entry: ShowcaseVideo, lang: Lang): void {
       link.addEventListener('click', () => {
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
       });
-      wrap.append(link);
+      actions.append(link);
     }
+
+    const { toggle, panel } = buildVideoShare(entry, lang);
+    actions.append(toggle);
+    wrap.append(actions, panel);
     return wrap;
   }
 
@@ -182,41 +191,69 @@ function openVideoModal(entry: ShowcaseVideo, lang: Lang): void {
 }
 
 /**
- * Where a shared video points. The stage hash when the entry has one — that
- * is the artwork itself, reproducible from the URL alone, and the same place
- * the modal's own "open the live stage" link goes. Otherwise the videos tab,
- * which is the nearest honest thing: individual videos have no URL of their
- * own, and inventing one that the router would not honour would hand people a
- * dead link.
+ * Where a shared video points: at the video, on a page of its own. Not the
+ * gallery with a player stacked over it — someone following a shared link came
+ * for that one recording, and should land on it rather than on a grid of
+ * everything else with a modal in the way.
+ *
+ * Not the stage hash — that is the artwork the recording was made from, which
+ * is a different thing and already has its own link in the modal.
  *
  * Absolute, because a QR code is scanned by a device that has no idea what
  * page it came from.
  */
-function videoShareUrl(entry: ShowcaseVideo): string {
-  return `${location.origin}${location.pathname}${entry.hash ?? '#/gallery/videos'}`;
+export function videoShareUrl(entry: ShowcaseVideo): string {
+  return `${location.origin}${location.pathname}#/video/${encodeURIComponent(entry.id)}`;
 }
 
 /**
- * The share control inside the video modal: a QR code for handing the link to
- * a phone across a table, and the link itself in a field that can be copied.
+ * The share control inside the video modal: a button in the action row, and
+ * the panel it reveals — a QR code for handing the link to a phone across a
+ * table, plus the link itself in a field that copies.
  *
- * Both are shown at once rather than behind a toggle. The QR is the reason
- * this exists — someone watching on a laptop wants it on their phone — and
- * hiding it behind a second click would bury the feature it was asked for.
+ * The panel starts closed and the button is what opens it. An always-open
+ * panel is what shipped first, and it was the wrong call: below a square
+ * video it fell off the bottom of a laptop viewport, so the feature was
+ * invisible to anyone who did not think to scroll a modal.
  */
-function buildVideoShare(entry: ShowcaseVideo, lang: Lang): HTMLElement {
+export function buildVideoShare(entry: ShowcaseVideo, lang: Lang): { toggle: HTMLButtonElement; panel: HTMLElement } {
   const url = videoShareUrl(entry);
 
-  const box = document.createElement('div');
-  box.className = 'video-share';
+  const panel = document.createElement('div');
+  panel.className = 'video-share';
+  panel.id = `video-share-${++shareSeq}`;
+  panel.hidden = true;
 
-  const heading = document.createElement('div');
-  heading.className = 'video-share-head';
-  heading.textContent = t('show.share', lang);
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'btn video-share-toggle';
+  toggle.textContent = t('show.share', lang);
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-controls', panel.id);
 
-  // Rendering the symbol is pure computation over a short string, but it is
-  // still work we should not do for someone who never opens the modal — which
-  // is why it happens here, on open, rather than when the card is built.
+  // Built lazily: encoding a QR is real work, and most people open a video to
+  // watch it, not to share it.
+  let built = false;
+  toggle.addEventListener('click', () => {
+    if (!built) {
+      panel.append(...sharePanelContents(entry, url, lang));
+      built = true;
+    }
+    panel.hidden = !panel.hidden;
+    toggle.setAttribute('aria-expanded', String(!panel.hidden));
+    // Opening it near the bottom of the modal is only useful if the modal
+    // then shows it.
+    if (!panel.hidden) panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+
+  return { toggle, panel };
+}
+
+let shareSeq = 0;
+
+/** The panel's contents: the QR, the link, a copy button, and — where the
+ *  platform has one — the native share sheet. */
+function sharePanelContents(entry: ShowcaseVideo, url: string, lang: Lang): Element[] {
   const code = qrSvg(url, t('share.qrAlt', lang));
 
   const link = document.createElement('div');
@@ -244,7 +281,7 @@ function buildVideoShare(entry: ShowcaseVideo, lang: Lang): HTMLElement {
   row.className = 'video-share-row';
   row.append(link, copy);
 
-  box.append(heading, code, row, status);
+  const out: Element[] = [code, row, status];
 
   // The native sheet, where the platform has one: it is how a link actually
   // reaches someone on a phone. The tagline rides along in the shared text so
@@ -264,10 +301,10 @@ function buildVideoShare(entry: ShowcaseVideo, lang: Lang): HTMLElement {
         if ((e as { name?: string } | null)?.name === 'AbortError') return;
       }
     });
-    box.append(native);
+    out.push(native);
   }
 
-  return box;
+  return out;
 }
 
 /** A video card: a still poster plus a play affordance. No `<video>` in the

@@ -89,6 +89,12 @@ export const SHOWCASE_POSTERS: ShowcaseEntry[] = [
  * carries its own poster frame and an optional link back to the live stage.
  */
 export interface ShowcaseVideo {
+  /** A short, stable slug naming this recording. It is what `#/gallery/videos?v=`
+   *  carries, so it is a published contract: renaming one breaks every link
+   *  already shared. Deliberately not derived from the filename, which is an
+   *  implementation detail that may change when a video is re-encoded.
+   *  `tests/content/showcase.test.ts` asserts these stay unique. */
+  id: string;
   /** Absolute site path, e.g. `/showcase/voronoi-drift.mp4`. */
   src: string;
   /** First-frame image, same folder. Shown before playback and where autoplay is refused. */
@@ -113,35 +119,35 @@ export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
   // first. The song title itself is not translated; `credit` is what marks it
   // apart from the silent stage recordings below. The credit is also burned
   // into the video itself, so it travels with the file wherever it is shared.
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/conecto.mp4', poster: '/showcase/conecto.jpg',
+  { id: 'conecto', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/conecto.mp4', poster: '/showcase/conecto.jpg',
     title: ['Conecto con ese lugar', 'Conecto con ese lugar'],
     credit: ['Song by Jossi Fresco', 'Canción de Jossi Fresco'] },
   // Second song. Same treatment as Conecto: credit burned into the video and
   // carried here; `lang` stripped from the stage hash (viewer's preference).
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/insensatez-final.mp4', poster: '/showcase/insensatez.jpg',
+  { id: 'insensatez', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/insensatez-final.mp4', poster: '/showcase/insensatez.jpg',
     hash: '#/a/mystery?v=1&seed=76002&hue=0&hueSpread=-24&chroma=0.13&stage=11&apre=breathe&acol=1&symmetry=10&harmonics=6&falloff=1.4&bloom=0.48&layers=4&strokeWidth=1.2&opacity=0.74&size=1.01&phase=0',
     title: ['Insensatez', 'Insensatez'],
     credit: ['Cover by Jossi Fresco', 'Versión de Jossi Fresco'] },
   // Third song, and the first recorded on Villarceau Ribbons. The hash is the
   // stage Jossi actually recorded, so the card links to the artwork that plays.
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/pozas.mp4', poster: '/showcase/pozas.jpg',
+  { id: 'pozas', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/pozas.mp4', poster: '/showcase/pozas.jpg',
     hash: '#/a/villarceau?v=1&seed=1&stage=11&apre=nest&latitudes=3&fibers=34&spread=0.57&nest=1.62&pole=1.24&tilt=0.2&view=0.79&strokeWidth=1.15&opacity=0.85&size=1.14&phase=0',
     title: ['Camino a las pozas', 'Camino a las pozas'],
     credit: ['Native American flute by Jossi Fresco', 'Flauta nativa americana de Jossi Fresco'],
     kind: ['Native American Flute', 'Flauta Nativa Americana'] },
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
+  { id: 'harmonograph', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
     title: ['Harmonograph', 'Armonógrafo'] },
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/timestable.mp4', poster: '/showcase/timestable.jpg',
+  { id: 'timestable', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/timestable.mp4', poster: '/showcase/timestable.jpg',
     title: ['Times-Table Chords', 'Cuerdas de la tabla de multiplicar'] },
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/flowfield.mp4', poster: '/showcase/flowfield.jpg',
+  { id: 'flowfield', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/flowfield.mp4', poster: '/showcase/flowfield.jpg',
     title: ['Flow Field', 'Campo de flujo'] },
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/fabric.mp4', poster: '/showcase/fabric.jpg',
+  { id: 'fabric', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/fabric.mp4', poster: '/showcase/fabric.jpg',
     title: ['Warped Fabric', 'Tejido deformado'] },
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph-wide.mp4', poster: '/showcase/harmonograph-wide.jpg',
+  { id: 'harmonograph-wide', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph-wide.mp4', poster: '/showcase/harmonograph-wide.jpg',
     title: ['Harmonograph, wide', 'Armonógrafo, panorámico'] },
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/mystery.mp4', poster: '/showcase/mystery.jpg',
+  { id: 'mystery', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/mystery.mp4', poster: '/showcase/mystery.jpg',
     title: ['Mystery Curve', 'Curva misteriosa'] },
-  { src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/guilloche.mp4', poster: '/showcase/guilloche.jpg',
+  { id: 'guilloche', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/guilloche.mp4', poster: '/showcase/guilloche.jpg',
     hash: '#/a/guilloche?v=1&seed=1&stage=11&apre=engrave&acol=1&rings=29&lobes=12&depth=0.145&inner=0.33&twist=0.74&strokeWidth=0.4&opacity=0.8&size=1&phase=0',
     title: ['Guilloché Rosette', 'Roseta guilloché'] },
 ];
