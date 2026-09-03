@@ -8,6 +8,11 @@ export interface AudioRig {
   /** Seconds; null for mic. */
   duration: number | null;
   playing: boolean;
+  /** True when the browser is holding the audio context suspended for want of
+   *  a user gesture. `play()` can succeed and still leave this set: the source
+   *  node is running but the context clock is not, so there is no sound and no
+   *  analyser data. The caller has to ask for a click. */
+  suspended(): boolean;
   play(): void;
   pause(): void;
   seek(sec: number): void;
@@ -37,6 +42,7 @@ export async function fileRig(file: File): Promise<{ rig: AudioRig; buffer: Audi
     sampleRate: ctx.sampleRate,
     duration: buffer.duration,
     playing: false,
+    suspended() { return ctx.state === 'suspended'; },
     play() {
       if (this.playing) return;
       if (offset >= buffer.duration) offset = 0;
@@ -95,6 +101,9 @@ export async function micRig(): Promise<AudioRig> {
     sampleRate: ctx.sampleRate,
     duration: null,
     playing: true,
+    // The mic needs a permission grant, which is itself a user gesture, so the
+    // context is never left suspended here.
+    suspended() { return false; },
     play() { this.playing = true; },
     pause() { this.playing = false; },
     seek() { /* no-op for mic */ },

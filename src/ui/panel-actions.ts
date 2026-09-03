@@ -56,7 +56,12 @@ export function buildActionsRow(
 
   const animateBtn = actionButton(t('pg.animateShort', lang), t('pg.animate', lang));
   animateBtn.addEventListener('click', () => {
-    location.hash = encodeState({ ...getState(), view: 'a' });
+    // 1:1 is the stage a new animation starts on: these recordings are shared
+    // to phones and social feeds, where a square reads at full size and 16:9
+    // shrinks to a letterboxed strip. Set here, where the URL is first built,
+    // rather than as the decoder's default — an animate link shared before
+    // this change carries no `stage`, and must keep meaning 16:9.
+    location.hash = encodeState({ ...getState(), view: 'a', stage: '11' });
   });
 
   const posterBtn = actionButton(t('pg.posterShort', lang), t('pg.poster', lang));

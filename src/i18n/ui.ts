@@ -113,6 +113,9 @@ export const UI: Record<string, Pair> = {
     'No se pudo decodificar este archivo de audio.',
   ],
   'anim.demoError': ['Could not load the demo track.', 'No se pudo cargar la pista de demostración.'],
+  // Shown when a shared link arrives with a demo the browser will not let
+  // start on its own. Autoplay needs a gesture; this asks for one.
+  'anim.tapToPlay': ['Click anywhere to play', 'Haz clic para reproducir'],
   'anim.micError': [
     'Microphone unavailable or permission denied.',
     'Micrófono no disponible o permiso denegado.',

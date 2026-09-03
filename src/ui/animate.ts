@@ -29,10 +29,11 @@ const STAGES: Record<'169' | '916' | '11', { cw: number; ch: number }> = {
 };
 
 /** Hermes's own RHY-2B, first 60 s. Shipped so the stage is never mute. */
-/** Four demo tracks, each 2 minutes with a fade-out. A shared animate link
- *  opens silent — the viewer has no audio to hand — so these make the stage
- *  immediately experienceable, and having several means the visualiser can be
- *  judged against more than one kind of music. */
+/** Four demo tracks, each 2 minutes with a fade-out. Without them a shared
+ *  animate link opens silent — the viewer has no audio to hand — so these make
+ *  the stage immediately experienceable, and having several means the
+ *  visualiser can be judged against more than one kind of music. A link can
+ *  name one (`adem`), and then it arrives already loaded. */
 const DEMOS = [
   { id: '1', src: '/samples/flow-1.mp3' },
   { id: '2', src: '/samples/flow-2.mp3' },
@@ -285,18 +286,20 @@ export function mountAnimate(root: HTMLElement): () => void {
   drop.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', () => {
     const f = fileInput.files?.[0];
-    if (f) { activeDemo = null; rebuildChips(); void loadFile(f); }
+    if (f) { activeDemo = null; rebuildChips(); syncUrl(); void loadFile(f); }
   });
   stageEl.addEventListener('dragover', (e) => e.preventDefault());
   stageEl.addEventListener('drop', (e) => {
     e.preventDefault();
     const f = e.dataTransfer?.files[0];
-    if (f) { activeDemo = null; rebuildChips(); void loadFile(f); }
+    if (f) { activeDemo = null; rebuildChips(); syncUrl(); void loadFile(f); }
   });
 
   // Which demo is loaded, so the chip row can show it. Null whenever the
-  // source is the viewer's own file or the mic — neither is a demo.
-  let activeDemo: string | null = null;
+  // source is the viewer's own file or the mic — neither is a demo. Seeded
+  // from the URL so a shared link opens with its music already selected.
+  let activeDemo: string | null =
+    DEMOS.some((d) => d.id === state.adem) ? state.adem! : null;
 
   async function loadDemo(id: string): Promise<void> {
     const demo = DEMOS.find((d) => d.id === id);
@@ -307,10 +310,12 @@ export function mountAnimate(root: HTMLElement): () => void {
       const blob = await res.blob();
       activeDemo = id;
       rebuildChips();
+      syncUrl();
       await loadFile(new File([blob], `flow-${id}.mp3`, { type: blob.type || 'audio/mpeg' }));
     } catch {
       activeDemo = null;
       rebuildChips();
+      syncUrl();
       status.textContent = t('anim.demoError', lang);
     }
   }
@@ -351,7 +356,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   const micBtn = iconButton('mic', t('anim.mic', lang), async () => {
     try {
       swapRig(await micRig());
-      activeDemo = null; rebuildChips();
+      activeDemo = null; rebuildChips(); syncUrl();
       clock = null; bpm = null; liveBeats = -1;
       paintPlay(true);
     } catch { status.textContent = t('anim.micError', lang); }
@@ -448,6 +453,7 @@ export function mountAnimate(root: HTMLElement): () => void {
   function syncUrl(): void {
     history.replaceState(null, '', encodeState({
       ...state, view: 'a', stage: stageId, apre: preset.id, aint: intensity, acol: colourOn,
+      adem: activeDemo ?? undefined,
       aatk: tuning.attackMs, arel: tuning.releaseMs,
       abass: tuning.bassGain, amid: tuning.midGain, ahigh: tuning.highGain,
     }));
@@ -478,6 +484,38 @@ export function mountAnimate(root: HTMLElement): () => void {
       status.textContent = t('anim.decodeError', lang);
     }
   }
+
+  /**
+   * A shared link that names a demo should arrive playing. Browsers do not
+   * allow that: audio needs a user gesture, and without one the context stays
+   * suspended — `play()` still "succeeds", the source node runs, and the
+   * result is a silent, motionless stage that looks broken.
+   *
+   * So the track is loaded and started, and if the browser held it, the stage
+   * says so and the very next click or key press anywhere releases it. That is
+   * as close to autoplay as the platform permits, and it fails loudly rather
+   * than looking like a bug.
+   */
+  function armAutoplay(): void {
+    if (!rig || !rig.suspended()) return;
+    status.textContent = t('anim.tapToPlay', lang);
+    const release = (): void => {
+      document.removeEventListener('pointerdown', release);
+      document.removeEventListener('keydown', release);
+      if (!rig) return;
+      rig.play();
+      paintPlay(true);
+      if (status.textContent === t('anim.tapToPlay', lang)) {
+        status.textContent = bpm ? `${Math.round(bpm)} BPM` : '';
+      }
+    };
+    document.addEventListener('pointerdown', release, { once: true });
+    document.addEventListener('keydown', release, { once: true });
+  }
+
+  // A link that names a demo opens with it loaded. Nothing is fetched when it
+  // does not — the stage stays silent until someone picks one, as before.
+  if (activeDemo) void loadDemo(activeDemo).then(armAutoplay);
 
   // --- stage sizing + render loop ---
   let userSize = { w: 600, h: 600 };

@@ -50,6 +50,11 @@ export interface AppState {
    *  apre/aint do. Never read outside view === 'a' — the poster path has no
    *  concept of it. */
   acol?: boolean;
+  /** Stage-only: which demo track is loaded, by its id. A shared link that
+   *  names one arrives with that music already selected, so the recipient
+   *  hears what the sender heard rather than a silent stage. Absent when the
+   *  audio is the viewer's own file or the mic — neither travels in a URL. */
+  adem?: string;
   /** Stage-only audio tuning, mirroring `AudioTuning` — envelope attack (ms),
    *  release (ms), and the three band gains. Omitted at the defaults so every
    *  animate URL shared before these existed decodes to identical motion. */
@@ -90,6 +95,7 @@ export function encodeState(s: AppState): string {
     if (s.apre !== undefined) q.set('apre', s.apre);
     if (s.aint !== undefined && s.aint !== 1) q.set('aint', String(Math.round(s.aint * 100) / 100));
     if (s.acol) q.set('acol', '1');
+    if (s.adem !== undefined) q.set('adem', s.adem);
     if (s.aatk !== undefined && s.aatk !== TUNING_DEFAULTS.attackMs) q.set('aatk', String(Math.round(s.aatk)));
     if (s.arel !== undefined && s.arel !== TUNING_DEFAULTS.releaseMs) q.set('arel', String(Math.round(s.arel)));
     if (s.abass !== undefined && s.abass !== TUNING_DEFAULTS.bassGain) q.set('abass', String(Math.round(s.abass * 100) / 100));
@@ -158,6 +164,8 @@ export function decodeState(hash: string): AppState | null {
       state.aint = Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 1;
     }
     if (q.get('acol') === '1') state.acol = true;
+    const adem = q.get('adem');
+    if (adem) state.adem = adem;
     // Tuning values clamp to the sliders' ranges; a non-numeric value is
     // dropped so the view falls back to the default, same as aint.
     const numIn = (key: string, lo: number, hi: number): number | undefined => {

@@ -222,3 +222,32 @@ describe('posterFilename', () => {
       .toBe('flowshape-voxel-71203-3a.s0.d0.a0.png');
   });
 });
+
+describe('animate: demo track and stage permanence', () => {
+  it('round-trips the demo id', () => {
+    const hash = encodeState({ ...state, view: 'a', adem: '3' });
+    expect(hash).toContain('adem=3');
+    expect(decodeState(hash)?.adem).toBe('3');
+  });
+
+  it('omits the demo when there is none, so a silent stage stays silent', () => {
+    const hash = encodeState({ ...state, view: 'a' });
+    expect(hash).not.toContain('adem');
+    expect(decodeState(hash)?.adem).toBeUndefined();
+  });
+
+  // The stage default is 16:9 in the decoder and always will be. New animate
+  // links are built with an explicit stage=11 (see ui/panel-actions), so this
+  // default only ever applies to links shared before that change — and those
+  // must keep rendering exactly as they did.
+  it('still reads a stage-less animate link as 16:9', () => {
+    const hash = '#/a/mystery?v=1&seed=1&apre=breathe';
+    expect(decodeState(hash)?.stage).toBeUndefined();
+  });
+
+  it('carries an explicit 1:1 stage', () => {
+    const hash = encodeState({ ...state, view: 'a', stage: '11' });
+    expect(hash).toContain('stage=11');
+    expect(decodeState(hash)?.stage).toBe('11');
+  });
+});
