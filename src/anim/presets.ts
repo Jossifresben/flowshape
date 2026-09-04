@@ -687,15 +687,45 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // rides, so driving it with bass makes the music push the same
     // blossoming the phase flow produces — the two motions compose
     // instead of fighting.
+    //
+    // Every route here used to ride a band envelope (bass/mid/high/level),
+    // and envelopes describe how LOUD the music is, not WHEN it hits: the
+    // figure swelled and subsided with the music but never landed on a beat.
+    // `flux` is the transient feature — it spikes on attacks — so it is what
+    // makes the curve punch rather than breathe. It now drives `size`, which
+    // moves the whole figure and so reads from across a room, and stroke
+    // weight underneath it.
     { id: 'flourish', label: { en: 'Flourish', es: 'Floritura' }, routes: [
       { feature: 'bass', param: 'bloom', depth: 0.35 },
       { feature: 'bright', param: 'falloff', depth: 0.12 },
       { feature: 'high', param: 'strokeWidth', depth: 0.3 },
+      { feature: 'flux', param: 'size', depth: 0.06 },
+      { feature: 'flux', param: 'strokeWidth', depth: 0.18 },
     ] },
     { id: 'breathe', label: { en: 'Breathe', es: 'Respira' }, routes: [
       { feature: 'level', param: 'bloom', depth: 0.4 },
       { feature: 'mid', param: 'opacity', depth: 0.4 },
+      // Lighter than Flourish's: Breathe is the slow one, and its whole point
+      // is the long swell. Enough to mark the beat, not enough to chop it.
+      { feature: 'flux', param: 'size', depth: 0.04 },
     ] },
+    // The beat-led reading of the same curve: the transient leads every route
+    // and the band envelopes only colour it. `bloom` sits at a lower depth
+    // than Flourish's despite being the louder preset — it is driven by flux
+    // here, and flux returns to zero between hits, so the figure snaps back
+    // instead of riding high.
+    //
+    // The event steps `symmetry` every eight beats. Symmetry is the curve's
+    // order — changing it rebuilds the whole figure, which is a bar-level
+    // gesture, never a per-beat one — and the range is held to 5..9 because
+    // the extremes stop reading as the same artwork.
+    { id: 'pulse', label: { en: 'Pulse', es: 'Pulso' }, routes: [
+      { feature: 'flux', param: 'size', depth: 0.09 },
+      { feature: 'flux', param: 'bloom', depth: 0.28 },
+      { feature: 'flux', param: 'strokeWidth', depth: 0.28 },
+      { feature: 'bass', param: 'bloom', depth: 0.15 },
+      { feature: 'level', param: 'opacity', depth: 0.2 },
+    ], event: { kind: 'step', param: 'symmetry', everyBeats: 8, steps: 5, from: 5, to: 9 } },
   ],
   curlicue: [
     // `alpha` is the whole figure — even a 0.0005 nudge reconfigures every
