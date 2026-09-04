@@ -135,6 +135,14 @@ export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
     title: ['Camino a las pozas', 'Camino a las pozas'],
     credit: ['Native American flute by Jossi Fresco', 'Flauta nativa americana de Jossi Fresco'],
     kind: ['Native American Flute', 'Flauta Nativa Americana'] },
+  // Fourth. No `credit`: this piece is not Jossi's and no author was given, so
+  // the card carries the title alone rather than an attribution invented to
+  // fill the field. `lang=es` is stripped from the hash as everywhere here —
+  // language is the viewer's preference, not part of the artwork.
+  { id: 'sarvaloka-natha', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/sarvaloka-natha.mp4',
+    poster: '/showcase/sarvaloka-natha.jpg',
+    hash: '#/a/mystery?v=1&seed=80503&hue=159&hueSpread=92&chroma=0.06&apre=flourish&acol=1&arel=500&symmetry=11&harmonics=6&falloff=1.15&bloom=0.48&layers=5&strokeWidth=1.35&opacity=0.74&size=1.06&phase=0',
+    title: ['Sarvaloka Natha', 'Sarvaloka Natha'] },
   { id: 'harmonograph', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/harmonograph.mp4', poster: '/showcase/harmonograph.jpg',
     title: ['Harmonograph', 'Armonógrafo'] },
   { id: 'timestable', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/timestable.mp4', poster: '/showcase/timestable.jpg',
