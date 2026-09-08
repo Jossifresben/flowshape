@@ -94,4 +94,14 @@ export const PRESETS: Record<string, Preset> = {
       size: 1.11,
     },
   },
+  bauhaus: {
+    seed: 1,
+    params: { motif: 2, symmetry: 3, cell: 60, repeat: 0, stripes: 7, render: 0, width: 0.5, tilt: 0, accentEvery: 6, size: 0.92 },
+    color: { hue: 72 },
+  },
+  scales: {
+    seed: 1,
+    params: { radius: 74, overlap: 0.72, rowStep: 0.86, rings: 8, boldShare: 0.45, ringWidth: 0.66, spokes: 22, size: 1.22 },
+    color: { hue: 130 },
+  },
 };

@@ -36,13 +36,13 @@ export const scales = definePattern({
   usesSeed: true,
   anim: { continuous: ['ringWidth', 'size'], usesPhase: true },
   params: [
-    { key: 'radius', kind: 'int', min: 30, max: 160, step: 2, default: 70, label: 'scales.radius' },
+    { key: 'radius', kind: 'int', min: 30, max: 160, step: 2, default: 74, label: 'scales.radius' },
     { key: 'overlap', kind: 'float', min: 0.5, max: 1, step: 0.01, default: 0.72, label: 'scales.overlap' },
-    { key: 'rowStep', kind: 'float', min: 0.5, max: 1.6, step: 0.02, default: 1, label: 'scales.rowStep' },
-    { key: 'rings', kind: 'int', min: 2, max: 8, step: 1, default: 4, label: 'scales.rings' },
-    { key: 'boldShare', kind: 'float', min: 0, max: 1, step: 0.05, default: 0.5, label: 'scales.boldShare' },
-    { key: 'ringWidth', kind: 'float', min: 0.2, max: 1, step: 0.02, default: 0.5, label: 'scales.ringWidth' },
-    { key: 'spokes', kind: 'int', min: 0, max: 32, step: 2, default: 16, label: 'scales.spokes' },
+    { key: 'rowStep', kind: 'float', min: 0.5, max: 1.6, step: 0.02, default: 0.86, label: 'scales.rowStep' },
+    { key: 'rings', kind: 'int', min: 2, max: 8, step: 1, default: 8, label: 'scales.rings' },
+    { key: 'boldShare', kind: 'float', min: 0, max: 1, step: 0.05, default: 0.45, label: 'scales.boldShare' },
+    { key: 'ringWidth', kind: 'float', min: 0.2, max: 1, step: 0.02, default: 0.66, label: 'scales.ringWidth' },
+    { key: 'spokes', kind: 'int', min: 0, max: 32, step: 2, default: 22, label: 'scales.spokes' },
   ],
   generate(p, seed, size) {
     const rnd = mulberry32(deriveSeed(seed, 'scales'));

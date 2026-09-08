@@ -133,17 +133,17 @@ export const bauhaus = definePattern({
   usesSeed: true,
   anim: { continuous: ['width', 'tilt', 'size'], usesPhase: true },
   params: [
-    { key: 'motif', kind: 'enum', min: 0, max: 8, step: 1, default: 0, label: 'bauhaus.motif',
+    { key: 'motif', kind: 'enum', min: 0, max: 8, step: 1, default: 2, label: 'bauhaus.motif',
       options: ['bauhaus.pipes', 'bauhaus.arcs', 'bauhaus.discs', 'bauhaus.cornerDiscs', 'bauhaus.chevrons', 'bauhaus.diamonds', 'bauhaus.hatch', 'bauhaus.knot', 'bauhaus.dots'] },
-    { key: 'symmetry', kind: 'enum', min: 0, max: 3, step: 1, default: 0, label: 'bauhaus.symmetry',
+    { key: 'symmetry', kind: 'enum', min: 0, max: 3, step: 1, default: 3, label: 'bauhaus.symmetry',
       options: ['bauhaus.free', 'bauhaus.pmm', 'bauhaus.p4m', 'bauhaus.p4'] },
     { key: 'cell', kind: 'int', min: 30, max: 150, step: 5, default: 60, label: 'bauhaus.cell' },
     { key: 'repeat', kind: 'int', min: 0, max: 6, step: 1, default: 0, label: 'bauhaus.repeat' },
-    { key: 'stripes', kind: 'int', min: 1, max: 12, step: 1, default: 3, label: 'bauhaus.stripes', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
+    { key: 'stripes', kind: 'int', min: 1, max: 12, step: 1, default: 7, label: 'bauhaus.stripes', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
     { key: 'render', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'bauhaus.render', options: ['bauhaus.strokes', 'bauhaus.bands'], dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
     { key: 'width', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.5, label: 'bauhaus.width', dependsOn: { key: 'render', values: [0] } },
     { key: 'tilt', kind: 'float', min: -1, max: 1, step: 0.05, default: 0, label: 'bauhaus.tilt', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
-    { key: 'accentEvery', kind: 'int', min: 0, max: 9, step: 1, default: 0, label: 'bauhaus.accentEvery', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
+    { key: 'accentEvery', kind: 'int', min: 0, max: 9, step: 1, default: 6, label: 'bauhaus.accentEvery', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
   ],
   generate(p, seed, size) {
     const motif = p['motif']!;
