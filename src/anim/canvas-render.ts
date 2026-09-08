@@ -89,7 +89,10 @@ function paint(ctx: Ctx2D, path: Path2D | null, st: Style, fillRule?: string, st
       ctx.fill();
     }
   }
-  if (st.stroke !== 'none') {
+  // SVG paints nothing for a non-positive stroke-width; the canvas API
+  // instead IGNORES the assignment and strokes at whatever lineWidth was set
+  // last. Match SVG, or a zero-width stroke inherits its predecessor's width.
+  if (st.stroke !== 'none' && st.sw > 0) {
     ctx.strokeStyle = st.stroke;
     ctx.lineWidth = st.sw;
     ctx.lineCap = st.cap;

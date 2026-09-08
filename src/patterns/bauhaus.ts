@@ -342,7 +342,13 @@ export const bauhaus = definePattern({
         const d = buckets.get(`${k}|${thin ? 1 : 0}|${over ? 1 : 0}|${accent ? 1 : 0}|${frozen ? 1 : 0}`);
         if (!d) continue;
         const lam = ((k + 0.5) / N + (frozen ? 0 : ph)) % 1;
-        children.push(el('path', { d, fill: 'none', stroke: accent ? 'accent' : 'ink', 'stroke-width': r2(widthOf(k, thin, lam)) }));
+        const sw = r2(widthOf(k, thin, lam));
+        // A stripe tapered to nothing is not emitted at all. SVG would draw
+        // nothing for stroke-width 0, but the canvas API ignores a zero line
+        // width and keeps the previous one — which, right after the halo, is
+        // a full cell: the vanishing stripe came back as an ink square.
+        if (sw <= 0) continue;
+        children.push(el('path', { d, fill: 'none', stroke: accent ? 'accent' : 'ink', 'stroke-width': sw }));
       }
     };
     emit(false);
