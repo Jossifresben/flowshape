@@ -282,6 +282,16 @@ export const bauhaus = definePattern({
     let halo = '';
     const solids: string[] = [];
 
+    // The halo that cuts the under-band at a crossing covers the whole cell
+    // along the over-line's centreline, and never moves. It was once one
+    // stroke per lane, following the lanes as they slide — so every time a
+    // lane wrapped from one band edge to the other the cut jumped with it,
+    // a field-wide tick every 1/N of a cycle with no music behind it.
+    for (const c of cells) for (const pr of c.prims) {
+      if (!pr.over) continue;
+      const A = px(c, portPt(pr.sides[0], 0.5)), B = px(c, portPt(pr.sides[1], 0.5));
+      halo += `M${r2(A[0])} ${r2(A[1])}L${r2(B[0])} ${r2(B[1])}`;
+    }
     chains.forEach((chain, ci) => {
       const accent = accentEvery > 0 && ci % accentEvery === 0;
       const shift = chain.frozen ? 0 : ph;
@@ -295,7 +305,6 @@ export const bauhaus = definePattern({
           const A = px(st.cell, portPt(st.sin, q));
           const qout = propagate(st, q);
           const B = px(st.cell, portPt(st.sout, qout));
-          if (st.prim.over) halo += `M${r2(A[0])} ${r2(A[1])}L${r2(B[0])} ${r2(B[1])}`;
           if (!drawn) { q = qout; continue; }
           let d: string;
           if (st.prim.kind === 'line' || st.prim.kind === 'chamfer') {
@@ -337,7 +346,7 @@ export const bauhaus = definePattern({
       }
     };
     emit(false);
-    if (halo) children.push(el('path', { d: halo, fill: 'none', stroke: 'paper', 'stroke-width': r2(pitch * 1.02) }));
+    if (halo) children.push(el('path', { d: halo, fill: 'none', stroke: 'paper', 'stroke-width': cellPx }));
     emit(true);
     if (solids.length) children.push(el('path', { d: solids.join(''), fill: 'ink', stroke: 'none' }));
     return el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }, children);

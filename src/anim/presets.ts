@@ -969,12 +969,13 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
     // thin, or the reverse) — the "stripes as a spectrum" idea reduced to one
     // param: brightness pushes weight toward the outer lanes. The stripes
     // themselves slide along their bands with phase, so the field rolls on
-    // its own; the reseed re-routes the plumbing every eight beats.
+    // its own and needs no event: a reseed every eight beats re-rolled every
+    // cell at once, a jump Jossi heard as a pulse the music did not have.
     { id: 'roll', label: { en: 'Roll', es: 'Rodar' }, routes: [
       { feature: 'bass', param: 'width', depth: 0.3 },
       { feature: 'bright', param: 'tilt', depth: 0.45 },
       { feature: 'level', param: 'size', depth: 0.05 },
-    ], event: { kind: 'reseed', everyBeats: 8 } },
+    ] },
     // Symmetry as song structure: every sixteen beats the seeded block is
     // extended by the next group — free, mirrored, kaleidoscopic, rotated —
     // so a section change reads as order arriving or leaving.
