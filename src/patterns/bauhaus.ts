@@ -1,5 +1,5 @@
 import { el, type SvgNode } from '../core/svg';
-import { definePattern } from './registry';
+import { definePattern, type Params } from './registry';
 import { mulberry32, deriveSeed } from '../core/prng';
 
 /**
@@ -26,10 +26,20 @@ import { mulberry32, deriveSeed } from '../core/prng';
  *
  * Motion: all stripes slide laterally along their band by a shared phase,
  * λ_k = ((k + ½)/N + phase) mod 1. Under mirrors this reads as rings
- * radiating from every disc centre; on pipes, as the band rolling. A closed
- * loop whose round trip maps p → 1 − p is a Möbius loop: no consistent
- * shift exists on it, so it is frozen at phase 0. `% 1` folds phase 1 onto
- * 0, so a full cycle is the phase-0 expression byte for byte.
+ * radiating from every disc centre; on pipes, as the band rolling. `% 1`
+ * folds phase 1 onto 0, so a full cycle is the phase-0 expression byte
+ * for byte.
+ *
+ * A closed chain always returns a stripe to its own position: a ribbon
+ * along a closed curve in the plane has a trivial normal bundle, so there
+ * is no Möbius loop to obstruct the shift. An earlier version of the
+ * tracer reported such loops. They were an artefact: a chain between two
+ * dead ends (an H or V glyph leaves two sides unused) was walked from a
+ * mid-point in one direction only, and the walk in the other direction
+ * later stopped at the first chain's start and was labelled "closed". Now
+ * a chain is walked both ways from wherever it is found, "closed" means
+ * returning to the start segment, and `tests/patterns/bauhaus.test.ts`
+ * asserts the round trip is the identity on every loop.
  *
  * Symmetry extends a seeded m×m block into the plane: pmm mirrors it across
  * both axes (four quarter discs fuse into one disc), p4m adds the diagonal
@@ -125,34 +135,11 @@ function propagate(st: Step, p: number): number {
 
 const r2 = (n: number): number => Math.round(n * 100) / 100;
 
-export const bauhaus = definePattern({
-  id: 'bauhaus',
-  family: 'tilings',
-  phase: 1,
-  heavy: false,
-  usesSeed: true,
-  anim: { continuous: ['width', 'tilt', 'size'], usesPhase: true },
-  params: [
-    { key: 'motif', kind: 'enum', min: 0, max: 8, step: 1, default: 7, label: 'bauhaus.motif',
-      options: ['bauhaus.pipes', 'bauhaus.arcs', 'bauhaus.discs', 'bauhaus.cornerDiscs', 'bauhaus.chevrons', 'bauhaus.diamonds', 'bauhaus.hatch', 'bauhaus.knot', 'bauhaus.dots'] },
-    { key: 'symmetry', kind: 'enum', min: 0, max: 3, step: 1, default: 3, label: 'bauhaus.symmetry',
-      options: ['bauhaus.free', 'bauhaus.pmm', 'bauhaus.p4m', 'bauhaus.p4'] },
-    { key: 'cell', kind: 'int', min: 30, max: 150, step: 5, default: 65, label: 'bauhaus.cell' },
-    { key: 'repeat', kind: 'int', min: 0, max: 6, step: 1, default: 5, label: 'bauhaus.repeat' },
-    { key: 'stripes', kind: 'int', min: 1, max: 12, step: 1, default: 8, label: 'bauhaus.stripes', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
-    { key: 'render', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'bauhaus.render', options: ['bauhaus.strokes', 'bauhaus.bands'], dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
-    { key: 'width', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.42, label: 'bauhaus.width', dependsOn: { key: 'render', values: [0] } },
-    { key: 'tilt', kind: 'float', min: -1, max: 1, step: 0.05, default: -0.25, label: 'bauhaus.tilt', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
-    { key: 'accentEvery', kind: 'int', min: 0, max: 9, step: 1, default: 5, label: 'bauhaus.accentEvery', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
-  ],
-  generate(p, seed, size) {
+/** The placed grid: one Cell per position, glyph and transform decided by
+ *  the seeded block and the symmetry group. Exported for the tests. */
+export function buildCells(p: Params, seed: number, cols: number, rows: number): Cell[] {
     const motif = p['motif']!;
     const symmetry = p['symmetry']!;
-    const cellPx = p['cell']!;
-    const cols = Math.max(1, Math.floor(size.w / cellPx));
-    const rows = Math.max(1, Math.floor(size.h / cellPx));
-    const ox = (size.w - cols * cellPx) / 2;
-    const oy = (size.h - rows * cellPx) / 2;
     const alphabet = MOTIFS[motif]!;
     const m = p['repeat']! === 0 ? (symmetry === 0 ? Infinity : 2) : p['repeat']!;
 
@@ -205,8 +192,95 @@ export const bauhaus = definePattern({
       const prims = (GLYPHS[b.glyph] ?? []).map((pr) => xfPrim(pr, xf));
       cells.push({ I, J, prims, xf, glyph: b.glyph, bar: b.bar });
     }
+    return cells;
+}
+
+/**
+ * Every band chain of a placed grid. A chain is walked from wherever it is
+ * first met, in both directions when it is open, so it always runs from one
+ * end to the other: a border or a dead end (a side the neighbouring glyph
+ * does not use). "Closed" means the walk came back to its own start segment.
+ * Exported for the tests, which assert that no closed chain reverses a
+ * stripe on a round trip.
+ */
+export function traceChains(cells: readonly Cell[], cols: number, rows: number): Chain[] {
     const cellAt = (I: number, J: number): Cell | null => (I < 0 || J < 0 || I >= cols || J >= rows ? null : cells[J * cols + I]!);
     const primBySide = (cell: Cell, side: Side): Prim | undefined => cell.prims.find((pr) => pr.sides.includes(side));
+    const visited = new Set<string>();
+    const key = (cell: Cell, prim: Prim): string => `${cell.J * cols + cell.I}:${cell.prims.indexOf(prim)}`;
+    const walk = (cell: Cell, prim: Prim, sin: Side): { steps: Step[]; closed: boolean } => {
+      const start = prim;
+      const steps: Step[] = [];
+      let closed = false;
+      for (;;) {
+        visited.add(key(cell, prim));
+        const sout = prim.sides[0] === sin ? prim.sides[1] : prim.sides[0];
+        steps.push({ cell, prim, sin, sout });
+        const [dI, dJ, ns] = ACROSS[sout]!;
+        const nb = cellAt(cell.I + dI, cell.J + dJ);
+        if (!nb) break;
+        const np = primBySide(nb, ns);
+        if (!np) break;
+        if (np === start) { closed = true; break; }
+        cell = nb; prim = np; sin = ns;
+      }
+      return { steps, closed };
+    };
+    const finish = (steps: Step[], closed: boolean): Chain => {
+      const first = steps[0]!;
+      const flipStart = first.prim.kind !== 'line' && !cornerAtStart(first.prim.corner!, first.sin);
+      let frozen = false;
+      if (closed) { let q = 0.25; for (const st of steps) q = propagate(st, q); frozen = Math.abs(q - 0.25) > 1e-9; }
+      return { steps, closed, flipStart, frozen };
+    };
+    const chains: Chain[] = [];
+    for (const cell of cells) {
+      const sides: Side[] = [];
+      if (cell.J === 0) sides.push(0); if (cell.I === cols - 1) sides.push(1);
+      if (cell.J === rows - 1) sides.push(2); if (cell.I === 0) sides.push(3);
+      for (const s of sides) { const pr = primBySide(cell, s); if (pr && !visited.has(key(cell, pr))) { const w = walk(cell, pr, s); chains.push(finish(w.steps, w.closed)); } }
+    }
+    for (const cell of cells) for (const pr of cell.prims) {
+      if (visited.has(key(cell, pr))) continue;
+      const fwd = walk(cell, pr, pr.sides[0]);
+      if (fwd.closed) { chains.push(finish(fwd.steps, true)); continue; }
+      // Open in this direction, so open in the other too: walk it and stitch,
+      // so the chain runs end to end and one stripe bookkeeping covers it.
+      const back = walk(cell, pr, pr.sides[1]);
+      const rev: Step[] = back.steps.slice(1).reverse().map((st) => ({ cell: st.cell, prim: st.prim, sin: st.sout, sout: st.sin }));
+      chains.push(finish([...rev, ...fwd.steps], false));
+    }
+    return chains;
+}
+
+export const bauhaus = definePattern({
+  id: 'bauhaus',
+  family: 'tilings',
+  phase: 1,
+  heavy: false,
+  usesSeed: true,
+  anim: { continuous: ['width', 'tilt', 'size'], usesPhase: true },
+  params: [
+    { key: 'motif', kind: 'enum', min: 0, max: 8, step: 1, default: 7, label: 'bauhaus.motif',
+      options: ['bauhaus.pipes', 'bauhaus.arcs', 'bauhaus.discs', 'bauhaus.cornerDiscs', 'bauhaus.chevrons', 'bauhaus.diamonds', 'bauhaus.hatch', 'bauhaus.knot', 'bauhaus.dots'] },
+    { key: 'symmetry', kind: 'enum', min: 0, max: 3, step: 1, default: 3, label: 'bauhaus.symmetry',
+      options: ['bauhaus.free', 'bauhaus.pmm', 'bauhaus.p4m', 'bauhaus.p4'] },
+    { key: 'cell', kind: 'int', min: 30, max: 150, step: 5, default: 65, label: 'bauhaus.cell' },
+    { key: 'repeat', kind: 'int', min: 0, max: 6, step: 1, default: 5, label: 'bauhaus.repeat' },
+    { key: 'stripes', kind: 'int', min: 1, max: 12, step: 1, default: 8, label: 'bauhaus.stripes', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
+    { key: 'render', kind: 'enum', min: 0, max: 1, step: 1, default: 0, label: 'bauhaus.render', options: ['bauhaus.strokes', 'bauhaus.bands'], dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
+    { key: 'width', kind: 'float', min: 0.1, max: 1, step: 0.02, default: 0.42, label: 'bauhaus.width', dependsOn: { key: 'render', values: [0] } },
+    { key: 'tilt', kind: 'float', min: -1, max: 1, step: 0.05, default: -0.25, label: 'bauhaus.tilt', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
+    { key: 'accentEvery', kind: 'int', min: 0, max: 9, step: 1, default: 5, label: 'bauhaus.accentEvery', dependsOn: { key: 'motif', values: STRIPE_MOTIFS } },
+  ],
+  generate(p, seed, size) {
+    const motif = p['motif']!;
+    const cellPx = p['cell']!;
+    const cols = Math.max(1, Math.floor(size.w / cellPx));
+    const rows = Math.max(1, Math.floor(size.h / cellPx));
+    const ox = (size.w - cols * cellPx) / 2;
+    const oy = (size.h - rows * cellPx) / 2;
+    const cells = buildCells(p, seed, cols, rows);
 
     const children: SvgNode[] = [];
     const px = (cell: Cell, q: Pt): Pt => [ox + (cell.I + q[0]) * cellPx, oy + (cell.J + q[1]) * cellPx];
@@ -223,38 +297,7 @@ export const bauhaus = definePattern({
       return el('svg', { viewBox: `0 0 ${size.w} ${size.h}` }, children);
     }
 
-    // ---- trace band chains ----
-    const visited = new Set<string>();
-    const key = (cell: Cell, prim: Prim): string => `${cell.J * cols + cell.I}:${cell.prims.indexOf(prim)}`;
-    const chains: Chain[] = [];
-    const walk = (cell: Cell, prim: Prim, sin: Side): Chain => {
-      const steps: Step[] = [];
-      let closed = false;
-      for (;;) {
-        if (visited.has(key(cell, prim))) { closed = true; break; }
-        visited.add(key(cell, prim));
-        const sout = prim.sides[0] === sin ? prim.sides[1] : prim.sides[0];
-        steps.push({ cell, prim, sin, sout });
-        const [dI, dJ, ns] = ACROSS[sout]!;
-        const nb = cellAt(cell.I + dI, cell.J + dJ);
-        if (!nb) break;
-        const np = primBySide(nb, ns);
-        if (!np) break;
-        cell = nb; prim = np; sin = ns;
-      }
-      const first = steps[0]!;
-      const flipStart = first.prim.kind !== 'line' && !cornerAtStart(first.prim.corner!, first.sin);
-      let frozen = false;
-      if (closed) { let q = 0.25; for (const st of steps) q = propagate(st, q); frozen = Math.abs(q - 0.25) > 1e-9; }
-      return { steps, closed, flipStart, frozen };
-    };
-    for (const cell of cells) {
-      const sides: Side[] = [];
-      if (cell.J === 0) sides.push(0); if (cell.I === cols - 1) sides.push(1);
-      if (cell.J === rows - 1) sides.push(2); if (cell.I === 0) sides.push(3);
-      for (const s of sides) { const pr = primBySide(cell, s); if (pr && !visited.has(key(cell, pr))) chains.push(walk(cell, pr, s)); }
-    }
-    for (const cell of cells) for (const pr of cell.prims) if (!visited.has(key(cell, pr))) chains.push(walk(cell, pr, pr.sides[0]));
+    const chains = traceChains(cells, cols, rows);
 
     // ---- emit stripes, bucketed by (k, thin, over, accent) ----
     const N = p['stripes']!;
