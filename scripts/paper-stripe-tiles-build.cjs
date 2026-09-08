@@ -142,4 +142,35 @@ for (const c of C) {
   else if (c.t === "ref") md.push(`- ${c.text}`);
 }
 fs.writeFileSync(path.join(REPO, "docs/paper/stripe-tiles.md"), md.join("\n"));
+// ─── html emitter (for the PDF: print with headless Chrome) ──────────────────
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const hRuns = (runs) => runs.map((r) => (r.bold ? `<b>${esc(r.text)}</b>` : r.italics ? `<i>${esc(r.text)}</i>` : esc(r.text))).join("");
+const H = [];
+H.push(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(TITLE)}</title><style>
+@page { size: Letter; margin: 1in; }
+body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.32; color: #000; max-width: 6.5in; margin: 0 auto; }
+h1 { font-size: 15pt; text-align: center; margin: 0 0 6pt; }
+.meta { text-align: center; margin: 0 0 4pt; } .meta.i { font-style: italic; margin-bottom: 18pt; }
+h2 { font-size: 12pt; margin: 18pt 0 6pt; }
+p { text-align: justify; text-indent: 0.25in; margin: 0 0 8pt; }
+p.abs { text-indent: 0; margin: 0 0.25in 14pt; font-size: 11pt; }
+pre { font-family: "Courier New", monospace; font-size: 10.5pt; margin: 0 0 8pt 0.25in; white-space: pre; }
+.fig { display: flex; gap: 6pt; justify-content: center; margin: 8pt 0 4pt; page-break-inside: avoid; } .fig img { flex: 1 1 0; min-width: 0; max-width: 100%; }
+.cap { font-style: italic; font-size: 10pt; margin: 2pt 0 12pt; text-indent: 0; }
+table { border-collapse: collapse; margin: 6pt auto; font-size: 10pt; } th, td { border: 1px solid #999; padding: 3pt 6pt; } th { background: #D9E2F3; }
+.ref { font-size: 11pt; margin: 0 0 4pt 0.25in; text-indent: -0.25in; text-align: left; }
+</style></head><body>`);
+H.push(`<h1>${esc(TITLE)}</h1><div class="meta"><b>${esc(AUTHOR)}</b></div><div class="meta">${esc(AFFIL)}</div><div class="meta">${esc(ORCID)}</div><div class="meta i">${esc(DATE)}</div>`);
+H.push(`<h2>Abstract</h2><p class="abs">${esc(ABSTRACT)}</p>`);
+for (const c of C) {
+  if (c.t === "h") H.push(`<h2>${esc(c.text)}</h2>`);
+  else if (c.t === "p") H.push(`<p>${hRuns(c.runs)}</p>`);
+  else if (c.t === "mono") H.push(`<pre>${esc(c.lines.join("\n"))}</pre>`);
+  else if (c.t === "fig") H.push(`<div class="fig">${c.files.map((f) => `<img src="figures/${f}">`).join("")}</div><p class="cap">${esc(c.caption)}</p>`);
+  else if (c.t === "table") H.push(`<table><tr>${c.header.map((x) => `<th>${esc(x)}</th>`).join("")}</tr>${c.rows.map((r) => `<tr>${r.map((v) => `<td>${esc(v)}</td>`).join("")}</tr>`).join("")}</table><p class="cap">${esc(c.caption)}</p>`);
+  else if (c.t === "ref") H.push(`<p class="ref">${esc(c.text)}</p>`);
+}
+H.push(`</body></html>`);
+fs.writeFileSync(path.join(REPO, "docs/paper/stripe-tiles.html"), H.join("\n"));
+
 Packer.toBuffer(doc).then((buf) => { fs.writeFileSync(path.join(REPO, "docs/paper/stripe-tiles.docx"), buf); console.log("wrote docx", buf.length, "bytes; md", md.join("\n").length, "chars"); });

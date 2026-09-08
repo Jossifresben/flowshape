@@ -1,0 +1,23 @@
+{
+  "upload_type": "publication",
+  "publication_type": "preprint",
+  "title": "Stripe Tiles: Band Chains and Seam-Free Lateral Motion in N-Stripe Truchet Tilings",
+  "creators": [
+    { "name": "Fresco Benaim, Jose", "affiliation": "SomosUno Digital, Madrid, Spain", "orcid": "0009-0000-2026-0836" }
+  ],
+  "description": "<p>A stripe tile draws each base curve of a Truchet-style square tile as N parallel offset curves that meet every side of the cell at the fixed fractions (k + ½)/N. The equal-subdivision rule that lets such tiles continue across any edge under any rotation or reflection is known from work on generalised Truchet tiles. This note adds two things for the multi-stripe case. First, the natural unit of drawing is not the cell but the <em>band chain</em>, the route one bundle takes from border to border or around a loop; tracing chains rather than cells is what keeps N stripes accounted for consistently, at woven crossings and at the dead ends left by glyphs that use only two sides of their cell. Second, defining each stripe by its position on the chain's entry edge and propagating that position through the corner connectors yields a lateral motion of the whole field: a phase slide with no seam at any edge and an exact return at phase 1, which under mirror symmetry reads as rings radiating from every disc centre. A closed chain always returns a stripe to its own position, since a ribbon along a closed planar curve has a trivial normal bundle; an implementation that reported \"Möbius loops\" was found to be a tracing error, and the invariant is now a test.</p><p>Everything is implemented in the open-source generator <a href=\"https://flowshape.art\">flowshape</a> (pattern <em>bauhaus</em>), where every figure in this note is a URL that reproduces it. Every number in the note is produced by a script in the repository, never typed by hand. The note was developed with Claude Fable 5.1 (Anthropic); see the Acknowledgements.</p><p>Files: the manuscript as PDF and Word, the Markdown source, and the figures with their generating numbers.</p>",
+  "keywords": ["Truchet tiles", "tilings", "generative art", "mathematics and art", "band chains", "animation", "offset curves", "flowshape"],
+  "license": "cc-by-4.0",
+  "access_right": "open",
+  "language": "eng",
+  "publication_date": "2026-09-08",
+  "version": "1.0",
+  "notes": "Preprint, not peer reviewed. Source, figures and the scripts that compute every number: https://github.com/Jossifresben/flowshape/tree/main/docs/paper",
+  "related_identifiers": [
+    { "identifier": "10.5281/zenodo.22659360", "relation": "references", "resource_type": "software", "scheme": "doi" },
+    { "identifier": "https://github.com/Jossifresben/flowshape", "relation": "isSupplementedBy", "resource_type": "software", "scheme": "url" },
+    { "identifier": "10.2307/1578535", "relation": "cites", "scheme": "doi" },
+    { "identifier": "10.1145/2630099.2630111", "relation": "cites", "scheme": "doi" },
+    { "identifier": "10.1016/j.cag.2007.10.001", "relation": "cites", "scheme": "doi" }
+  ]
+}
