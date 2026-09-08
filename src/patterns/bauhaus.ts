@@ -263,10 +263,18 @@ export const bauhaus = definePattern({
     const ph = (p['phase'] ?? 0) % 1;
     const accentEvery = p['accentEvery']!;
     const tilt = p['tilt']!;
-    const widthOf = (k: number, thin: boolean): number => {
+    // A stripe's weight, tapered to nothing at the band edges. As stripes
+    // slide with phase, one reaches λ = 1 and re-enters at λ = 0 — a jump
+    // the eye read as a field-wide tick every 1/N of a cycle, unrelated to
+    // the music. The taper spans the outer half-lane on each side, so the
+    // stripe fades out and is born thin instead. At rest, λ_k = (k + ½)/N
+    // sits exactly at the taper's edge for the outermost stripes, so the
+    // factor is 1 for every k and phase 0 renders as it always did.
+    const widthOf = (k: number, thin: boolean, lam: number): number => {
       const base = bands ? pitch : pitch * p['width']!;
       const w = base * (1 + tilt * (2 * (k + 0.5) / N - 1));
-      return Math.max(pitch * 0.05, w) * (thin ? Math.SQRT1_2 : 1);
+      const taper = Math.min(1, Math.min(lam, 1 - lam) * 2 * N + 1e-9);
+      return Math.max(pitch * 0.05, w) * (thin ? Math.SQRT1_2 : 1) * taper;
     };
     // bucket id → d
     const buckets = new Map<string, string>();
@@ -306,7 +314,7 @@ export const bauhaus = definePattern({
             }
           }
           const thin = st.prim.kind === 'chamfer';
-          add(`${k}|${thin ? 1 : 0}|${st.prim.over ? 1 : 0}|${accent ? 1 : 0}`, d);
+          add(`${k}|${thin ? 1 : 0}|${st.prim.over ? 1 : 0}|${accent ? 1 : 0}|${chain.frozen ? 1 : 0}`, d);
           q = qout;
         }
       }
@@ -321,10 +329,11 @@ export const bauhaus = definePattern({
     }
 
     const emit = (over: boolean): void => {
-      for (let k = 0; k < N; k++) for (const thin of [false, true]) for (const accent of [false, true]) {
-        const d = buckets.get(`${k}|${thin ? 1 : 0}|${over ? 1 : 0}|${accent ? 1 : 0}`);
+      for (let k = 0; k < N; k++) for (const thin of [false, true]) for (const accent of [false, true]) for (const frozen of [false, true]) {
+        const d = buckets.get(`${k}|${thin ? 1 : 0}|${over ? 1 : 0}|${accent ? 1 : 0}|${frozen ? 1 : 0}`);
         if (!d) continue;
-        children.push(el('path', { d, fill: 'none', stroke: accent ? 'accent' : 'ink', 'stroke-width': r2(widthOf(k, thin)) }));
+        const lam = ((k + 0.5) / N + (frozen ? 0 : ph)) % 1;
+        children.push(el('path', { d, fill: 'none', stroke: accent ? 'accent' : 'ink', 'stroke-width': r2(widthOf(k, thin, lam)) }));
       }
     };
     emit(false);
