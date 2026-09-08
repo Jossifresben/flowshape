@@ -8,7 +8,7 @@
 
 **[flowshape.art](https://flowshape.art)** — turn mathematics into art.
 
-Explore 36 pattern generators, read the maths that draws each one, and take the result out as a print-ready poster or as a visual that moves with your music.
+Explore 38 pattern generators, read the maths that draws each one, and take the result out as a print-ready poster or as a visual that moves with your music.
 
 Free, open source, no accounts, no backend. Everything runs in the browser.
 
@@ -28,7 +28,7 @@ Both are built on the same idea as everything else here: a saved favourite *is* 
 
 ## What it is
 
-flowshape turns mathematics into art. Pick one of **36 deterministic pattern generators** — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — move every parameter it has, and watch the shape respond.
+flowshape turns mathematics into art. Pick one of **38 deterministic pattern generators** — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — move every parameter it has, and watch the shape respond.
 
 Then take it somewhere:
 
@@ -91,13 +91,13 @@ Forty lines, no framework, no hidden library doing the interesting part. That is
 
 **Fields** *(7)* — [Flow Field](docs/patterns.md#flow-field) · [Coulomb Field](docs/patterns.md#coulomb-field) · [Moiré Weave](docs/patterns.md#moiré-weave) · [Warped Fabric](docs/patterns.md#warped-fabric) · [Converging Chirp](docs/patterns.md#converging-chirp) · [Line Field](docs/patterns.md#line-field) · [Interference](docs/patterns.md#interference)
 
-**Tilings** *(4)* — [Truchet Arcs](docs/patterns.md#truchet-arcs) · [Hitomezashi](docs/patterns.md#hitomezashi) · [Girih Stars](docs/patterns.md#girih-stars) · [Ribbon Interlace](docs/patterns.md#ribbon-interlace)
+**Tilings** *(6)* — [Truchet Arcs](docs/patterns.md#truchet-arcs) · [Hitomezashi](docs/patterns.md#hitomezashi) · [Girih Stars](docs/patterns.md#girih-stars) · [Ribbon Interlace](docs/patterns.md#ribbon-interlace) · [Bauhaus Tiles](docs/patterns.md#bauhaus-tiles) · [Ring Scales](docs/patterns.md#ring-scales)
 
 **Isometric** *(4)* — [Voxel Form](docs/patterns.md#voxel-form) · [Iso Weave](docs/patterns.md#iso-weave) · [Nested Shafts](docs/patterns.md#nested-shafts) · [Tumbling Blocks](docs/patterns.md#tumbling-blocks)
 
 **Growth** *(1)* — [Differential Growth](docs/patterns.md#differential-growth)
 
-All 36, with the formula, explanation, parameters and citation for each, in **[docs/patterns.md](docs/patterns.md)**. Sources run from Vogel and Descartes to Hankin, Truchet, Seaton, Jobard & Lefer, Quílez, Newell and Müller-Brockmann.
+All 38, with the formula, explanation, parameters and citation for each, in **[docs/patterns.md](docs/patterns.md)**. Sources run from Vogel and Descartes to Hankin, Truchet, Seaton, Jobard & Lefer, Quílez, Newell and Müller-Brockmann.
 
 ## Design rules
 

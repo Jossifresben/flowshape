@@ -151,4 +151,12 @@ export const BLURBS: Record<string, { en: string; es: string }> = {
     en: 'Hopf fibers of the 3-sphere, stereographically projected into nested rings of linked Villarceau circles.',
     es: 'Fibras de Hopf de la 3-esfera, proyectadas estereográficamente en anillos anidados de círculos de Villarceau enlazados.',
   },
+  bauhaus: {
+    en: 'Stripes that cross every edge at the same heights, so pipes, discs and chevrons join into one Bauhaus field.',
+    es: 'Franjas que cruzan cada borde a la misma altura: tuberías, discos y chevrones se unen en un campo Bauhaus.',
+  },
+  scales: {
+    en: 'Rings on a staggered lattice, each disc covering the one above it, the way blue-wave textiles overlap.',
+    es: 'Anillos en una retícula escalonada: cada disco cubre al de arriba, como se solapan las olas del seigaiha.',
+  },
 };

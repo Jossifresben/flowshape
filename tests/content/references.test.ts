@@ -24,7 +24,7 @@ const DIR = path.join(process.cwd(), 'src', 'content', 'explain');
 // motions, hyperweave's closed coprime walk with the (B/m)-periodic ripple —
 // was worked out for this project.
 const OWN_CONSTRUCTION = [
-  'bands', 'chirp', 'helix', 'hyperweave', 'interference', 'isoweave', 'knot', 'linefield',
+  'bands', 'bauhaus', 'chirp', 'helix', 'hyperweave', 'interference', 'isoweave', 'knot', 'linefield',
   'nested', 'nodegarden', 'roselattice', 'villarceau',
 ];
 

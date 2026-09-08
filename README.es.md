@@ -8,7 +8,7 @@
 
 **[flowshape.art](https://flowshape.art)** — convierte las matemáticas en arte.
 
-Explora 36 generadores de patrones, lee las matemáticas que dibujan cada uno y llévate el resultado como póster listo para imprimir o como un visual que se mueve con tu música.
+Explora 38 generadores de patrones, lee las matemáticas que dibujan cada uno y llévate el resultado como póster listo para imprimir o como un visual que se mueve con tu música.
 
 Gratuito, de código abierto, sin cuentas y sin backend. Todo ocurre en el navegador.
 
@@ -28,7 +28,7 @@ Ambas cosas descansan sobre la misma idea que todo lo demás: un favorito *es* u
 
 ## Qué es
 
-flowshape convierte las matemáticas en arte. Elige uno de los **36 generadores de patrones deterministas** —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— mueve cada parámetro que tenga y observa cómo responde la forma.
+flowshape convierte las matemáticas en arte. Elige uno de los **38 generadores de patrones deterministas** —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— mueve cada parámetro que tenga y observa cómo responde la forma.
 
 Después, llévatelo a alguna parte:
 
@@ -91,13 +91,13 @@ Cuarenta líneas, sin framework, sin una biblioteca oculta que haga la parte int
 
 **Campos** *(7)* — [Flow Field](docs/patterns.md#flow-field) · [Coulomb Field](docs/patterns.md#coulomb-field) · [Moiré Weave](docs/patterns.md#moiré-weave) · [Warped Fabric](docs/patterns.md#warped-fabric) · [Converging Chirp](docs/patterns.md#converging-chirp) · [Line Field](docs/patterns.md#line-field) · [Interference](docs/patterns.md#interference)
 
-**Teselados** *(4)* — [Truchet Arcs](docs/patterns.md#truchet-arcs) · [Hitomezashi](docs/patterns.md#hitomezashi) · [Girih Stars](docs/patterns.md#girih-stars) · [Ribbon Interlace](docs/patterns.md#ribbon-interlace)
+**Teselados** *(6)* — [Truchet Arcs](docs/patterns.md#truchet-arcs) · [Hitomezashi](docs/patterns.md#hitomezashi) · [Girih Stars](docs/patterns.md#girih-stars) · [Ribbon Interlace](docs/patterns.md#ribbon-interlace) · [Bauhaus Tiles](docs/patterns.md#bauhaus-tiles) · [Ring Scales](docs/patterns.md#ring-scales)
 
 **Isométricos** *(4)* — [Voxel Form](docs/patterns.md#voxel-form) · [Iso Weave](docs/patterns.md#iso-weave) · [Nested Shafts](docs/patterns.md#nested-shafts) · [Tumbling Blocks](docs/patterns.md#tumbling-blocks)
 
 **Crecimiento** *(1)* — [Differential Growth](docs/patterns.md#differential-growth)
 
-Los 36, con la fórmula, la explicación, los parámetros y la cita de cada uno, en **[docs/patterns.md](docs/patterns.md)**. Las fuentes van de Vogel y Descartes a Hankin, Truchet, Seaton, Jobard y Lefer, Quílez, Newell y Müller-Brockmann.
+Los 38, con la fórmula, la explicación, los parámetros y la cita de cada uno, en **[docs/patterns.md](docs/patterns.md)**. Las fuentes van de Vogel y Descartes a Hankin, Truchet, Seaton, Jobard y Lefer, Quílez, Newell y Müller-Brockmann.
 
 ## Reglas de diseño
 

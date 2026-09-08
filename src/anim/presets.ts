@@ -963,6 +963,35 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'mid', param: 'pole', depth: 0.15 },
     ] },
   ],
+  bauhaus: [
+    // Two continuous axes and the phase. `width` is the stripe weight,
+    // `tilt` a weight gradient across the band (outer stripes fat, inner
+    // thin, or the reverse) — the "stripes as a spectrum" idea reduced to one
+    // param: brightness pushes weight toward the outer lanes. The stripes
+    // themselves slide along their bands with phase, so the field rolls on
+    // its own; the reseed re-routes the plumbing every eight beats.
+    { id: 'roll', label: { en: 'Roll', es: 'Rodar' }, routes: [
+      { feature: 'bass', param: 'width', depth: 0.3 },
+      { feature: 'bright', param: 'tilt', depth: 0.45 },
+      { feature: 'level', param: 'size', depth: 0.05 },
+    ], event: { kind: 'reseed', everyBeats: 8 } },
+    // Symmetry as song structure: every sixteen beats the seeded block is
+    // extended by the next group — free, mirrored, kaleidoscopic, rotated —
+    // so a section change reads as order arriving or leaving.
+    { id: 'sections', label: { en: 'Sections', es: 'Secciones' }, routes: [
+      { feature: 'bass', param: 'width', depth: 0.35 },
+      { feature: 'mid', param: 'tilt', depth: 0.3 },
+    ], event: { kind: 'step', param: 'symmetry', everyBeats: 16, steps: 4 } },
+  ],
+  scales: [
+    // The rings pulse outward with phase already; bass fattens them and the
+    // reseed re-deals which discs are bold. `boldShare` is not routed: it
+    // re-kinds discs across a threshold, a flicker, not a swell.
+    { id: 'ripple', label: { en: 'Ripple', es: 'Ondas' }, routes: [
+      { feature: 'bass', param: 'ringWidth', depth: 0.35 },
+      { feature: 'level', param: 'size', depth: 0.04 },
+    ], event: { kind: 'reseed', everyBeats: 8 } },
+  ],
 };
 
 export function presetsFor(patternId: string): AnimPreset[] {

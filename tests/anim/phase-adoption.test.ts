@@ -99,9 +99,15 @@ const EIGHTH_WAVE = ['linefield', 'nodegarden', 'interference'];
  * congruence and knot's coprime frequencies.
  */
 const NINTH_WAVE = ['villarceau'];
+/**
+ * The tenth pass: the Bauhaus stripe tiles slide every stripe along its band
+ * by phase (Möbius loops frozen), and the ring lattice pushes its ring radii
+ * outward. Both fold phase through `% 1` before use.
+ */
+const TENTH_WAVE = ['bauhaus', 'scales'];
 const LOOPERS = [
   ...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE, ...SIXTH_WAVE, ...SEVENTH_WAVE,
-  ...EIGHTH_WAVE, ...NINTH_WAVE,
+  ...EIGHTH_WAVE, ...NINTH_WAVE, ...TENTH_WAVE,
 ];
 const ADOPTERS = [...FIRST_WAVE, ...LOOPERS];
 

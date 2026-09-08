@@ -34,3 +34,5 @@ import './linefield';
 import './nodegarden';
 import './interference';
 import './villarceau';
+import './bauhaus';
+import './scales';

@@ -1,6 +1,6 @@
 # The pattern catalogue
 
-36 generators, grouped into six families. Every one is a pure function of
+38 generators, grouped into six families. Every one is a pure function of
 `(params, seed, size)` returning an `SvgNode` tree — see
 [architecture.md](architecture.md) for the contract.
 
@@ -70,6 +70,8 @@ the animated stage.
 | [**Hitomezashi**](#hitomezashi) | `hitomezashi` | `cell` · `bitChance` · `strokeWidth` · `fillParity` | ✓ | — |
 | [**Girih Stars**](#girih-stars) | `girih` | `hexSize` · `contactAngle` · `render` · `ribbonWidth` · `strokeWidth` | — | — |
 | [**Ribbon Interlace**](#ribbon-interlace) | `interlace` | `cell` · `ribbonWidth` · `ringScale` · `coreRatio` · `junctions` · `gapScale` · `strokeWidth` | — | — |
+| [**Bauhaus Tiles**](#bauhaus-tiles) | `bauhaus` | `motif` · `symmetry` · `cell` · `repeat` · `stripes` · `render` · `width` · `tilt` · `accentEvery` | ✓ | — |
+| [**Ring Scales**](#ring-scales) | `scales` | `radius` · `overlap` · `rowStep` · `rings` · `boldShare` · `ringWidth` · `spokes` | ✓ | — |
 
 ### Isometric
 
@@ -655,6 +657,43 @@ Two families of strand are drawn, and only two. Every hexagonal face of the hone
 **Source.** Celtic knotwork construction (Cromwell, P.R., 1993, "Celtic Knotwork: Mathematical Art", The Mathematical Intelligencer 15(1), 36–47); the free over/under rests on the honeycomb graph being bipartite — a graph is bipartite iff it contains no odd cycle (Kőnig, D., 1916) · [reference](https://doi.org/10.1007/BF03025256)
 
 **Parameters.** `cell`, `ribbonWidth`, `ringScale`, `coreRatio`, `junctions`, `gapScale`, `strokeWidth` — each one annotated in the explanation document above.
+
+### Bauhaus Tiles
+
+`bauhaus` · [generator](../src/patterns/bauhaus.ts) · [explanation: EN](../src/content/explain/bauhaus.en.md) · [ES](../src/content/explain/bauhaus.es.md) · seeded
+
+```
+unit cell, N stripes; stripe k crosses every side at t_k = (k + ½) / N
+base curves: line (side ↔ opposite side, p_out = p_in)
+             corner connector — arc, chamfer or bend — with r = p_in or 1 − p_in
+band chain:  side → neighbour's facing side → … until a border or a loop
+stripe k:    entry position λ_k = (t_k + phase) mod 1, propagated step by step
+Möbius loop: round trip maps p → 1 − p; held at phase 0
+symmetry:    pmm mirrors a seeded m×m block, p4m adds the diagonal, p4 rotates it
+```
+
+The Bauhaus line-and-circle posters are one object: bundles of N parallel stripes following straight runs and quarter turns on a square grid. Because every stripe meets every cell edge at the same N heights, any glyph continues into any neighbour in any rotation or reflection — Truchet's arcs are the N = 1 case. The drawing follows each band chain from border to border and places stripes by their entry position, which is what lets the whole field slide with phase without a seam; mirrored, the sliding stripes become rings radiating from every disc centre.
+
+**Source.** Smith, C.S. (1987) "The Tiling Patterns of Sébastien Truchet and the Topology of Structural Hierarchy", Leonardo 20(4); the N-stripe glyph alphabet, the band-chain tracing and the lateral flow are this project's own construction · [reference](https://en.wikipedia.org/wiki/Truchet_tiles)
+
+**Parameters.** `motif`, `symmetry`, `cell`, `repeat`, `stripes`, `render`, `width`, `tilt`, `accentEvery` — each one annotated in the explanation document above.
+
+### Ring Scales
+
+`scales` · [generator](../src/patterns/scales.ts) · [explanation: EN](../src/content/explain/scales.en.md) · [ES](../src/content/explain/scales.es.md) · seeded
+
+```
+lattice:  x = −R + col · 2R·overlap  (+ R·overlap on odd rows),  y = −R + row · R·rowStep
+draw rows top to bottom; each disc covers what is under it
+bold disc: ink, n paper rings at r_j = R · ((j + ½)/n + phase) mod 1
+fine disc: accent, 2n paper rings and S spokes
+```
+
+Overlapping discs drawn in order: each hides what came before, so only the crown of every earlier disc survives and the lattice reads as fish scales or the stacked waves of seigaiha textiles. Two fills alternate by seed, bold rings against a fine polar grid, the pairing the Bauhaus textile studies used on the same lattice. With phase the ring radii advance outward, so each disc pulses from its own centre while the lattice holds still.
+
+**Source.** Seigaiha (青海波), the Japanese blue-wave tiling of overlapping concentric arcs, documented on Nara-period textiles; here rebuilt as a two-fill lattice in painter's order · [reference](https://en.wikipedia.org/wiki/Seigaiha)
+
+**Parameters.** `radius`, `overlap`, `rowStep`, `rings`, `boldShare`, `ringWidth`, `spokes` — each one annotated in the explanation document above.
 
 ## Isometric
 

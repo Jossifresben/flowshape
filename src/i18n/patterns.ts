@@ -41,6 +41,8 @@ export const PATTERN_NAMES: Record<string, Pair> = {
   nodegarden: ['Node Garden', 'Jardín de nodos'],
   interference: ['Interference', 'Interferencia'],
   villarceau: ['Villarceau Ribbons', 'Cintas de Villarceau'],
+  bauhaus: ['Bauhaus Tiles', 'Teselas Bauhaus'],
+  scales: ['Ring Scales', 'Escamas de anillos'],
 };
 
 /** Human label for each pattern family. */
