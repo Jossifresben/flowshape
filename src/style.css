@@ -107,6 +107,8 @@ input[type='checkbox'] { accent-color: var(--ink); }
   margin: 0; font-size: 46px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.02;
 }
 .gal-subtitle { margin: 16px 0 0; color: var(--gray); font-size: 15px; max-width: 640px; }
+.gal-hero-side { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+.gal-hero-cta:hover { border-color: var(--accent); color: var(--accent); }
 .gal-stats {
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--gray);
   white-space: nowrap;
@@ -551,6 +553,7 @@ a.gal-wordmark { text-decoration: none; }
 
 @media (max-width: 640px) {
   .gal-hero-top { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .gal-hero-side { align-items: flex-start; gap: 10px; }
   /* Burger nav: the four links plus the language switch and share button
      overflowed the bar and pushed it to two rows, eating vertical space on
      the smallest screens. Collapsed behind a toggle; the bar is one row

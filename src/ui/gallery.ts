@@ -5,6 +5,7 @@ import { recallState } from '../core/persist';
 import { currentLang, patternName, familyLabel, t, withLang, type Lang } from '../i18n';
 import { PATTERN_NAMES, FAMILY_NAMES } from '../i18n/patterns';
 import { buildNav } from './nav';
+import { openTipJar } from './tip';
 import { buildFooter } from './footer';
 
 /** English display names, kept as a plain map for build scripts and tests.
@@ -93,7 +94,20 @@ export function mountGallery(root: HTMLElement): void {
   stats.textContent =
     `${patterns.length} ${t('gal.patterns', lang)} · ${families.length} ${t('gal.families', lang)}`;
 
-  heroTop.append(headline, stats);
+  // The one ask on the landing page. Same tip jar the footer and the about
+  // page open; placed under the stats so a first-time visitor meets it once,
+  // above the grid, rather than only after scrolling past every card.
+  const cta = document.createElement('button');
+  cta.type = 'button';
+  cta.className = 'btn gal-hero-cta';
+  cta.textContent = t('tip.support', lang);
+  cta.addEventListener('click', () => openTipJar(lang));
+
+  const side = document.createElement('div');
+  side.className = 'gal-hero-side';
+  side.append(stats, cta);
+
+  heroTop.append(headline, side);
 
   const subtitle = document.createElement('p');
   subtitle.className = 'gal-subtitle';
