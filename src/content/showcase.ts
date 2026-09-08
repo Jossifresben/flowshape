@@ -139,6 +139,14 @@ export const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
   // the card carries the title alone rather than an attribution invented to
   // fill the field. `lang=es` is stripped from the hash as everywhere here —
   // language is the viewer's preference, not part of the artwork.
+  // Fifth, and the first on Bauhaus Tiles: an improvisation, recorded on the
+  // knot motif under p4 that is now the pattern's default. `kind` names it
+  // for the card; the credit is burned into the video as everywhere else.
+  { id: 'improv-6', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/improv-6.mp4', poster: '/showcase/improv-6.jpg',
+    hash: '#/a/bauhaus?v=1&seed=1&hue=72&stage=11&apre=roll&aint=0.84&acol=1&aatk=19&arel=50&motif=7&symmetry=3&cell=65&repeat=5&stripes=8&render=0&width=0.42&tilt=-0.25&accentEvery=5&size=0.81&phase=0',
+    title: ['Improv 6', 'Improv 6'],
+    credit: ['Improvisation by Jossi Fresco', 'Improvisación de Jossi Fresco'],
+    kind: ['Improvisation', 'Improvisación'] },
   { id: 'sarvaloka-natha', src: 'https://pub-6a0f4482746040e4a9d5bac43683870a.r2.dev/sarvaloka-natha.mp4',
     poster: '/showcase/sarvaloka-natha.jpg',
     hash: '#/a/mystery?v=1&seed=80503&hue=159&hueSpread=92&chroma=0.06&apre=flourish&acol=1&arel=500&symmetry=11&harmonics=6&falloff=1.15&bloom=0.48&layers=5&strokeWidth=1.35&opacity=0.74&size=1.06&phase=0',
