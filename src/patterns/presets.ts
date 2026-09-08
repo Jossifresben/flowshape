@@ -96,7 +96,7 @@ export const PRESETS: Record<string, Preset> = {
   },
   bauhaus: {
     seed: 1,
-    params: { motif: 2, symmetry: 3, cell: 60, repeat: 0, stripes: 7, render: 0, width: 0.5, tilt: 0, accentEvery: 6, size: 0.92 },
+    params: { motif: 7, symmetry: 3, cell: 65, repeat: 5, stripes: 8, render: 0, width: 0.42, tilt: -0.25, accentEvery: 5, size: 0.81 },
     color: { hue: 72 },
   },
   scales: {
