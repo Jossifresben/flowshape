@@ -1,7 +1,7 @@
 # Stripe Tiles: Band Chains and Seam-Free Lateral Motion in N-Stripe Truchet Tilings
 
 **Jose “Jossi” Fresco Benaim** — SomosUno Digital, Madrid, Spain · jossif@gmail.com — ORCID 0009-0000-2026-0836  
-*8 September 2026 · preprint*
+*8 September 2026 · preprint · DOI 10.5281/zenodo.22667466*
 
 > Built by `scripts/paper-stripe-tiles.ts` (figures, numbers) and a docx-js script (this file and `stripe-tiles.docx`) from one content source. Edit neither by hand: change the source and rebuild.
 

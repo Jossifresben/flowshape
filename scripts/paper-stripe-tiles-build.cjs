@@ -17,7 +17,7 @@ const TITLE = "Stripe Tiles: Band Chains and Seam-Free Lateral Motion in N-Strip
 const AUTHOR = "Jose “Jossi” Fresco Benaim";
 const AFFIL = "SomosUno Digital, Madrid, Spain · jossif@gmail.com";
 const ORCID = "ORCID 0009-0000-2026-0836";
-const DATE = "8 September 2026 · preprint";
+const DATE = "8 September 2026 · preprint · DOI 10.5281/zenodo.22667466";
 const ABSTRACT = `A stripe tile draws each base curve of a Truchet-style square tile as N parallel offset curves that meet every side of the cell at the fixed fractions (k + ½)/N. The equal-subdivision rule that lets such tiles continue across any edge under any rotation or reflection is known from work on generalised Truchet tiles. This note adds two things for the multi-stripe case. First, the natural unit of drawing is not the cell but the band chain, the route one bundle takes from border to border or around a loop; tracing chains rather than cells is what keeps N stripes accounted for consistently, at woven crossings and at the dead ends left by glyphs that use only two sides of their cell. Second, defining each stripe by its position on the chain's entry edge and propagating that position through the corner connectors yields a lateral motion of the whole field: a phase slide with no seam at any edge and an exact return at phase 1, which under mirror symmetry reads as rings radiating from every disc centre. A closed chain always returns a stripe to its own position, since a ribbon along a closed planar curve has a trivial normal bundle; an implementation that reported “Möbius loops” was found to be a tracing error, and the invariant is now a test. Everything is implemented in the open-source generator flowshape, where every figure in this note is a URL that reproduces it.`;
 
 const C = [];
