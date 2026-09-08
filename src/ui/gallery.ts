@@ -33,7 +33,7 @@ const FAMILY_ORDER: Family[] = (Object.keys(FAMILY_RANK) as Family[])
 /** The curated gallery-sample state for a pattern (its `PRESETS` entry, or
  *  bare defaults when the pattern has none). Carries the reader's language so
  *  the playground opens in the language they were just browsing in. */
-function presetHash(id: string, lang: Lang): string {
+export function presetHash(id: string, lang: Lang): string {
   const preset = PRESETS[id];
   return encodeState({
     patternId: id,

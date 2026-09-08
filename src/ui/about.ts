@@ -4,6 +4,7 @@ import { REFERENCES } from '../content/references';
 import { BLURBS } from '../content/blurbs';
 import { openTipJar } from './tip';
 import { buildNav } from './nav';
+import { presetHash } from './gallery';
 import { buildFooter, AUTHOR_NAME, AUTHOR_URL, ORCID_URL, REPO_URL } from './footer';
 
 type Block =
@@ -204,8 +205,12 @@ function buildReferences(lang: Lang): DocumentFragment {
     const ref = REFERENCES[id];
     if (!ref) continue;
     const li = document.createElement('li');
-    const title = document.createElement('span');
+    // The name is the way into the pattern itself: the same curated state
+    // the gallery card opens, so the reader lands on the artwork the
+    // citation is about, not on bare defaults.
+    const title = document.createElement('a');
     title.className = 'about-ref-name';
+    title.href = presetHash(id, lang);
     title.textContent = name;
     const blurb = document.createElement('span');
     blurb.className = 'about-ref-blurb';
