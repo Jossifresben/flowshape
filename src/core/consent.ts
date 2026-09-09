@@ -75,8 +75,15 @@ function analyticsAllowed(): boolean {
   return import.meta.env.PROD && globalThis.location?.hostname === 'flowshape.art';
 }
 
-function gtag(...args: unknown[]): void {
-  (g().dataLayer ??= []).push(args);
+/** Exported for the test that pins the push shape; not part of the module's API. */
+export function gtag(..._args: unknown[]): void {
+  // gtag.js executes only commands pushed as an `arguments` object — the shape
+  // Google's own snippet pushes. A plain array is stored and ignored. This
+  // loader pushed arrays from its first day: the tag loaded, the data layer
+  // filled, consent was granted, and not one hit left the page. Found
+  // 2026-09-09 by comparing against the official snippet in the same browser.
+  // eslint-disable-next-line prefer-rest-params
+  (g().dataLayer ??= []).push(arguments);
 }
 
 /**

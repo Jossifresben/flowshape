@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { storedConsent, setConsent, routePath, GA_ID, CONSENT_EVENT } from '../../src/core/consent';
+import { gtag, storedConsent, setConsent, routePath, GA_ID, CONSENT_EVENT } from '../../src/core/consent';
 
 /** Minimal in-memory stand-in for the Storage interface. */
 function makeStubStorage(): Storage {
@@ -108,5 +108,22 @@ describe('consent', () => {
       expect(at('#/p/curlicue?seed=3&curls=60')).not.toContain('?');
       expect(at('#/p/curlicue?seed=3&curls=60')).not.toContain('seed');
     });
+  });
+});
+
+describe('the gtag command shape', () => {
+  // gtag.js executes only commands pushed as an `arguments` object — the
+  // shape Google's snippet pushes. A plain array is stored and ignored,
+  // silently: the tag loads, the data layer fills, nothing is sent. The
+  // site shipped that way and reported zero traffic until 2026-09-09.
+  it('pushes an arguments object, never an array', () => {
+    const w = globalThis as { dataLayer?: unknown[] };
+    w.dataLayer = [];
+    gtag('config', 'G-TEST', { send_page_view: false });
+    const entry = w.dataLayer[0];
+    expect(Object.prototype.toString.call(entry)).toBe('[object Arguments]');
+    expect(Array.isArray(entry)).toBe(false);
+    expect(Array.from(entry as ArrayLike<unknown>)).toEqual(['config', 'G-TEST', { send_page_view: false }]);
+    delete w.dataLayer;
   });
 });
