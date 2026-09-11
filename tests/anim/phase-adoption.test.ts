@@ -105,9 +105,17 @@ const NINTH_WAVE = ['villarceau'];
  * outward. Both fold phase through `% 1` before use.
  */
 const TENTH_WAVE = ['bauhaus', 'scales'];
+/**
+ * The eleventh pass, the playgrnd-audit spike: whorl orbits its core
+ * constellation once per cycle (or advances θ₀ by π, the orientation field's
+ * own period, when there is no pair to orbit); contour walks its noise
+ * read-point once around a closed circle, flowfield's device. Both fold
+ * phase through `% 1`.
+ */
+const ELEVENTH_WAVE = ['whorl', 'contour'];
 const LOOPERS = [
   ...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE, ...SIXTH_WAVE, ...SEVENTH_WAVE,
-  ...EIGHTH_WAVE, ...NINTH_WAVE, ...TENTH_WAVE,
+  ...EIGHTH_WAVE, ...NINTH_WAVE, ...TENTH_WAVE, ...ELEVENTH_WAVE,
 ];
 const ADOPTERS = [...FIRST_WAVE, ...LOOPERS];
 

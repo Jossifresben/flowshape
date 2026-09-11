@@ -36,3 +36,5 @@ import './interference';
 import './villarceau';
 import './bauhaus';
 import './scales';
+import './whorl';
+import './contour';

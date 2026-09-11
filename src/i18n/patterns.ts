@@ -43,6 +43,8 @@ export const PATTERN_NAMES: Record<string, Pair> = {
   villarceau: ['Villarceau Ribbons', 'Cintas de Villarceau'],
   bauhaus: ['Bauhaus Tiles', 'Teselas Bauhaus'],
   scales: ['Ring Scales', 'Escamas de anillos'],
+  whorl: ['Fingerprint Whorl', 'Verticilo dactilar'],
+  contour: ['Contour Terraces', 'Terrazas de nivel'],
 };
 
 /** Human label for each pattern family. */
