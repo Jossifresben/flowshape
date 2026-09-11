@@ -37,3 +37,4 @@ import './villarceau';
 import './bauhaus';
 import './scales';
 import './contour';
+import './whorl';

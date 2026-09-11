@@ -116,4 +116,17 @@ export const PRESETS: Record<string, Preset> = {
       size: 1,
     },
   },
+  whorl: {
+    seed: 3,
+    params: {
+      count: 24,
+      centres: 3,
+      pull: 0.6,
+      push: 0.35,
+      reach: 0.3,
+      angle: 0,
+      render: 0,
+      size: 1,
+    },
+  },
 };

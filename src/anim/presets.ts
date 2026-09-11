@@ -1001,6 +1001,17 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'level', param: 'size', depth: 0.05 },
     ], event: { kind: 'reseed', everyBeats: 16 } },
   ],
+  whorl: [
+    // The bands already flow with phase. Bass raises the hills (rings tighten
+    // around every pull centre), highs deepen the pits; the reseed moves the
+    // centres. `count` and `centres` re-key every loop at a unit step and are
+    // left to the reseed.
+    { id: 'swell', label: { en: 'Swell', es: 'Oleaje' }, routes: [
+      { feature: 'bass', param: 'pull', depth: 0.35 },
+      { feature: 'high', param: 'push', depth: 0.25 },
+      { feature: 'level', param: 'size', depth: 0.05 },
+    ], event: { kind: 'reseed', everyBeats: 16 } },
+  ],
 };
 
 export function presetsFor(patternId: string): AnimPreset[] {

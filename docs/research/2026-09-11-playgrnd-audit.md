@@ -12,15 +12,16 @@
 
 ## Outcome (2026-09-11)
 
-- `contour` built and promoted (38 → 39): `src/patterns/contour.ts`.
-- `whorl` built as a spike and **rejected**. The live playgrnd Whorl turned
-  out to be a different object from the ridge-field reading below: a field
-  of horizontal stripes bent by a handful of *centres* with pull/push
-  weights, drawn as alternating filled bands (controls: centres, pull, push,
-  stripe count). That is the `contour` machinery over a different scalar
-  field — f(x, y) = y/λ + Σᵢ wᵢ · kernel(|p − cᵢ|), bands = parity of ⌊f⌋ —
-  and would be a `field` enum on `contour` rather than a pattern of its own,
-  if it is ever wanted.
+- `contour` built and promoted: `src/patterns/contour.ts`. Marching squares
+  lives in `src/core/marching.ts` as a shared utility.
+- `whorl` was first built as the fingerprint ridge field described below and
+  **rejected**: the live playgrnd Whorl turned out to be a different object —
+  a field of stripes bent by a handful of *centres* with pull/push weights,
+  drawn as alternating filled bands (controls: centres, pull, push, stripe
+  count). It was then rebuilt as that: the level sets of a ramp with Gaussian
+  hills and pits, all integer levels in one evenodd path over the same
+  marching-squares core. Promoted as `whorl` (38 → 40 with contour). The
+  ridge-field reading below stays on record as a candidate in its own right.
 
 ## What playgrnd is
 

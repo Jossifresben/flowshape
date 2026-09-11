@@ -163,4 +163,8 @@ export const BLURBS: Record<string, { en: string; es: string }> = {
     en: 'A noise field cut into level sets by marching squares, stacked lowest first so every terrace covers the one beneath.',
     es: 'Un campo de ruido cortado en conjuntos de nivel con marching squares, apilados desde abajo: cada terraza cubre a la anterior.',
   },
+  whorl: {
+    en: 'Stripes as the level sets of a ramp with Gaussian hills and pits: they bend around each centre and close into rings at the summit.',
+    es: 'Franjas como conjuntos de nivel de una rampa con colinas y fosas gaussianas: rodean cada centro y se cierran en anillos en la cima.',
+  },
 };

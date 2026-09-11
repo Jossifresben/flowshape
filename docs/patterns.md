@@ -1,6 +1,6 @@
 # The pattern catalogue
 
-39 generators, grouped into six families. Every one is a pure function of
+40 generators, grouped into six families. Every one is a pure function of
 `(params, seed, size)` returning an `SvgNode` tree — see
 [architecture.md](architecture.md) for the contract.
 
@@ -62,6 +62,7 @@ the animated stage.
 | [**Line Field**](#line-field) | `linefield` | `cells` · `vortices` · `swirl` · `waviness` · `warp` · `strokeLen` · `strokeWidth` · `opacity` | ✓ | — |
 | [**Interference**](#interference) | `interference` | `lines` · `sources` · `frequency` · `amplitude` · `separation` · `detune` · `strokeWidth` · `opacity` | ✓ | — |
 | [**Contour Terraces**](#contour-terraces) | `contour` | `noiseScale` · `octaves` · `levels` · `contrast` · `mode` · `strokeWidth` · `accentEvery` | ✓ | — |
+| [**Whorl Bands**](#whorl-bands) | `whorl` | `count` · `centres` · `pull` · `push` · `reach` · `angle` · `render` · `strokeWidth` | ✓ | — |
 
 ### Tilings
 
@@ -580,6 +581,22 @@ A noise field cut at evenly spaced heights. Marching squares samples the field o
 **Source.** Lorensen, W. E. & Cline, H. E. (1987) "Marching Cubes: A high resolution 3D surface construction algorithm", SIGGRAPH '87 (the 2-D case, marching squares); field is fractional Brownian value noise after Perlin, K. (1985) "An image synthesizer" · [reference](https://en.wikipedia.org/wiki/Marching_squares)
 
 **Parameters.** `noiseScale`, `octaves`, `levels`, `contrast`, `mode`, `strokeWidth`, `accentEvery` — each one annotated in the explanation document above.
+
+### Whorl Bands
+
+`whorl` · [generator](../src/patterns/whorl.ts) · [explanation: EN](../src/content/explain/whorl.en.md) · [ES](../src/content/explain/whorl.es.md) · seeded
+
+```
+f(p) = count · ⟨p − o, n⟩ / H  +  Σᵢ sᵢ · Aᵢ · exp(−|p − cᵢ|² / 2σᵢ²)
+n = (−sin angle, cos angle);  sᵢ = ±1 (pull / push);  Aᵢ = pull·count or push·count;  σᵢ = reach · min(W, H)
+band = ⌊f⌋ mod 2  —  every integer level set traced by marching squares, all in one evenodd path
+```
+
+A tilted plane rising one unit per stripe, with a Gaussian hill at every pull centre and a pit at every push centre; the bands are its contour lines at whole-number heights, filled alternately. Far from the centres the stripes run straight; near a hill they bend around it and, where the hill outclimbs the plane, close into rings around the summit; between two centres they pinch through a saddle, which is where the whorls come from. All level sets go into one path under the even-odd rule, so the alternation is a property of the fill, not bookkeeping. With phase the thresholds slide by two levels per cycle — one stripe period — so the bands flow around the centres and the loop closes exactly.
+
+**Source.** Level sets of a ramp with Gaussian hills and pits, traced by marching squares — Lorensen, W. E. & Cline, H. E. (1987), the 2-D case; the band register follows Riley, B. "Current" (1964); the ramp-plus-centres construction is this project's own · [reference](https://en.wikipedia.org/wiki/Gaussian_function)
+
+**Parameters.** `count`, `centres`, `pull`, `push`, `reach`, `angle`, `render`, `strokeWidth` — each one annotated in the explanation document above.
 
 ## Tilings
 

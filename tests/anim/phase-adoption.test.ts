@@ -106,11 +106,13 @@ const NINTH_WAVE = ['villarceau'];
  */
 const TENTH_WAVE = ['bauhaus', 'scales'];
 /**
- * The eleventh pass, one pattern from the 2026-09-11 playgrnd audit: contour
- * walks its noise read-point once around a closed circle in noise space,
- * flowfield's device, and folds phase through `% 1`.
+ * The eleventh pass, the two patterns from the 2026-09-11 playgrnd audit:
+ * contour walks its noise read-point once around a closed circle in noise
+ * space, flowfield's device; whorl slides its integer thresholds by two per
+ * cycle (one stripe period is two bands), so at phase 1 the thresholds are
+ * integers again. Both fold phase through `% 1`.
  */
-const ELEVENTH_WAVE = ['contour'];
+const ELEVENTH_WAVE = ['contour', 'whorl'];
 const LOOPERS = [
   ...SECOND_WAVE, ...THIRD_WAVE, ...FOURTH_WAVE, ...FIFTH_WAVE, ...SIXTH_WAVE, ...SEVENTH_WAVE,
   ...EIGHTH_WAVE, ...NINTH_WAVE, ...TENTH_WAVE, ...ELEVENTH_WAVE,

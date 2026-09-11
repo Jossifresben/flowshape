@@ -44,6 +44,7 @@ export const PATTERN_NAMES: Record<string, Pair> = {
   bauhaus: ['Bauhaus Tiles', 'Teselas Bauhaus'],
   scales: ['Ring Scales', 'Escamas de anillos'],
   contour: ['Contour Terraces', 'Terrazas de nivel'],
+  whorl: ['Whorl Bands', 'Bandas en remolino'],
 };
 
 /** Human label for each pattern family. */

@@ -255,4 +255,11 @@ export const PARAMS: Record<string, Pair> = {
   'contour.levels': ['LEVELS', 'NIVELES'],
   'contour.terraces': ['terraces', 'terrazas'],
   'contour.isolines': ['isolines', 'isolíneas'],
+  'whorl.count': ['STRIPES', 'FRANJAS'],
+  'whorl.centres': ['CENTRES', 'CENTROS'],
+  'whorl.pull': ['PULL', 'ATRACCIÓN'],
+  'whorl.push': ['PUSH', 'REPULSIÓN'],
+  'whorl.reach': ['REACH', 'ALCANCE'],
+  'whorl.bands': ['bands', 'bandas'],
+  'whorl.lines': ['lines', 'líneas'],
 };

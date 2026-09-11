@@ -8,7 +8,7 @@
 
 **[flowshape.art](https://flowshape.art)** — turn mathematics into art.
 
-Explore 39 pattern generators, read the maths that draws each one, and take the result out as a print-ready poster or as a visual that moves with your music.
+Explore 40 pattern generators, read the maths that draws each one, and take the result out as a print-ready poster or as a visual that moves with your music.
 
 Free, open source, no accounts, no backend. Everything runs in the browser.
 
@@ -28,7 +28,7 @@ Both are built on the same idea as everything else here: a saved favourite *is* 
 
 ## What it is
 
-flowshape turns mathematics into art. Pick one of **39 deterministic pattern generators** — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — move every parameter it has, and watch the shape respond.
+flowshape turns mathematics into art. Pick one of **40 deterministic pattern generators** — a Voronoi mesh, a Truchet tiling, a flow field, an isometric voxel form — move every parameter it has, and watch the shape respond.
 
 Then take it somewhere:
 
@@ -97,7 +97,7 @@ Forty lines, no framework, no hidden library doing the interesting part. That is
 
 **Growth** *(1)* — [Differential Growth](docs/patterns.md#differential-growth)
 
-All 39, with the formula, explanation, parameters and citation for each, in **[docs/patterns.md](docs/patterns.md)**. Sources run from Vogel and Descartes to Hankin, Truchet, Seaton, Jobard & Lefer, Quílez, Newell and Müller-Brockmann.
+All 40, with the formula, explanation, parameters and citation for each, in **[docs/patterns.md](docs/patterns.md)**. Sources run from Vogel and Descartes to Hankin, Truchet, Seaton, Jobard & Lefer, Quílez, Newell and Müller-Brockmann.
 
 ## Design rules
 
