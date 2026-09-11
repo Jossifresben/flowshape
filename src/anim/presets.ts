@@ -993,17 +993,6 @@ export const PRESETS_BY_PATTERN: Record<string, AnimPreset[]> = {
       { feature: 'level', param: 'size', depth: 0.04 },
     ], event: { kind: 'reseed', everyBeats: 8 } },
   ],
-  whorl: [
-    // The core pair already orbits with phase. Bass pulls the cores apart
-    // (the whorl opens into a double loop and closes again), highs weight the
-    // ridges. `cores`/`deltas`/`spacing` re-seed every ridge at a unit step
-    // and belong to the reseed, not a route.
-    { id: 'turn', label: { en: 'Turn', es: 'Giro' }, routes: [
-      { feature: 'bass', param: 'separation', depth: 0.3 },
-      { feature: 'high', param: 'strokeWidth', depth: 0.35 },
-      { feature: 'level', param: 'size', depth: 0.06 },
-    ], event: { kind: 'reseed', everyBeats: 16 } },
-  ],
   contour: [
     // The field drifts with phase. Bass raises the contrast so plateaus
     // swell and merge like a rising tide; the reseed moves to new ground.

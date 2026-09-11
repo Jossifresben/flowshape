@@ -8,7 +8,7 @@
 
 **[flowshape.art](https://flowshape.art)** — convierte las matemáticas en arte.
 
-Explora 38 generadores de patrones, lee las matemáticas que dibujan cada uno y llévate el resultado como póster listo para imprimir o como un visual que se mueve con tu música.
+Explora 39 generadores de patrones, lee las matemáticas que dibujan cada uno y llévate el resultado como póster listo para imprimir o como un visual que se mueve con tu música.
 
 Gratuito, de código abierto, sin cuentas y sin backend. Todo ocurre en el navegador.
 
@@ -28,7 +28,7 @@ Ambas cosas descansan sobre la misma idea que todo lo demás: un favorito *es* u
 
 ## Qué es
 
-flowshape convierte las matemáticas en arte. Elige uno de los **38 generadores de patrones deterministas** —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— mueve cada parámetro que tenga y observa cómo responde la forma.
+flowshape convierte las matemáticas en arte. Elige uno de los **39 generadores de patrones deterministas** —una malla de Voronoi, un teselado de Truchet, un campo de flujo, una forma de vóxeles— mueve cada parámetro que tenga y observa cómo responde la forma.
 
 Después, llévatelo a alguna parte:
 
@@ -97,7 +97,7 @@ Cuarenta líneas, sin framework, sin una biblioteca oculta que haga la parte int
 
 **Crecimiento** *(1)* — [Differential Growth](docs/patterns.md#differential-growth)
 
-Los 38, con la fórmula, la explicación, los parámetros y la cita de cada uno, en **[docs/patterns.md](docs/patterns.md)**. Las fuentes van de Vogel y Descartes a Hankin, Truchet, Seaton, Jobard y Lefer, Quílez, Newell y Müller-Brockmann.
+Los 39, con la fórmula, la explicación, los parámetros y la cita de cada uno, en **[docs/patterns.md](docs/patterns.md)**. Las fuentes van de Vogel y Descartes a Hankin, Truchet, Seaton, Jobard y Lefer, Quílez, Newell y Müller-Brockmann.
 
 ## Reglas de diseño
 

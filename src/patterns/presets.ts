@@ -104,4 +104,16 @@ export const PRESETS: Record<string, Preset> = {
     params: { radius: 74, overlap: 0.72, rowStep: 0.86, rings: 8, boldShare: 0.45, ringWidth: 0.66, spokes: 22, size: 1.22 },
     color: { hue: 130 },
   },
+  contour: {
+    seed: 3,
+    params: {
+      noiseScale: 0.006,
+      octaves: 3,
+      levels: 5,
+      contrast: 1.9,
+      mode: 0,
+      accentEvery: 3,
+      size: 1,
+    },
+  },
 };

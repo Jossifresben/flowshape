@@ -159,10 +159,6 @@ export const BLURBS: Record<string, { en: string; es: string }> = {
     en: 'Rings on a staggered lattice, each disc covering the one above it, the way blue-wave textiles overlap.',
     es: 'Anillos en una retícula escalonada: cada disco cubre al de arriba, como se solapan las olas del seigaiha.',
   },
-  whorl: {
-    en: 'Ridges traced through a field of cores and deltas: the half-turn singularity that makes a fingerprint loop instead of radiate.',
-    es: 'Crestas trazadas por un campo de núcleos y deltas: la singularidad de media vuelta que hace que una huella gire en vez de radiar.',
-  },
   contour: {
     en: 'A noise field cut into level sets by marching squares, stacked lowest first so every terrace covers the one beneath.',
     es: 'Un campo de ruido cortado en conjuntos de nivel con marching squares, apilados desde abajo: cada terraza cubre a la anterior.',

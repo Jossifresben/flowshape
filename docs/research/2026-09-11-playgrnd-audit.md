@@ -10,6 +10,18 @@
 > mathematics the name points at, not from the tool's UI. Verify against the
 > live page before building.
 
+## Outcome (2026-09-11)
+
+- `contour` built and promoted (38 → 39): `src/patterns/contour.ts`.
+- `whorl` built as a spike and **rejected**. The live playgrnd Whorl turned
+  out to be a different object from the ridge-field reading below: a field
+  of horizontal stripes bent by a handful of *centres* with pull/push
+  weights, drawn as alternating filled bands (controls: centres, pull, push,
+  stripe count). That is the `contour` machinery over a different scalar
+  field — f(x, y) = y/λ + Σᵢ wᵢ · kernel(|p − cᵢ|), bands = parity of ⌊f⌋ —
+  and would be a `field` enum on `contour` rather than a pattern of its own,
+  if it is ever wanted.
+
 ## What playgrnd is
 
 - "Tiny tools for making weird, beautiful things": 43 free, single-purpose

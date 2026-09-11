@@ -1,6 +1,6 @@
 # The pattern catalogue
 
-38 generators, grouped into six families. Every one is a pure function of
+39 generators, grouped into six families. Every one is a pure function of
 `(params, seed, size)` returning an `SvgNode` tree — see
 [architecture.md](architecture.md) for the contract.
 
@@ -61,6 +61,7 @@ the animated stage.
 | [**Converging Chirp**](#converging-chirp) | `chirp` | `lineCount` · `freqStart` · `freqEnd` · `amplitude` · `phaseStep` · `strokeWidth` | — | — |
 | [**Line Field**](#line-field) | `linefield` | `cells` · `vortices` · `swirl` · `waviness` · `warp` · `strokeLen` · `strokeWidth` · `opacity` | ✓ | — |
 | [**Interference**](#interference) | `interference` | `lines` · `sources` · `frequency` · `amplitude` · `separation` · `detune` · `strokeWidth` · `opacity` | ✓ | — |
+| [**Contour Terraces**](#contour-terraces) | `contour` | `noiseScale` · `octaves` · `levels` · `contrast` · `mode` · `strokeWidth` · `accentEvery` | ✓ | — |
 
 ### Tilings
 
@@ -562,6 +563,23 @@ A bed of horizontal lines bent vertically by the summed field of two (or three) 
 **Source.** Two-source wave interference — the phase-difference argument fixing the fringes to the hyperbola family with foci at the sources is classical wave physics; cf. Wikipedia, "Wave interference"; the horizontal-line displacement rendering and its composition are this project's own construction · [reference](https://en.wikipedia.org/wiki/Wave_interference)
 
 **Parameters.** `lines`, `sources`, `frequency`, `amplitude`, `separation`, `detune`, `strokeWidth`, `opacity` — each one annotated in the explanation document above.
+
+### Contour Terraces
+
+`contour` · [generator](../src/patterns/contour.ts) · [explanation: EN](../src/content/explain/contour.en.md) · [ES](../src/content/explain/contour.es.md) · seeded
+
+```
+v(x, y) = ½ + ½ · contrast · fbm(x·s, y·s)       clamped to [0, 1]
+fbm     = Σₖ noise(2ᵏ·x, 2ᵏ·y) / 2ᵏ,  k = 0 … octaves − 1
+level i: region { v ≥ i/N },  i = 1 … N − 1
+boundary by marching squares; crossings by linear interpolation along the cell edge
+```
+
+A noise field cut at evenly spaced heights. Marching squares samples the field on a lattice and, in every cell whose corners straddle the threshold, places one segment on the edges whose ends disagree (two on a saddle, split by the centre value); chained edge to edge the segments close into loops, and a ring of samples below every threshold just outside the frame guarantees that a region running off the sheet still closes. The regions nest, so drawing them lowest first is a painter's stack: every terrace covers the one beneath it, fills alternating ink and paper with every k-th level in accent. Isolines mode strokes the same loops and lifts the pen along the frame. With phase the noise read-point walks a closed circle, so the terraces breathe and return exactly.
+
+**Source.** Lorensen, W. E. & Cline, H. E. (1987) "Marching Cubes: A high resolution 3D surface construction algorithm", SIGGRAPH '87 (the 2-D case, marching squares); field is fractional Brownian value noise after Perlin, K. (1985) "An image synthesizer" · [reference](https://en.wikipedia.org/wiki/Marching_squares)
+
+**Parameters.** `noiseScale`, `octaves`, `levels`, `contrast`, `mode`, `strokeWidth`, `accentEvery` — each one annotated in the explanation document above.
 
 ## Tilings
 
