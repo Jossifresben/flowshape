@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  # Node 22 LTS: patched for the eMudhra CA compromise / Oct 2026 Node security release
+  NODE_VERSION = "22"
+
 [[headers]]
   for = "/*"
   [headers.values]
